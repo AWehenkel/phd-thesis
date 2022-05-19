@@ -1,0 +1,26 @@
+\babel@toc {american}{}
+\vspace {-\cftbeforepartskip }
+\babel@toc {american}{}
+\contentsline {chapter}{\numberline {1}\spacedlowsmallcaps {Introduction}}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Outline and contributions}{1}{section.1.1}
+\contentsline {section}{\numberline {1.2}Publications}{1}{section.1.2}
+\contentsline {chapter}{\numberline {2}\spacedlowsmallcaps {Background}}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}Unsupervised learning}{3}{section.2.1}
+\contentsline {part}{i\hspace {1em}\spacedlowsmallcaps {Black-box generative modeling}}{5}{part.1}
+\contentsline {chapter}{\numberline {3}\spacedlowsmallcaps {Deep Latent Variables Generative Models}}{7}{chapter.3}
+\contentsline {section}{\numberline {3.1}Variational Auto Encoders}{7}{section.3.1}
+\contentsline {section}{\numberline {3.2}Diffusion Models}{7}{section.3.2}
+\contentsline {section}{\numberline {3.3}Contribution: \textit {Diffusion Priors in Variational Autoencoders}}{7}{section.3.3}
+\contentsline {chapter}{\numberline {4}\spacedlowsmallcaps {Unstructured Density Estimation with Normalizing Flows}}{9}{chapter.4}
+\contentsline {section}{\numberline {4.1}Normalizing Flows}{9}{section.4.1}
+\contentsline {section}{\numberline {4.2}Contribution: \textit {You say Normalizing Flows I see Bayesian Networks}}{9}{section.4.2}
+\contentsline {section}{\numberline {4.3}Contribution: \textit {Unconstrained Monotonic Neural Networks}}{9}{section.4.3}
+\contentsline {chapter}{\numberline {5}\spacedlowsmallcaps {Digression on monotonic functions in machine learning}}{11}{chapter.5}
+\contentsline {part}{ii\hspace {1em}\spacedlowsmallcaps {Hybrid generative modeling}}{13}{part.2}
+\contentsline {chapter}{\numberline {6}\spacedlowsmallcaps {Structured Density Estimation with Normalizing Flows}}{15}{chapter.6}
+\contentsline {section}{\numberline {6.1}Contribution: \textit {Graphical normalizing flows}}{15}{section.6.1}
+\contentsline {chapter}{\numberline {7}\spacedlowsmallcaps {Hybrid Generative Models}}{17}{chapter.7}
+\contentsline {section}{\numberline {7.1}Contribution: \textit {Robust Hybrid Learning With Expert Augmentation}}{17}{section.7.1}
+\contentsline {part}{iii\hspace {1em}\spacedlowsmallcaps {Appendix}}{19}{part.3}
+\contentsline {chapter}{\numberline {A}\spacedlowsmallcaps {Notations}}{21}{appendix.A}
+\contentsline {chapter}{\numberline {B}\spacedlowsmallcaps {References}}{25}{appendix.B}
