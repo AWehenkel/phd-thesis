@@ -38,12 +38,12 @@ Thumbs.db
 
 # Latex trashes #
 ######################
-.aux
-.blg
-.log
-.out
-.bbl
-.pdf
-.pyg
-.gz
-.toc
+*.aux
+*.blg
+*.log
+*.out
+*.bbl
+*.pdf
+*.pyg
+*.gz
+*.toc
