@@ -75,7 +75,7 @@
 \PassOptionsToPackage{latin9}{inputenc}	% latin9 (ISO-8859-9) = latin1+"Euro sign"
  \usepackage{inputenc}
 
-%\PassOptionsToPackage{ngerman,american}{babel}   % change this to your language(s)
+\PassOptionsToPackage{american}{babel}   % change this to your language(s)
 % Spanish languages need extra options in order to work with this template
 %\PassOptionsToPackage{spanish,es-lcroman}{babel}
  \usepackage{babel}
@@ -112,8 +112,9 @@
 \newcommand{\tableheadline}[1]{\multicolumn{1}{c}{\spacedlowsmallcaps{#1}}}
 \newcommand{\myfloatalign}{\centering} % to be used with each float for alignment
 \usepackage{caption}
-\captionsetup{format=hang,font=small}
 \usepackage{subfig}
+\captionsetup{format=hang,font=small}
+\usepackage{graphicx}
 % ****************************************************************************************************
 
 
@@ -153,7 +154,6 @@
 \pdfcompresslevel=9
 \pdfadjustspacing=1
 \PassOptionsToPackage{pdftex}{graphicx}
-	\usepackage{graphicx}
 
 % ********************************************************************
 % Setup the style of the backrefs from the bibliography
@@ -280,4 +280,5 @@
 % \usepackage[T1]{fontenc}
 % \usepackage{textcomp}
 %\usepackage[urw-garamond]{mathdesign} <-- no osf support :-(
+\usepackage{cleveref}
 % ****************************************************************************************************

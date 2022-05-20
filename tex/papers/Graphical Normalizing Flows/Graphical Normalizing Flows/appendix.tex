@@ -1,0 +1,387 @@
+\appendix
+\section{Optimization procedure}\label{app:optim}
+\begin{algorithm}
+\begin{algorithmic} \caption{Main Loop}
+\State $\text{epoch} \gets 0$
+\While {$!\text{Stopping criterion}$} 
+    \ForAll{batch $\mb{X} \in \mb{X_{train}}$}
+        \State $\text{loss} \gets \Call{computeLoss}{\text{flow}, X}$
+        \State $\Call{optimize}{\text{flow}, \text{loss}}$
+    \EndFor
+   \State $\text{loss}_{valid} \gets \Call{computeLoss}{\text{flow}, \mb{X_{test}}}$
+    \State $\text{epoch} \gets \text{epoch} + 1$
+    \State $\Call{updateCoefficients}{\text{flow}, \text{epoch}, \text{loss}_{valid}}$
+    \If{$\Call{isDagConstraintNull}{\text{flow}}$}
+        \State $\Call{PostProcess}{\text{flow}}$
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+The method $\Call{computeLoss}{\text{flow}, X}$ is computed as described by equation~\eqref{eq:loss}. The $\Call{optimize}{\text{flow}, \text{loss}}$ method performs a backward pass and an optimization step with the chosen optimizer (Adam in our experiments). The post-processing is peformed by $\Call{PostProcess}{\text{flow}}$ and consists in thresholding the values in $A$ such that the values below a certain threshold are set to $0$ and the other values to $1$, after post-processing the stochastic door is deactivated. The threshold is the smallest real value that makes the equivalent graph acyclic. The method $\Call{updateCoefficients}$ updates the Lagrangian coefficients as described in section \ref{sec:optim}.
+
+
+\section{Jacobian of graphical conditioners}\label{app:proof-jac-gnf}
+\begin{proposition}\label{app:prop:jac-gnf}
+The absolute value of the determinant of the Jacobian of a normalizing flow step based on graphical conditioners is equal to the product of its diagonal terms. 
+\end{proposition}
+\begin{proof} \textbf{Proposition \ref{app:prop:jac-gnf}}
+A Bayesian Network is a directed acyclic graph. \cite{sedgewick2011algorithms} showed that every directed acyclic graph has a topological ordering, it is to say an ordering of the vertices such that the starting endpoint of every edge occurs earlier in the ordering than the ending endpoint of the edge. Let us suppose that an oracle gives us the permutation matrix $P$ that orders the components of $\mb{g}$ in the topological defined by $A$. Let us introduce the following new transformation $\mb{g}_P(\mb{x}_P) = P\mb{g}(P
+^{-1}(P\mb{x}))$ on the permuted vector $\mb{x}_P = P\mb{x}$. The Jacobian of the transformation $\mb{g}_P$ (with respect to $\mb{x}_P$) is lower triangular with diagonal terms given by the derivative of the normalizers with respect to their input component. The determinant of such Jacobian is equal to the product of the diagonal terms. Finally, we have
+\begin{align*}
+    |\det(J_{\mb{g}_P(\mb{x}_P)})| &= |\det(P)||\det(J_{\mb{g}(\mb{x})})| \frac{|\det(P)|}{|\det(P)|}\\
+    &= |\det(J_{\mb{g}(\mb{x})})|,
+\end{align*}
+because of (1) the chain rule; (2) The determinant of the product is equal to the product of the determinants; (3) The determinant of a permutation matrix is equal to $1$ or $-1$.
+The absolute value of the determinant of the Jacobian of $\mb{g}$ is equal to the absolute value of the determinant of $\mb{g}_P$, the latter given by the product of its diagonal terms that are the same as the diagonal terms of $\mb{g}$. Thus the absolute value of the determinant of the Jacobian of a normalizing flow step based on graphical conditioners is equal to the product of its diagonal terms.
+\end{proof}
+\section{Experiments on topology learning}\label{app:top_dataset}
+\subsection{Neural networks architecture}
+We use the same neural network architectures for all the experiments on the topology. The conditioner functions $h_i$ are modeled by shared neural networks made of 3 layers of $100$ neurons. When using UMNNs for the normalizer we use an embedding size equal to $30$ and a 3 layers of $50$ neurons MLP for the integrand network.
+\subsection{Dataset description}\label{app:top_dataset_descri}
+\begin{figure*}
+\caption{Ground truth adjacency matrices. Black squares denote direct connections and in light grey is their transposed.}
+\centering
+\begin{subfigure}[t]{.2\textwidth}
+\includegraphics[width=1.\textwidth]{figures/arithmetic_circuit_A.pdf}
+\caption{Arithmetic Circuit}
+\end{subfigure}
+\begin{subfigure}[t]{.2\textwidth}
+\includegraphics[width=1.\textwidth]{figures/8-MIX_A.pdf}
+\caption{8 Pairs}
+\end{subfigure}
+\begin{subfigure}[t]{.2\textwidth}
+\includegraphics[width=1.\textwidth]{figures/7-pyramid_A.pdf}
+\caption{Tree}
+\end{subfigure}
+\begin{subfigure}[t]{.2\textwidth}
+\includegraphics[width=1.\textwidth]{figures/proteins_A.pdf}
+\caption{Human Proteins}
+\end{subfigure}
+\end{figure*}
+\paragraph{Arithmetic Circuit}
+The arithmetic circuit reproduced the generative model described by \cite{wood}. It is composed of heavy tailed and conditional normal distributions, the dependencies are non-linear. We found that some of the relationships are rarely found by during topology learning, we guess that this is due to the non-linearity of the relationships which can quickly saturates and thus almost appears as constant.
+\paragraph{8 pairs}
+This is an artificial dataset made by us which is a concatenation of 8 2D toy problems borrowed from \cite{ffjord} implementation. These 2D variables are multi-modal and/or discontinuous. We found that learning the independence between the pairs of variables is most of the time successful even when using affine normalizers.
+\paragraph{Tree}
+This problem is also made on top of 2D toy problems proposed by \cite{ffjord}, in particular a sample $X = [X_1,\hdots, X_7]^T$ is generated as follows:
+\begin{enumerate}
+    \item The pairs variables $(X_1, X_2)$ and $(X_3, X_4)$ are respectively drawn from \textit{Circles} and \textit{8-Gaussians};
+    \item $X_5 \sim \mathcal{N}(\max(X_1, X_2), 1)$;
+    \item $X_6 \sim \mathcal{N}(\min(X_3, X_4), 1)$;
+    \item $X_7 \sim 0.5 \mathcal{N}(\sin(X_5 + X_6), 1) + 0.5 \mathcal{N}(\cos(X_5 + X_6), 1)$.
+\end{enumerate}
+\paragraph{Human Proteins}
+A causal protein-signaling networks derived from single-cell data. Experts have annoted 20 ground truth edges between the 11 nodes. The dataset is made of 7466 entries which we kept $5,000$ for training and $1,466$ for testing.
+
+\subsection{Additional experiments}\label{app:top_dataset_exp}
+\figref{fig:app_mono_L1} and \figref{fig:app_aff_L1} present the test log likelihood as a function of the $\ell_1$-penalization on the four datasets for monotonic and affine normalizers respectively. It can be observed that graphical conditioners perform better than autoregressive ones for certain values of regularization and when given a prescribed topology in many cases. It is interesting to observe that autoregressive architectures perform better than a prescribed topology when an affine normalizer is used. We believe this is due to the non-universality of mono-step affine normalizers which leads to different modeling trade-offs. In opposition, learning the topology improves the results in comparison to autoregressive architectures.
+\begin{figure*}
+\centering
+\caption{Test log-likelihood as a function of $\ell_1$-penalization for monotonic normalizers. The red horizontal line is the average result when given a prescribed topology, the green horizontal line is the result with an autoregressive conditioner.}
+    \label{fig:all_L1}
+    \begin{subfigure}[t]{.32\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/woodStructural.pdf}
+    \caption{Arithmetic Circuit}
+    \end{subfigure}
+    \begin{subfigure}[t]{.32\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/7-pyramid.pdf}
+    \caption{Tree}
+    \end{subfigure}
+    \begin{subfigure}[t]{.32\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/proteins.pdf}
+    \caption{Human Proteins}
+    \end{subfigure}
+    \label{fig:app_mono_L1}
+\end{figure*}
+\begin{figure*}
+\centering
+\caption{Test log-likelihood as a function of $\ell_1$-penalization for affine normalizers. The red horizontal line is the average result when given a prescribed topology, the green horizontal line is the result with an autoregressive conditioner.}
+    \label{fig:all_L1}
+    \begin{subfigure}[t]{.24\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/woodStructuralAffine.pdf}
+    \caption{Arithmetic Circuit}
+    \end{subfigure}
+    \begin{subfigure}[t]{.24\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/7-pyramidAffine.pdf}
+    \caption{Tree}
+    \end{subfigure}
+    \begin{subfigure}[t]{.24\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/proteinsAffine.pdf}
+    \caption{Human Proteins}
+    \end{subfigure}
+    \begin{subfigure}[t]{.24\textwidth}
+    \includegraphics[width=1.\textwidth]{figures/8-MIXAffine.pdf}
+    \caption{8 Pairs}
+    \end{subfigure}
+    \label{fig:app_aff_L1}
+\end{figure*}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Tabular density estimation - Training parameters}\label{app:archi-tabular}
+\tabref{tab:train_configs} provides the hyper-parameters used to train the normalizing flows for the tabular density estimation tasks. In our experiments we parameterize the functions $\mb{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mb{x} \odot A_{i,:}$. The embedding net architecture corresponds to the network that computes an embedding of the conditioning variables for the coupling and DAG conditioners, for the autoregressive conditioner it corresponds to the architecture of the masked autoregressive network. The output of this network is equal to $2$ ($2 \times d$ for the autoregressive conditioner) when combined with an affine normalizer and to an hyper-parameter named \textit{embedding size} when combined with a UMNN. The number of dual steps corresponds to the number of epochs between two updates of the DAGness constraint (performed as in \cite{DAG-2}).
+\begin{table}[H]
+    \centering
+    \tiny
+    \setlength{\tabcolsep}{1pt}
+    \renewcommand{\arraystretch}{1.5}
+    
+    \begin{tabular}{l c c c c c c c}
+        \hline
+        \hline
+        Dataset & \tbf{POWER} & \tbf{GAS} & \tbf{HEPMASS} & \tbf{MINIBOONE} & \tbf{BSDS300}\\
+        \hline
+        Batch size & $2500$ & $10000$ & $100$ & $100$ & $100$ \\
+        Integ. Net & $3 \times 100$ & $3 \times 200$ & $3 \times 200$ & $3 \times 40$ & $3 \times 150$ \\
+        Embedd. Net & $3 \times 60$ & $3 \times 80$ & $3 \times 210$ & $3 \times 430$ & $3 \times 630$\\
+        Embed. Size & $30$ & $30$ & $30$ & $30$ & $30$\\
+        Learning Rate & $0.001$& $0.001$& $0.001$& $0.001$& $0.001$\\
+        Weight Decay & $10^{-5}$ &  $10^{-3}$ & $10^{-4}$ & $10^{-2}$ & $10^{-4}$\\
+        $\lambda_{\ell_1}$ & $0$ & $0$ & $0$ & $0$ & $0$\\
+        \hline\hline
+    \end{tabular}
+    \vspace{1em}
+    \caption{Training configurations for density estimation tasks.}
+    \label{tab:train_configs}
+\end{table}
+In addition, in all our experiments (tabular and MNIST) the integrand networks used to model the monotonic transformations have their parameters shared and receive an additional input that one hot encodes the index of the transformed variable. The models are trained until no improvement of the average log-likelihood on the validation set is observed for 10 consecutive epochs.
+
+%%%%%%
+% \subsection{Graphical Conditioner + Affine Normalizer}
+% BPP on valid lors de la génération des samples = 1.85.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/DAG_affine_1_0.png}
+%     \caption{Sampling T°=1.0}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/DAG_affine_0_75.png}
+%     \caption{Sampling T°=0.75}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=.9\textwidth]{figures/MNIST/A_degrees_DAG_affine.png}
+%     \caption{Degrees in and out}
+% \end{figure}
+% %%%%%%
+% \subsection{Graphical Conditioner + Monotonic Normalizer}
+% BPP on Test lors de la génération des samples = 1.2.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/DAG_one_layer_monotonic_images_test_1.150000.png}
+%     \caption{Sampling T°=.9, 1.0, 1.05, 1.1, 1.15}
+% \end{figure}
+% %%%%%%
+% \subsection{Coupling Conditioner + Monotonic Normalizer}
+% BPP on valid lors de la génération des samples = 1.87.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/coupling_monotonic_1_0.png}
+%     \caption{Sampling T°=1.0}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/coupling_monotonic_0_75.png}
+%     \caption{Sampling T°=0.75}
+% \end{figure}
+% %%%%%%
+% \subsection{Autoregressive Conditioner + Monotonic Normalizer}
+% BPP on valid lors de la génération des samples = 1.63.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/autoregressive_monotonic_1_0.png}
+%     \caption{Sampling T°=1.0}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/autoregressive_monotonic_0_75.png}
+%     \caption{Sampling T°=0.75}
+% \end{figure}
+% %%%%%%
+% \subsection{Autoregressive Conditioner + Affine Normalizer}
+% BPP on valid lors de la génération des samples = 2.19.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/autoregressive_affine_1_0.png}
+%     \caption{Sampling T°=1.0}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/autoregressive_affine_0_75.png}
+%     \caption{Sampling T°=0.75}
+% \end{figure}
+    
+% \subsection{DAG Conditioner + Monotonic Normalizer + Multiscale}
+% BPP on valid lors de la génération des samples = 1.16.
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/DAG_monotonic_multi_1_0.png}
+%     \caption{Sampling T°=1.0}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics{figures/MNIST/DAG_monotonic_multi_0_75.png}
+%     \caption{Sampling T°=0.75}
+% \end{figure}
+
+\section{Density estimation of images} \label{app:MNIST}
+We now demonstrate how graphical conditioners can be used to fold in domain knowledge into NFs by performing density estimation on MNIST images. The design of the graphical conditioner is adapted to images by parameterizing the functions $\mb{h}^i$ with convolutional neural networks (CNNs) whose parameters are shared for all $i \in \{1, ..., d\}$ as illustrated in \figref{fig:dag-condi-archi}. Inputs to the network $\mb{h}^i$ are masked images specified by both the adjacency matrix $A$ and the entire input image $\mb{x}$. %, and can thus be efficiently processed by CNNs. 
+Using a CNN together with the graphical conditioner allows for an inductive bias suitably designed for processing images. 
+We consider single step normalizing flows whose conditioners are either coupling, autoregressive or graphical-CNN as described above, each combined with either affine or monotonic normalizers. %Second, a 3-step normalizing flow where only 1 fourth of the intermediate latent variables are passed to the next step, leading to more efficient flow while implicitly modeling low and high level features. 
+% Each step of this flow is parameterized by a graphical-CNN. Finally, each of these two architectures is either combined with an affine normalizer or a monotonic normalizer. 
+The graphical conditioners that we use include an additional inductive bias that enforces a sparsity constraint on $A$ and which prevents a pixel's parents to be too distant from their descendants in the images. Formally, given a pixel located at $(i, j)$, only the pixels $(i \pm l_1, j \pm l_2),  l_1, l_2\in \{1, ..., L\}$ are allowed to be its parents. In early experiments we also tried not constraining the parents and observed slower but successful training leading to a relevant structure. 
+
+Results reported in \tabref{tab:MNIST} show that graphical conditioners lead to the best performing affine NFs even if they are made of a single step. 
+This performance gain can probably be attributed to the combination of both learning a masking scheme and processing the result with a convolutional network.
+% to the meaningful domain knowledge that is introduced by the combination of a learned masking scheme with convolutional neural networks. 
+These results also show that when the capacity of the normalizers is limited, finding a meaningful factorization is very effective to improve performance. The number of edges in the equivalent BN is about two orders of magnitude smaller than for coupling and autoregressive conditioners. This sparsity is beneficial for the inversion since the evaluation of the inverse of the flow requires a number of steps equal to the depth \citep{depth-dag} of the equivalent BN. 
+%By allowing for the learning of a meaningful factorization of the distribution, graphical conditioners lead to simpler representations that are easier to sample from.
+% The depth (increased by one) of the equivalent BN is equal to the number of steps required to invert the normalizing flow, it is strictly proportional to the computing time required to generate samples. 
+Indeed, we find that while obtaining density models that are as expressive, the computation complexity to generate samples is approximately divided by $\frac{5\times 784}{100} \approx 40 $ in comparison to the autoregressive flows made of 5 steps and comprising many more parameters. 
+%Comparing the results between single-step flows made of graphical conditioners and 5-steps autoregressive flows, we observe that both architectures lead to comparable performances while the former models include 5 times fewer parameters and correspond to significantly sparser Bayesian networks. 
+
+%While this is not the case in our work, the idea of masked neural networks could be generalized for the DAG learned by the graphical conditioners in order to fasten up their evaluation. In particular, \cite{DAG-3} use such an architecture for causal graph learning. 
+% \gilles{Discuss the difference/similarity between 1-step and 5-step architectures.}
+% \gilles{Discuss results for the multi-scale architecture or remove completely.}
+
+% \figref{fig:MNIST-gen-samples} shows random  samples generated with the architectures we trained on MNIST. These few samples are representative of the beneficial inductive bias produced by the combination of the graphical conditioner with a CNN. 
+% While the global structure of the images produced by the different architectures is of similar quality, the images produced by graphical conditioners are more consistent locally. We believe that the possibility granted by graphical conditioners to introduce domain knowledge could be beneficial for a large panel of density estimation applications.
+% \figref{fig:in-out-degrees} shows the in and out degrees of the equivalent BN learned on MNIST by a NF made of graphical conditioners. It can be observed that most of the connections in the equivalent BN come from the center of the images. In a certain sense, this shows that the graphical conditioner has successfully discovered the most informative pixels and made sense of their relationships.
+% \gilles{Add a paragraph  discussing the generated samples and the good locality bias it induces. Add the corresponding figures (either for affine or monotonic normalizers, leave the others in the Appendix.)}
+% \gilles{Discuss the topology that is found through the in/out degrees figures.} 
+
+These experiments show that, in addition to being a favorable tool for introducing inductive bias into NFs, graphical conditioners open the possibility to build BNs for large datasets, unlocking the BN machinery for modern datasets and computing infrastructures. 
+% \antoine{Maybe a word about the good results of coupling layers in comparison to their low depth. Insist that we do not sell graphical conditioner as better than autoregressive or coupling in general but more that for certain tasks each type of conditioner is better and so the fact to have a new one gives an additional tool to build domain based NFs. @Gilles?}
+\begin{figure}
+    \def\layersep{2.5cm}
+    \centering
+    \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=1.25cm, scale=0.50]
+    \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+    \tikzstyle{neuron}=[circle,fill=black!25,minimum size=7pt,inner sep=0pt]
+    \tikzstyle{input neuron}=[neuron, fill=black!50];
+    \tikzstyle{output neuron}=[neuron, fill=black!50];
+    \tikzstyle{hidden neuron}=[neuron, fill=black!50];
+    \tikzstyle{annot} = [text width=4em, text centered]
+    \tikzset{edge/.style = {->,-latex}}
+
+    \node[inner sep=0pt] (graphical) at (0,0)
+    {\includegraphics[width=.55\textwidth]{figures/DAGNF_mask_BW.pdf}};
+    \node[] (x) at (-5.5, -2.8) {$\mb{x}$};
+    \node[] (A) at (0, -2.8) {$A_{i,:}$};
+    \node[] (label) at (0, 3) {\small Masking operation from the adjacency matrix.};
+    \node[fit={(graphical) (x) (A) (label)}] (graphical-all) {};
+    % Draw the input layer nodes
+    \begin{scope}[shift={(12.5,0)}]
+    \node[inner sep=0pt] (cnn) at (0,0){\includegraphics[width=.11\textwidth]{figures/convolution.pdf}};
+    \node[] (cnn-label) at (0, 3) {\small CNN};
+    \node[fit={(cnn) (cnn-label)}] (cnn-all) {};
+    \draw[edge, ultra thick, black]  (graphical-all) to (graphical-all-|cnn-all.west);
+
+        % \foreach \name / \y in {1,...,4}
+        % % This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
+        %     \node[input neuron] (I-\name) at (0,-\y cm) {};
+    
+        % % Draw the hidden layer nodes
+        % \foreach \name / \y in {1,...,5}
+        %     \path[yshift=0.5cm]
+        %         node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+    
+        % % Draw the output layer node
+        % \node[output neuron, right of=H-2] (h1) {};
+        % \node[output neuron, right of=H-3] (h2) {};
+        % \node[output neuron, right of=H-4] (h3) {};
+         \node[] at (1.8, -2.8) {$\mb{c}^i(\mb{x})$};
+    
+        % \node[fit={(h1) (h2) (h3)}] (outputs) {};
+        % \node[fit={(H-1) (H-2) (H-3) (H-4) (H-5)}] (hiddens) {};
+        % \node[fit={(I-1) (I-2) (I-3) (I-4)}] (inputs) {};
+        % \node[draw, fit={(inputs) (hiddens) (outputs)}] (nn) {};
+        % % Connect every node in the input layer with every node in the
+        % % hidden layer.
+        % \foreach \source in {1,...,4}
+        %     \foreach \dest in {1,...,5}
+        %         \path (I-\source) edge (H-\dest);
+    
+        % % Connect every node in the hidden layer with the output layer
+        % \foreach \source in {1,...,5}
+        %     \path (H-\source) edge (h1);
+        % \foreach \source in {1,...,5}
+        %     \path (H-\source) edge (h2);
+        % \foreach \source in {1,...,5}
+        %     \path (H-\source) edge (h3);
+    \end{scope}
+\end{tikzpicture}
+    \caption{Illustration of how a graphical conditioner's output $\mb{c}^i(\mb{x})$ is computed for images. The sample $\mb{x}$, on the left, is an image of a $4$. The stripes denote the pixel $x_i$. The parents of $x_i$ in the learned DAG are shown as white pixels on the mask $A_{i, :}$, the other pixels are in black. The element-wise product between the image $\mb{x}$ and the mask $A_{i, :}$ is processed by a convolutional neural network that produces the embedding vector $\mb{c}^i(\mb{x})$ conditioning the pixel $x_i$.}
+    \label{fig:dag-condi-archi}
+    %\vspace{-1em}
+
+\end{figure}
+\begin{figure}
+\begin{minipage}[h]{.48\textwidth}
+
+\begin{table}[H]
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{2pt}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{l l | c c c c}
+    \hline\hline
+        & Model & Neg. LL. & Parameters & Edges & Depth \\
+        \hline
+        \multirow{3}{*}{(a)} 
+        & G-Affine (1) & \result{1.8074786666666667}{0.006730915803629995} & $\scriptstyle 1\times 10^6$ & $\scriptstyle 5016$ & $\scriptstyle 103$ \\ 
+        & G-Monotonic (1) & \result{1.1694063333333333}{0.027104726898130156} & $\scriptstyle 1\times 10^6$ & $\scriptstyle 2928$ & $\scriptstyle 125$ \\ 
+%        & G-Monotonic-Multiscale (3) & $1.15$ & $1.1\times 10^6$ & $2 + 179 + 4833$ & $2 + 14 + 100$ \\ 
+        \hline
+        \multirow{4}{*}{(b)} 
+        & A-Affine (1) & \result{2.1196110000000004}{0.02185270459233812} & $\scriptstyle 3\times 10^6$ & $\scriptstyle 306936$ & $783$ \\ 
+        & A-Monotonic (1) & \result{1.3669339999999999}{0.040867502713035936} & $\scriptstyle 3.1\times 10^6$ & $\scriptstyle 306936$ & $\scriptstyle 783$ \\ 
+        & C-Affine (1) & \result{2.389779666666667}{0.02812879663658265} & $\scriptstyle 3\times 10^6$ & $\scriptstyle 153664$ & $\scriptstyle 1$ \\ 
+        & C-Monotonic (1) & \result{1.6721043333333334}{0.08022989393126614} & $\scriptstyle 3.1\times 10^6$ & $\scriptstyle 153664$ & $\scriptstyle 1$ \\ 
+        \hline 
+        \multirow{2}{*}{(c)} 
+        & A-Affine (5)  & \result{1.89}{0.01} & $\scriptstyle 6\times 10^6$  & $\scriptstyle 5\times 306936$ & $\scriptstyle 5 \times 783$\\ 
+        & A-Monotonic (5) & \result{1.13}{0.02} & $\scriptstyle 6.6\times 10^6$ & $\scriptstyle 5\times 306936$  & $\scriptstyle 5 \times 783$\\ 
+         \hline\hline
+    \end{tabular}
+    \vspace{1em}
+    \caption{Results on MNIST. The negative log-likelihood is reported in bits per pixel on the test set over 3 runs on MNIST, error bars are equal to the standard deviation. The number of edges and the depth of the equivalent Bayesian network is reported. Results are divided into 3 categories: (a) The architectures introduced in this work. (b) Classical single-step architectures. (c) The best performing architectures based on multi-steps autoregressive flows.} \label{tab:MNIST}
+\end{table}
+\end{minipage}
+\begin{minipage}[h]{.01\textwidth}
+\hspace{1.\textwidth}
+\end{minipage}
+\begin{minipage}[h]{.49\textwidth}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/MNIST/A_degrees_test0.pdf}
+    \caption{The in (a) and out (b) degrees of the nodes in the equivalent BN learned in the MNIST experiments.} \label{fig:in-out-degrees}
+\end{figure}
+
+% \begin{figure}[H]
+% \setlength{\tabcolsep}{2pt}
+%     \renewcommand{\arraystretch}{1.5}
+% \begin{tabular}{c c c c}
+%      & Coupling & Autoregressive & Graphical \\
+%     {\rotatebox[origin=l]{90}{\hspace{.1em} Affine}} &
+%     \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/coupling_affine.png} &
+%     \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/auto_affine.png}& \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/DAG_affine.png} \\
+%     {\rotatebox[origin=l]{90}{Monot.}} &
+%     \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/coupling_mono.png}
+%      & \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/auto_mono.png} & \includegraphics[width=.3\textwidth, height=1.25cm]{figures/MNIST/DAG_mono.png}
+% \end{tabular}
+% \caption{Samples from normalizing flows made of coupling, autoregressive or graphical conditioners combined with affine or monotonic normalizers.} \label{fig:MNIST-gen-samples}
+% \vspace{-2.5em}
+% \begin{minipage}[h]{1.\textwidth}
+% \centering
+
+% \end{minipage}
+% \end{figure}
+\end{minipage}
+% %\vspace{-1.em}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{MNIST density estimation - Training parameters}
+For all experiments the batch size was $100$, the learning rate $10^{-3}$, the weight decay $10^{-5}$. For the graphical conditioners the number of epochs between two coefficient updates was chosen to $10$, the greater this number the better were the performance however the longer is the optimization. The CNN is made of 2 layers of 16 convolutions with $3\times 3$ kernels followed by an MLP with two hidden layers of size $2304$ and $128$. The neural network used for the Coupling and the autoregressive conditioner are neural networks with $3 \times 1024$ hidden layers. For all experiments with a monotonic normalizer the size of the embedding was chosen to $30$ and the integral net was made of 3 hidden layers of size $50$.
+The models are trained until no improvements of the average log-likelihood on the validation set is observed for 10 consecutive epochs.

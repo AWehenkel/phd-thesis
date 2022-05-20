@@ -1,0 +1,266 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Include tikz file.
+%
+% Author(s): Guillaume Dolle <gdolle at unistra.fr>
+% (c) GNU GPLv2 2015
+%
+% Package required: package calc
+% Options: scale, scalefnt
+% Package options: external
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NeedsTeXFormat{LaTeX2e}[2014/05/01]
+\ProvidesPackage{includetikz}[2015/05/01 Smart tikz include package]
+\RequirePackage{ifthen}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{external}
+\RequirePackage{scalefnt}
+\RequirePackage{xkeyval}
+\RequirePackage{ifluatex}
+\RequirePackage{xstring}
+\RequirePackage{etoolbox}
+\RequirePackage{morewrites}
+\RequirePackage{currfile-abspath}
+\RequirePackage{newfile}
+
+\tikzexternaldisable
+
+\newtoggle{itOrigin} \togglefalse{itOrigin}
+\newtoggle{itDisable} \togglefalse{itDisable}
+\newtoggle{itRebuild} \togglefalse{itRebuild}
+
+%===============================================================================
+% Enable external tikz (pdf) with checksum.
+\DeclareOption{external}
+{
+  \tikzexternalize
+  \tikzexternaldisable
+}
+
+%===============================================================================
+% Optimize
+\DeclareOption{itOptimize}
+{
+  \tikzset{external/optimize=true}
+}
+
+%===============================================================================
+\DeclareOption{origin}
+{
+  \toggletrue{itOrigin}
+}
+
+%===============================================================================
+\DeclareOption{disable}
+{
+  \toggletrue{itDisable}
+}
+
+%===============================================================================
+\DeclareOption{force}
+{
+  \toggletrue{itRebuild}
+}
+
+\makeatletter
+% Parameters
+\define@key{includetikz}{scale}{\tikzset{every picture/.style={scale=#1}}}
+\define@key{includetikz}{width}{\tikzset{every picture/.style={width=#1}}}
+\define@key{includetikz}{height}{\tikzset{every picture/.style={height=#1}}}
+\define@key{includetikz}{fill opacity}{\tikzset{every picture/.style={fill opacity=#1}}}
+\define@key{includetikz}{font style}{\tikzset{every picture/.style={font=#1}}}
+\define@key{includetikz}{font scale}{\scalefont{#1}}
+\define@key{includetikz}{font keepratio}[1]{\tikzset{every node/.style={transform shape}}}
+\define@key{includetikz}{drawscale}{
+    \pgfmathsetmacro{\fs}{2 - #1}
+    \scalefont{\fs}
+    \tikzset{every picture/.style={scale=#1}}
+}
+
+%-------------------------------------------------------------------------------
+% NOTE: All it@<func> are made to be used inside \includetikz!
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\def\it@figCounterName
+{
+  it\filename@base
+}
+
+%-------------------------------------------------------------------------------
+\def\it@pdfFileName{%
+  \filename@base-n\arabic{\it@figCounterName}%
+}
+
+%-------------------------------------------------------------------------------
+\def\it@optChecksumFileName
+{%
+%  \def\pdfoptsmdfivefilename{
+  \it@pdfFileName-opts.md5%
+}
+
+%-------------------------------------------------------------------------------
+\def\it@stepFigCounter
+{
+  % Create a counter for renaming.
+  % Note that tikz external might provide this value...
+  \ifcsname c@\it@figCounterName \endcsname
+  % Counter defined.
+    \stepcounter{\it@figCounterName}
+  \else
+    % counter not defined.
+    \newcounter{\it@figCounterName}
+  \fi
+}
+
+%-------------------------------------------------------------------------------
+\def\it@defaultFigure
+{
+    % Add default image
+    \begin{tikzpicture}
+      \draw[fill=black] (-3.5,2.5) rectangle (3.5,-2);
+      \node[color=white] at (0,0.5){\large FIGURE DISABLED !};
+      \node[color=white] at (0,0){\tiny\textit{(remove
+          \textbackslash{}includetikzdisable} to
+           reactivate this figure)};
+    \end{tikzpicture}
+}
+
+%-------------------------------------------------------------------------------
+% Pdf path
+\def\it@pdfPath%
+{%
+  \iftoggle{itOrigin}{\filename@area/autogen/}{./autogen/}%
+}
+
+
+%-------------------------------------------------------------------------------
+\def\it@optChecksumPathToFileName
+{%
+  \it@pdfPath/\it@optChecksumFileName%
+}
+
+%-------------------------------------------------------------------------------
+\def\it@optChecksumSave
+{
+    \newoutputstream{\it@pdfFileName}
+    \openoutputfile{\it@optChecksumPathToFileName}{\it@pdfFileName}
+    \addtostream{\it@pdfFileName}{\@backslashchar def \@backslashchar optLastChecksum{\it@optCurrChecksum}\@percentchar}
+    \closeoutputstream{\it@pdfFileName}
+}
+
+%-------------------------------------------------------------------------------
+\def\it@rebuild
+{
+  \message{current path:\it@optChecksumPathToFileName ^^J}
+  \input{\it@optChecksumPathToFileName} % load md5 opts
+      %************ DEBUG ******************************
+  \message{old:\optLastChecksum ^^J}
+  \message{new:\it@optCurrChecksum ^^J}
+     %*************************************************
+  \ifnum\pdf@strcmp{\optLastChecksum}{\it@optCurrChecksum}=0
+    % Same MD5.
+    % \message{SAME MD5}
+  \else
+    % Different MD5, force rebuild tikz.
+    % \message{NOT SAME MD5}
+    \toggletrue{itRebuild}
+    \it@optChecksumSave
+  \fi
+  \iftoggle{itRebuild}
+  {
+    \tikzset{external/force remake=true}
+    \togglefalse{itRebuild}
+  }
+  {}
+}
+
+%-------------------------------------------------------------------------------
+\def\it@debugInfo
+{
+  \immediate\message{--------- BEGIN DEBUG --------^^J}
+  \immediate\message{Pdf opt name \it@pdfFileName ^^J}
+  \immediate\message{Path to opt MD5 checksum:  \it@optChecksumPathToFileName^^J}
+  \immediate\message{--------- END DEBUG --------^^J}
+}
+
+%-------------------------------------------------------------------------------
+\newcommand\includetikz[2][]
+{
+  % Require -recorder option.
+  \getabspath{\jobname.aux}
+
+  %-------------------------------------------------------------------------------
+  \gdef\it@optCurrChecksum
+  {%
+    \pdf@mdfivesum{#1}%
+  }
+
+  \iftoggle{itDisable}
+  {
+    \it@defaultFigure
+  }
+  {
+    \bgroup
+    \filename@parse{#2}
+
+    \it@stepFigCounter
+
+    \immediate\write18{mkdir -p \it@pdfPath}
+    % If output-directory is different, this is required to avoid writing
+    % error...
+    \immediate\write18{mkdir -p \theabsdir\it@pdfPath}
+
+    % Set tikz external path and filename.
+    \tikzsetexternalprefix{\it@pdfPath}
+    \tikzsetnextfilename{\it@pdfFileName}
+
+    % Set figure options.
+    \setkeys{includetikz}{#1}
+
+    % Check md5file and force rebuild.
+    \IfFileExists{\it@optChecksumPathToFileName}
+    {% MD5 file exist.
+      \message{MD5 checksum differs : rebuild picture \it@pdfFileName ^^J}
+      \it@rebuild{toto}
+    }
+    {
+      % MD5 file does not exist.
+      \message{Create file \it@optChecksumPathToFileName checksum : \it@optCurrChecksum ^^J}
+      \it@optChecksumSave
+    }
+
+    \tikzexternalenable
+    % Set path and auto-generated figure name.
+    \input{#2}
+    \tikzexternaldisable
+    \tikzset{external/force remake=false}
+    \egroup
+  }
+}
+
+%-------------------------------------------------------------------------------
+\newcommand\includetikzdisable
+{
+  \toggletrue{itDisable}
+}
+
+%-------------------------------------------------------------------------------
+\newcommand\includetikzorigin
+{
+  \toggletrue{itOrigin}
+}
+
+%-------------------------------------------------------------------------------
+\newcommand\includetikzforcerebuild
+{
+  \toggletrue{itRebuild}
+}
+
+\makeatother
+
+\ProcessOptions\relax
+
+% vim: set ft=tex tw=80 sw=2:

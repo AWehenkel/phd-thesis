@@ -1,6 +1,6 @@
 \documentclass[twoside,openright,titlepage,numbers=noenddot,headinclude,%
                footinclude=true,cleardoublepage=empty,abstractoff,BCOR=5mm,%
-               paper=a4,fontsize=11pt,ngerman,american]{scrreprt}
+               paper=a4,fontsize=11pt,english]{scrreprt}
 
 % Custom config ===============================================================
 
@@ -102,18 +102,19 @@
 \include{chapters/chapter03}\cleardoublepage
 \include{chapters/chapter04}\cleardoublepage
 \include{chapters/chapter05}\cleardoublepage
+\include{chapters/chapter06}\cleardoublepage
 
 %\ctparttex{}
 \part{Hybrid generative modeling}\label{part:2}
-\include{chapters/chapter06}\cleardoublepage
 \include{chapters/chapter07}\cleardoublepage
+\include{chapters/chapter08}\cleardoublepage
 
-%\addtocontents{toc}{\protect\vspace*{\baselineskip}\protect}
-%\cleardoublepage
-%\makeatletter
-%\def\toclevel@chapter{-1}
-%\makeatother
-%\include{chapters/chapter08}
+\addtocontents{toc}{\protect\vspace*{\baselineskip}\protect}
+\cleardoublepage
+\makeatletter
+\def\toclevel@chapter{-1}
+\makeatother
+\include{chapters/chapter09}
 
 
 % Back pages ==================================================================

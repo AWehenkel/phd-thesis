@@ -1,11 +1,188 @@
 \chapter{Deep Latent Variables Generative Models}\label{ch:03}
 
 \begin{remark}{Outline}
-???
+Among likelihood-based approaches for deep generative modelling, variational autoencoders (VAEs) offer scalable amortized posterior inference and fast sampling. However, VAEs are also more and more outperformed by competing models such as normalizing flows (NFs), deep-energy models, or the new denoising diffusion probabilistic models (DDPMs).
+In this preliminary work, we improve VAEs by demonstrating how DDPMs can be used for modelling the prior distribution of the latent variables. The diffusion prior model improves upon Gaussian priors of classical VAEs and is competitive with NF-based priors.
+Finally, we hypothesize that hierarchical VAEs could similarly benefit from the enhanced capacity of diffusion priors.
 \end{remark}
 
+\section{Introduction}
+Over the last few years, the interest of the deep learning community for generative modelling has increased steadily.
+Among the likelihood-based approaches for deep generative modelling, variational autoencoders~\citep[VAEs]{VAEs} stand as one of the most popular, although competing approaches now demonstrate better performance.
+In particular, \citet{DDPM,IDDPM,dhariwal2021diffusion} recently showed that denoising diffusion probabilistic models (DDPMs) are competitive deep generative models, obtaining samples quality similar to those of the best implicit deep generative models such as ProgressiveGAN~\citep{PGANs} and StyleGAN~\citep{karras2019style}.
+Similarly to VAEs, DDPMs train on a variational bound and may be interpreted under the encoding-decoding framework.
+
+In the original formulation of VAEs, the prior and the posterior distributions over the latent variables are assumed to be both Gaussian.
+However, these assumptions are often incompatible and are thus limiting the performance of VAEs for complex modelling tasks \citep{vamprior, t_beta_vae}.
+A natural solution to this problem is to parameterize the prior, sometimes also the posterior, with more expressive distributions. In this preliminary work, we improve VAEs by demonstrating how DDPMs can be used for modelling the prior distribution of the latent variables. In addition to boosting DDPM with the compression properties of VAEs, combining the two models should eventually lead to greater generative performance by enabling complex generative modelling even with simple decoder architecture. Finally, working in the latent space should eventually reduce the computational burden associated with diffusion generative models.
+
 \section{Variational Auto Encoders}
+We want to learn a generative model of an unknown distribution $p(\mathbf{x})$ given a dataset $X \in \mathbb{R}^{N\times d}$ of $N$ i.i.d observations $\mathbf{x}$ sampled from this unknown distribution.
+The original VAE postulates a two-step generative process in which some unobserved variables $\mathbf{z} \in \mathbb{R}^h$ are first sampled from a prior distribution $p(\mathbf{z})$ and then observations $\mathbf{x}$ are generated from a conditional distribution $p_\mathbf{\theta}(\mathbf{x}|\mathbf{z})$. The generative process can be expressed mathematically as
+\begin{align}
+     \mathbf{z} \sim p(\mathbf{z}) \quad \text{and} \quad \mathbf{x} \sim p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}).
+\end{align}
+The prior $p(\mathbf{z})$ is chosen Gaussian while the likelihood $p_\mathbf{\theta}(\mathbf{x}|\mathbf{z})$ is modeled with a neural network. The likelihood model decodes latent variables into observations and is thus usually refereed as the decoder in the literature. In its original formulation, the likelihood is parameterized with a multivariate Gaussian $\mathcal{N}(\mathbf{\mu_\theta}(\mathbf{z}), \diag(\sigma_\theta^2(\mathbf{z})))$ when the observations are continuous, and a categorical distribution when they are discrete.
+
+Training the generative model is achieved by finding the parameters $\mathbf{\theta}$ of the decoder that maximize the sum of the marginal likelihoods of individual points $$p_\mathbf{\theta}(X)= \sum_{\mathbf{x}\in X}\log \int p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) \text{d}\mathbf{z}.$$
+These integrals are intractable but the introduction of an encoder network that approximates the posterior distribution $q_\phi(\mathbf{z}|\mathbf{x})$ allows maximizing the associated evidence lower bound
+\begin{align}
+    \operatorname{ELBO}&:=\mathbb{E}_q\left[\log \frac{p_\mathbf{\theta} (\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\psi(\mathbf{z}|\mathbf{x})} \right]\label{eq:ELBO_VAE}\\
+    &=\log p_\mathbf{\theta}(\mathbf{x}) - \mathbb{KL}\left[q_\psi(\mathbf{z}|\mathbf{x})||p_\mathbf{\theta} (\mathbf{z}|\mathbf{x})\right]\\
+    &\leq \log p_\mathbf{\theta}(\mathbf{x}).
+\end{align}
+
+The $\operatorname{ELBO}$ becomes tighter as the approximate posterior $q_\psi(\mathbf{z}|\mathbf{x})$ gets closer to the true posterior.
+Learning the generative model is finally performed by jointly optimizing the parameters $\mathbf{\theta}$ of the decoder and $\phi$ of the approximate posterior via stochastic gradient ascent.
+In the original VAE, the encoder models the approximate posterior as a conditional multivariate Gaussian distribution $\mathcal{N}(\mu_\phi(\mathbf{x}), \diag(\sigma_\phi^2(\mathbf{x})))$.
+
+The $\operatorname{ELBO}$ loss presents two antagonistic goals to the encoder.
+It should be able to both encodes the data accurately while being as close as possible to the prior distribution. Consequently, the Gaussian assumptions made on both the prior and the posterior distributions are often incompatible and limit the generative performance.
+A possible solution consists in learning a prior distribution that is compatible with the learned posteriors. For example, \citet{PriorAutoreg2019} and \citet{PriorNF2017} respectively showed that autoregressive models and normalizing flows~\citep[NFs]{rezende2015variational} greatly improve the performance of VAEs when used as prior distributions.
+In the following we present how denoising diffusion probabilistic models can be used to improve the performance of classical VAEs.
 
 \section{Diffusion Models}
 
-\section{Contribution: \textit{Diffusion Priors in Variational Autoencoders}}
+Inspired by non-equilibrium statistical physics, \citet{DDPM_initial} originally introduced DDPMs while \citet{DDPM}  demonstrated only more recently how to train these models for image synthesis, achieving results close to the state-of-the-art on this task.
+DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information.
+Formally, the reverse process is a latent variable model of the form
+$$p_\phi(\mathbf{x}_0) := \int p_\phi(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T},$$
+where $\mathbf{x}_0:=\mathbf{x}$ denotes the observations and $\mathbf{x}_1, \dots, \mathbf{x}_T$ denote latent variables of the same dimensionality as $\mathbf{x}_0$. The joint distribution $p_\phi(\mathbf{x}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
+\begin{align}
+    &p_\phi(\mathbf{x}_{0:T}) := p_\phi(\mathbf{x}_{T}) \prod^T_{t=1} p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}),\\
+    &p_\phi(\mathbf{x}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}),\\ &p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}) := \mathcal{N}(\mathbf{\mu_\phi}(\mathbf{x}_t, t), \sigma_t^2 \text{I}).
+\end{align}
+Similar to VAEs, the reverse Markov chain is trained on an $\operatorname{ELBO}$. However, the approximate posterior $q(\mathbf{x}_{1:T}|\mathbf{x}_0)$ is fixed to a diffusion process that is also a first order Markov chain with Gaussian transitions,
+\begin{align}
+    &q(\mathbf{x}_{1:T}|\mathbf{x}_0) := \prod^T_{t=1} q(\mathbf{x}_{t}|\mathbf{x}_{t-1}),\\
+    &q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_{t-1}, \beta_t \text{I}),
+\end{align}
+where $\beta_1, \hdots, \beta_T$ are the variance schedule that is either fixed as training hyper-parameters or learned.
+The $\operatorname{ELBO}$ is then given by
+\begin{align}
+    \operatorname{ELBO} := \mathbb{E}_q\left[ \log \frac{p_\phi(\mathbf{x_{0:T}})}{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \right] \leq \log p_\phi(\mathbf{x}_0). \label{eq:ELBO_DDPM}
+\end{align}
+
+Provided that the variance schedule $\beta_t$ is small and that the number of timesteps $T$ is large enough, the Gaussian assumptions on the generative process $p_\phi$ are reasonable. \citet{DDPM} take advantage of the Gaussian transitions to express the $\operatorname{ELBO}$ as
+\begin{align}
+        \mathbb{E}_q \biggl[& \mathbb{KL}\left[q(\mathbf{x}_T|\mathbf{x}_0)||p(\mathbf{x}_T)\right] - \log p_\phi(\mathbf{x}_0|\mathbf{x}_1) \phantom{\biggr]} \notag \\
+    \phantom{\biggl[}&+ \sum_{t=2}^T \mathbb{KL}\left[q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)||p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)\right]
+     \biggr]. \label{eq:simple_DDPM_ELBO}
+\end{align}
+The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)$ and the conditional forward posterior $q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t), \tilde{\beta}_t \text{I})$, where $\tilde{\beta}_t$ are functions of the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
+In addition, \citet{DDPM} empirically demonstrate that it is sufficient to take optimization steps on uniformly sampled terms of the sum instead of computing it completely. The final objective closely resembles denoising score matching over multiple noise levels \citep{ScoreMatching}. These observations combined with additional simplifications leads to a simplified loss
+\begin{align}
+    L_\text{DDPM}(\mathbf{x}_0; \phi) := \mathbb{E}_{t, \mathbf{x}_0, \mathbf{x}_t}\left[ \frac{1}{2\sigma^2_t}|| \mathbf{\mu}_\phi(\mathbf{x}_t, t) - \tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)  ||^2\right],
+\end{align}
+where $\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)$ is the mean of $q(\mathbf{x}_{t-1}|\mathbf{x}_{0}, \mathbf{x}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{x}_{0}$.
+% \begin{align}
+%     L_{\text{simple}}(\phi) := \mathbb{E}_{t, \mathbf{x}_0, \mathbf{\epsilon}} \left[ || \mathbf{\epsilon} - \mathbf{\epsilon}_\phi() ||^2 \right]
+% \end{align}
+
+We now introduce our contribution which consists in using a DDPM for modelling the prior distribution in VAEs.
+We formulate the generative model as
+\begin{align}
+    & \mathbf{z}_T \sim \mathcal{N}(\mathbf{0}, \text{I}) \label{eq:VAE_DDPM_1} \\
+    & \mathbf{z}_{t-1|t} \sim p_\mathbf{\phi}(\mathbf{z}_{t-1}|\mathbf{z}_{t})\quad \forall t \in \left[T, \dots, 1\right] \label{eq:VAE_DDPM_2} \\
+    &\mathbf{x} \sim p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0),
+\end{align}
+where $\phi$ denotes the parameters of the reverse diffusion model encoding the prior distribution. \Cref{eq:VAE_DDPM_1,eq:VAE_DDPM_2} implicitly define a prior distribution over the usual latent variables $\mathbf{z}_0$ which is modelled with a reverse diffusion process.
+
+Unfortunately, we cannot train a VAE with a diffusion prior directly on the $\operatorname{ELBO}$ as expressed in \Cref{eq:ELBO_VAE} as $p_\mathbf{\phi}(\mathbf{z}_0)$ cannot be evaluated. However, \Cref{eq:ELBO_VAE} can be further developed as
+\begin{align}
+    \mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0)\right] - \mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right] +  \mathbb{E}_{q_\psi}\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right]
+\end{align}
+in which a lower bound on the last term can be expressed by \Cref{eq:ELBO_DDPM}. This finally leads to the following expression
+\begin{align}
+    &\mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) +  \mathbb{E}_{q}\left[ \log \frac{p_\phi(\mathbf{z_{0:T}})}{q(\mathbf{z_{1:T}}|\mathbf{z_0})} \right] \right] \\
+    & \leq \mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) + \log p_\mathbf{\phi}(\mathbf{z}_0) \right] \\
+    & \leq  \log p_\mathbf{\theta}(\mathbf{x}),
+\end{align}
+which is a valid ELBO.
+% \begin{align}
+%     &\max_\mathbf{\theta} \log p_\mathbf{\theta}(\mathbf{x})\\ =& \max_\mathbf{\theta} \log \int p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) p_\mathbf{\theta}(\mathbf{z}_0) d\mathbf{z}_0\\
+%     =& \max_\mathbf{\theta} \log \int p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) p_\mathbf{\theta}(\mathbf{z}_0) \frac{q(\mathbf{z}_0|\mathbf{x})}{q(\mathbf{z}_0|\mathbf{x})} d\mathbf{z}_0\\
+%     =& \max_\mathbf{\theta} \log \mathbb{E}_q\left[\frac{p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) p_\mathbf{\theta}(\mathbf{z}_0)}{q(\mathbf{z}_0|\mathbf{x})}\right]\\
+%     \geq& \max_\mathbf{\theta} \mathbb{E}_q\left[ \log \frac{p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) p_\mathbf{\theta}(\mathbf{z}_0)}{q(\mathbf{z}_0|\mathbf{x})}\right]\\
+%     =&\max_\mathbf{\theta} \underbrace{\mathbb{E}_q\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0)\right] - \mathbb{KL}\left[q(\mathbf{z}_0|\mathbf{x})||p_\mathbf{\theta}(\mathbf{z}_0)\right]}_{\text{ELBO}(\mathbf{x}; \mathbf{\theta})}.\\
+% \end{align}
+% The problem comes from the intractability of $p_\mathbf{\phi}(\mathbf{z}_0)$ which can be isolated by extracting $\mathbb{E}_q\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right]$.
+% \begin{align}
+% \mathbb{KL}\left[q(\mathbf{z}_0|\mathbf{x})||p_\mathbf{\theta}(\mathbf{z}_0)\right] &= \mathbb{E}_q\left[\log q(\mathbf{z}_0|\mathbf{x})\right] -  \mathbb{E}_q\left[\log p_\mathbf{\theta}(\mathbf{z}_0)\right]. \label{eq:kl_split}
+% \end{align}
+% However, isolating $\mathbb{E}_q\left[\log p_\mathbf{\theta}(\mathbf{z}_0)\right]$ from \Cref{eq:ELBO_VAE}, \Cref{eq:ELBO_DDPM} directly translates into a lower bound on this term.
+% \gilles{Show this explicitly.}
+Finally, the diffusion prior $p_\phi$ is trained jointly with the approximate posterior $q_\psi$ and the likelihood models $p_\theta$ which are optimized as in a classical VAE. This leads to the following loss function:
+\begin{align}
+    \mathcal{L}(\mathbf{x}; \phi, \theta, \psi) &:= \mathbb{E}_{q_\psi}\left[\log \frac{p_\mathbf{\theta} (\mathbf{x}|\mathbf{z}) }{q_\psi(\mathbf{z}|\mathbf{x})} \right] + \mathbb{E}_{q_\psi}\left[L_\text{DDPM}(\mathbf{z}_0; \phi)\right].
+\end{align}
+
+% The approximate posterior $q_\beta(\mathbf{z}_{1:T}|\mathbf{z}_0)$ is fixed to a diffusion process, that is a fixed size Markov chain defined as
+% \begin{align}
+%     q_\beta(\mathbf{z}_{1:T}|\mathbf{z}_0) := \prod_{t=1}^T q_\beta(\mathbf{z}_t|\mathbf{z}_{t-1}), \nonumber\\
+%      q_\beta(\mathbf{z}_t|\mathbf{z}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{z}_{t-1}, \beta_t I) ,
+% \end{align}
+% where $\beta_t$ defines the variance schedule which can be learned or fixed apriori. This approximate posterior can then be used to obtain a variational bound on the second term of \Cref{eq:kl_split}:
+% \begin{align}
+%     \log p_\mathbf{\theta}(\mathbf{z}_0) &\geq \mathbb{E}_{q_\beta}\left[ \log p_\mathbf{\theta}(\mathbf{z}_T) + \sum_{t=1}^T \log \frac{p_\mathbf{\theta}(\mathbf{z}_{t-1}|\mathbf{z}_t)}{q_\beta(\mathbf{z}_t|z_{t-1})} \right].
+% \end{align}
+
+% Following \cite{DDPM}, we train the generative model $p_\mathbf{\theta}(\mathbf{z}_t|\mathbf{z}_{t+1})$ by optimizing random terms of L.
+
+\section{Related work}
+
+Various approaches have been proposed to improve the modelling capacity and the training of VAEs. As a first example, some state-of-the-art deep generative models based on VAEs model the posterior with normalizing flows or autoregressive models \citep{IAF, nvae}. Autoregressive models are also often used as a replacement of the original likelihood parameterization, which assumes conditional independencies that are often unrealistic \citep{pixelcnn_posterior}. Another popular improvement made to the original VAE is the embedding of structure in the latent variables. In particular, hierarchical VAEs \citep{sonderby2016ladder, IAF} combined with careful training demonstrate impressive results on generative modelling for images \citep{nvae}.
+
+\citet{latent_diffusion} concurrently proposed to use diffusion for modelling the prior distributions of VAEs. They obtain state-of-the-art results on image synthesis by combining continuous diffusion models and VAEs. Not as close to our work but related, \citet{PriorNF2017} proposed to learn the prior as a solution to the mismatch between the approximate and the true posteriors. They model the prior with an autoregressive flow, which also closely relates to modelling the posterior distribution with an inverse autoregressive flow \citep{IAF}. \citet{vamprior} takes inspiration from the aggregated posterior $\frac{1}{N}\sum^N_{i=1}q_\psi(z|x)$ \citep{hoffman2016elbo, makhzani2015adversarial} to introduce the VampPrior defined as a mixture of learned pseudo-inputs. An orthogonal line of work suggests that the mismatch between the approximate posterior and the exact posterior can be reduced by over-weighting the terms related to the prior and to the approximate posterior in the ELBO \citep{beta_vae, t_beta_vae}.
+\section{Experiments}
+
+We now compare VAEs for different choices of priors, including the original Gaussian prior, an NF prior, and the proposed diffusion prior. All models share a same backbone encoder-decoder architecture inspired from DCGAN~\citep{radford2015unsupervised}. Optimization is performed with Adam for $250$ epochs with a learning rate set to $0.0005$. After each epoch, the models are evaluated on a validation set used to select the best one for each training setting. We compare the models on the CIFAR10 and CelebA datasets for 3 different latent variables dimensionality ($40$, $100$, $200$). The NF used in our experiments is a 3-step autoregressive affine flow with simple MLP backbones similar to the one used to model the transition function of DDPM.
+
+\Cref{tab:results} presents the FID scores for the different models. We first notice the large scores reached by all models on the CIFAR10 dataset. This can be explained by the simplicity of the models trained in our experiments. We believe these scores could be greatly improved by using a more sophisticated likelihood model such as a PixelCNN~\citep{pixelcnn_posterior}. Although FID scores suggest that the Gaussian prior outperforms the diffusion prior in terms of generative performance, the visual inspection of \Cref{fig:CIFAR10} shows that the diffusion prior results in samples slightly more realistic than those of the classical VAE. The best FID score is achieved by the NF prior, although its samples do not seem to reflect this superiority. In this case, we believe the FID scores are not entirely informative about the quality of the images synthesized by the models and should be interpreted with a grain of salt. Although learned priors seem to improve generative performance on CIFAR10, additional work is needed to reach results that would justify using a diffusion prior for this dataset.
+
+On CelebA however, we observe in \Cref{tab:results} that diffusion priors outperform the Gaussian prior. This is in line with the visual inspection of \Cref{fig:celeba_classical} and \Cref{fig:celeba_DDPM}. As for CIFAR10, the NF prior outperforms the Gaussian and diffusion priors in terms of FID scores, although the visual inspection of the corresponding samples in \Cref{fig:celeba_NF} does not reveal a much better quality of images when compared to those resulting from the diffusion prior. We conclude from these observations that diffusion priors offer an interesting alternative to NFs for modelling the prior in a VAE.
+
+\begin{table}
+%\vspace{1em}
+    \caption{FID scores for different models for prior modelling in VAEs and for different latent size. \textit{Diffusion priors outperform classical VAE on CelebA but are slightly worse than NFs. FID scores do not reveal the superiority of any method on CIFAR10.}}
+    \vspace{.5em}
+    \label{tab:results}
+    \centering
+    \small
+        \setlength{\tabcolsep}{4pt}
+
+    \begin{tabular}{l | c c c | c c c}
+        \hline\hline
+        \textit{Dataset} & \multicolumn{3}{c|}{\tbf{CelebA}} & \multicolumn{3}{c}{\tbf{CIFAR10}} \\
+        \hline
+        \textit{Latent Size} & $40$ & $100$ & $200$ & $40$ & $100$ & $200$ \\ \hline
+        \textit{Gaussian} & $154.3$ & $149.4$ & $139.1$ & $176.0$ & $126.2$ & $123.9$ \\
+        \textit{NF} & $72.9$ & $59.49$ & $54.7$ & $167.6$ & $129.1$ & $129.6$\\
+        \textit{Diffusion} & $114.8$ & $67.95$ & $88.3$ & $177.9$ & $160.5$ & $153.1$ \\
+       \hline \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}
+    \centering
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/classical_CIFAR10.png}}\label{fig:CIFAR10_classical}
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/NF_CIFAR10.png}}\label{fig:CIFAR10_NF}
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/DDPM_CIFAR10.png}}\label{fig:CIFAR10_DDPM}
+
+    \caption{Samples generated by a VAE trained on CIFAR10 for three different prior models. \textit{The diffusion prior leads to slightly better sampling quality than the Gaussian distribution and similar to the NF prior.}} \label{fig:CIFAR10}
+    \vspace{1em}
+\end{figure}
+\begin{figure}
+    \centering
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/classical_celeba.png}}\label{fig:celeba_classical}
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/NF_celeba.png}}\label{fig:celeba_NF}
+    \subfloat[Gaussian prior]{\includegraphics[width=.32\textwidth]{figures/chapter03/DDPM_celeba.png}}\label{fig:celeba_DDPM}
+
+    \caption{Samples generated by a VAE trained on CelebA for three different prior models. \textit{The diffusion prior leads to better sampling quality than the Gaussian distribution and similar to the NF prior.}}\label{fig:CelebA}
+    \vspace{1em}
+\end{figure}
+
+\section{Conclusion and future work}
+This preliminary work presents how denoising diffusion probabilistic models can be used as a new class of learnable priors for VAEs. As a notable contribution, we empirically demonstrate that optimizing implicitly a prior on an ELBO can be performed jointly to training the encoder and the decoder of the VAE. In addition, our results suggest DDPM performs on par with NFs for modelling prior distribution.
+
+A large spectrum of future research directions could benefit from the basic idea expressed in this preliminary work. As an example, recent advances in diffusion models such as the continuous formulation \citep{song2020score} or improvement to the training procedure of DDPM \citep{IDDPM} could be implemented in the prior model. Similarly, many improvements could be made to the architectures used for the VAE and to the training procedure. In particular, image synthesis with hierarchical VAEs which organizes the latent variables into multiple scales images could reveal the full potential of diffusion priors. This would indeed combine the structural knowledge embed by such type of VAEs with the impressive performance of DDPM for modelling distributions over images. Finally, diffusion does not constrain the neural networks architectures and so enables the embedding of a larger choice of inductive biases in the prior distribution compared to autoregressive models and NFs.

@@ -1,0 +1,151 @@
+\appendix
+\section{Experimental setup}
+
+\subsection{Density estimation and toy problems hyperparameters}\label{app:config-toy}
+Table \ref{tab:train_configs-toy} reports the training configurations for  the 2D toy problems and the 5 tabular datasets. 
+For tabular data the best performing architecture has been found after some preliminary experiments, while this was not needed for the 2D toy problems. During our preliminary experiments we tested different integrand network architectures, we tested on the number of hidden layers $L \in \{3, 4\}$ and on their dimension $D \in \{50, 100, 150, 200\}$. The architecture of the embedding networks is the best performing MADE network used in NAF~\citep{NAF}. We used the Adam optimizer and tried different learning rate $\lambda \in \{10^{-3}, 5\times 10^{-4}, 10^{-4}\}$. When the learning rate chosen was greater than $10^{-4}$ we schedule once the learning rate to $10^{-4}$ after the first plateau. We also tested for different weights decay values $W \in \{10^{-5}, 10^{-2}\}$. The batch size was chosen to be as big as possible while not harming the learning procedure. We observed during our preliminary experiments that choosing the number of integration steps at random (uniformly from 20 to 100) for each batch regularizes the complexity of the integral. For MNIST, we observed that 25 integration steps was enough if the Lipschitz constant of the network is constraint (with the normalization proposed by \cite{L_regularisation}) to be smaller than $1.5$.
+
+\begin{table}[H]
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{1pt}
+    \renewcommand{\arraystretch}{1.5}
+    
+    \begin{tabular}{c c c c c c c c}
+        \hline
+        Dataset & \tbf{POWER} & \tbf{GAS} & \tbf{HEPMASS} & \tbf{MINIBOONE} & \tbf{BSDS300} & \tbf{MNIST} & \tbf{2D Toys}  \\
+        \hline
+        Lipschitz & - & - & - & - & $2.5$ & $1.5$ & -\\
+        N\textdegree  integ. steps & rand & rand & rand & rand & rand & $25$ & $50$ \\
+        Embedding net & $2 \times 100$ & $2\times 100$ & $2\times 512$ & $1 \times 512$ & $2 \times 1024$ & $1\times 1024$ & $4 \times 50$\\
+        Integrand net ($L\times D$) & $4 \times 150$ & $3 \times 200$ & $4 \times 200$ & $3\times 50$ & $4\times 150$ & $3\times 150$  & $4 \times 50$ \\
+        Learning rate ($\lambda$)  & $ 10^{-3}$ & $10^{-3}$ & $10^{-3}$ & $10^{-3}$ & $10^{-4}$ & $10^{-3}$ & $10^{-3}$\\
+        N\textdegree  flows & $5$ & $10$ & $5$ & $3$ & $5$ & $5$ & $1$\\
+        Embedding Size & $30$ & $30$ & $30$ & $30$ & $30$ & $30$ & $10$\\
+        Weight decay ($W$) & $10^{-5}$ & $10^{-2}$ & $10^{-4}$ & $10^{-2}$ & $10^{-2}$ & $10^{-2}$ & $10^{-5}$\\
+        Batch size & $10000$ & $10000$ & $100$ & $500$ & $100$ & $100$ & $100$\\ \hline
+    \end{tabular}
+    \vspace{1em}
+    \caption{Training configurations for density estimation and toy problems.}
+    \label{tab:train_configs-toy}
+\end{table}
+
+\subsection{Variational auto-encoders} \label{app:vae_train_config}
+Table \ref{tab:vae_train_config} presents the architectural settings of the normalizing flows used inside the variational auto-encoders. The number of values outputted by the encoder is always taken to be equal to $320$. These values as well as the $64$-dimensional noise vector are the inputs of the embedding network which is constantly made of one hidden layer of $1280$ neurons. We have performed a small grid search on the integrand network architecture, we took a look at 2 different number $L \in \{3, 4\}$ of hidden layers of dimensions $D \in \{100, 150\}$.
+\begin{table}[H]
+    \centering
+    \scriptsize
+    \setlength{\tabcolsep}{1pt}
+    \renewcommand{\arraystretch}{1.5}
+    \begin{tabular}{c c c c c}
+        \hline
+        Dataset & \tbf{MNIST} & \tbf{Freyfaces} & \tbf{Omniglot} & \tbf{Caltech 101}  \\
+        \hline
+        Lipschitz & - & - & - & - \\
+        N\textdegree  integ. steps & rand & rand & rand & rand  \\
+        Encoder Output & $320$ & $320$ & $320$ & $320$\\
+        Embedding net & $1 \times 1280$ & $1\times 1280$ & $1\times 1280$ & $1 \times 1280$ \\
+        Integrand net & $4 \times 100$ & $3 \times 100$ & $4\times 100$ & $4\times 100$  \\
+        N\textdegree  flows & $16$ & $8$ & $16$ & $16$ \\
+        Embedding Size & $30$ & $30$ & $30$ & $30$ \\
+        \hline
+    \end{tabular}
+    \vspace{1em}
+    \caption{Training configurations of variational auto-encoder.}
+    \label{tab:vae_train_config}
+\end{table}
+
+\newpage
+\section{Clenshaw-Curtis module}\label{app:CC-module}
+
+\begin{algorithm}[H]
+\algnewcommand{\LineComment}[1]{\State \(\triangleright\) #1}
+\linespread{1.3}\selectfont
+\caption{Clenshaw-Curtis quadrature}\label{algo:CC-module}
+\begingroup % keep the change local
+\setlength\arraycolsep{1pt}
+
+%%%%%% FORWARD %%%%%
+\small
+\begin{tabular}{ll}
+    \textit{Input:}  & $x$: A tensor of scalar values that represent the superior integration bounds. \\
+     & $\mb{h}$: A tensor of vectors that representing embeddings.\\
+     \textit{Output:}  & $F$: A tensor of scalar values that represent the integral of $\int_{0}^{x} f(t;\mb{h})\dt$ .\\
+     \textit{Hyper-parameters:} & $f$: A derivable function $\mathbb{R}\rightarrow \mathbb{R}$.\\
+     &$N$: The number of integration steps.
+\end{tabular}
+\small
+\begin{algorithmic}[1]
+\Procedure{forward}{$x$, $\mb{h}$; $f$, $N$}
+\LineComment{Compute weights and evaluation steps for Clenshaw-Curtis quadrature}
+\State $\mb{w}$, $\mb{\delta}_x$ = \Call{compute\_cc\_weights}{$N$}
+\State $F = 0$
+\For{$i \in \left[ 1, \text{$N$} \right]$}
+\State $x_i$ = $x_0 +  \frac{1}{2}(x - x_0)(\mb{\delta}_x[i] + 1)$ \Comment{Compute the next point to evaluate}
+\State $\delta_F = f(x_i; \mb{h})$
+\State $F$ = $F + \mb{w}[i] \delta_F$
+\EndFor
+\State $F = \frac{F}{2} (x-x_0)$
+\State \Return $F$
+\EndProcedure
+\end{algorithmic}
+\vspace{1em}
+%%%%%% BACKWARD %%%%%
+\small
+\begin{tabular}{ll}
+    \textit{Inputs:}  & $x$: A tensor of scalar values that represent the superior integration bounds. \\
+     & $\mb{h}$: A tensor of vectors that representing embeddings.\\
+     & $\nabla_{out}:$ The derivatives of the loss function with respect to $\int_{0}^{x} f(t;\mb{h})\dt$ for all $x$.\\
+     \textit{Outputs:}  & $\nabla_x$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to x.\\
+     & $\nabla_{\mb{\theta}}$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to f parameters.\\
+     & $\nabla_{\mb{h}}$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to h.\\
+     \textit{Hyper-parameters:} & $f$: A derivable function $\mathbb{R}\rightarrow \mathbb{R}$.\\
+     &$N$: The number of integration steps.
+\end{tabular}
+\small
+\begin{algorithmic}[1]
+\Procedure{backward}{$x$, $h$, $\nabla_{out}$; $f$, $N$}
+\LineComment{Compute weights and evaluation steps for Clenshaw-Curtis quadrature}
+\State $\mb{w}$, $\mb{\delta}_x$ = \Call{compute\_cc\_weights}{$N$} 
+\State $F, \nabla_{\mb{\theta}}, \nabla_{\mb{h}} = 0, 0, 0$
+\For{$i \in \left[ 1, N \right]$}
+\State $x_i$ = $x_0 + \frac{1}{2} (x - x_0)(\mb{\delta}_x[i] + 1)$\Comment{Compute the next point to evaluate}
+\State $\delta_F$ =$f(x_i; \mb{h})$
+ \LineComment{Sum up for all samples of the batch the gradients with respect to inputs $\mb{h}$ }
+\State $\delta_{\nabla_{\mb{h}}}$ = $ \sum_{j=1}^{B} \nabla_{{\mb{h}}^j}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
+\LineComment{Sum up for all samples of the batch the gradients with respect to parameters $\mb{\theta}$ }
+\State $\delta_{\nabla_{\mb{\theta}}}$ = $ \sum_{j=1}^{B} \nabla_{\mb{\theta}}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
+\State $\nabla_{\mb{h}}$ = $\nabla_{\mb{h}} + \mb{w}[i] \delta_{\nabla_{\mb{h}}}$
+\State $\nabla_{\mb{\theta}}$ = $\nabla_{\mb{\theta}} + \mb{w}[i] \delta_{\nabla_{\mb{\theta}}}$
+\EndFor
+\LineComment Gradients with respect to superior integration bound.
+\State $\nabla_x = f(x, \mb{h}) \nabla_{out}$
+\State \Return $\nabla_x$, $\nabla_{\mb{\theta}}$, $\nabla_{\mb{h}}$
+\EndProcedure
+\end{algorithmic}
+\vspace{1em}
+\endgroup
+\end{algorithm}
+
+\section{Generated images from MNIST}\label{app:supp_results}
+Figure \ref{fig:cond_uncond_mnist} presents samples generated from two UMNN-MAF trained on MNIST, respectively with (sub-figure a) and without (sub-figure b) labels. The samples are generated with different levels of noise, which are the product of the inversion of the network with random values drawn from $\mathcal{N}(0, T)$, with $T$ being the sampling temperature. The sampling temperature increases linearly from $0.1$ (top rows) to $1.0$ (bottom rows). We can observe that the unconditional model fails to incorporate digit structure when the level of noise is too small. However, when the level is sufficient it is able to generate random digits with a high level of heterogeneity.
+
+\begin{figure}[H]
+\begin{minipage}[left]{.45\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/MNIST/dif_temps.png}
+    \\ (a)
+\end{minipage}
+\begin{minipage}{.1\textwidth}
+
+\end{minipage}
+\begin{minipage}[right]{.45\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/MNIST/uncond_dif_temp_mnist.png}
+    \\ (b)
+\end{minipage}
+\centering
+\caption{(a): Class-conditional generated images from MNIST. The temperature of sampling increases from $0.1$ (top row) to $1.0$ (bottom row). Columns correspond to different classes. (b): Unconditional generated images from MNIST. The temperature of sampling goes from $0.1$ at top row to $1.0$ at bottom row. Columns are different random noise values.}
+    \label{fig:cond_uncond_mnist}
+
+\end{figure}

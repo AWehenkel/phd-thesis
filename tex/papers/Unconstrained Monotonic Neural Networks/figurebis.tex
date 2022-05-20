@@ -1,0 +1,171 @@
+\tikzset{
+    *|/.style={
+        to path={
+            (perpendicular cs: horizontal line through={(\tikztostart)},
+                                 vertical line through={(\tikztotarget)})
+            % is the same as (\tikztostart -| \tikztotarget)
+            % but just to be safe: http://tex.stackexchange.com/a/29781/16595
+            -- (\tikztotarget) \tikztonodes
+        }
+    }
+}
+\tikzset{%
+   neuron missing/.style={
+    draw=none, 
+    scale=3,
+    text height=0.333cm,
+    text width=.333cm,
+    execute at begin node=\color{black}$\dots$
+  },
+}
+\makeatletter
+\newcommand{\gettikzxy}[3]{%
+  \tikz@scan@one@point\pgfutil@firstofone#1\relax
+  \edef#2{\the\pgf@x}%
+  \edef#3{\the\pgf@y}%
+}
+
+\newcommand{\BIPblock}[1]{
+
+\foreach \m/\l [count=\y] in {1,2,3}
+{
+ \node [circle, draw, minimum size=1cm, fill=white!100] (input-\m) at (0, 2.5-\y) {};
+}
+\foreach \m/\l [count=\y] in {1,2,3}
+{
+ \node [circle, draw, minimum size=1cm, fill=white!100] (hidden-\m) at (2.0, 2.5-\y) {};
+}
+
+%\node[neuron missing] (test) at (0., .25){};
+
+\node[circle, draw, dashed, minimum size=1cm, fill=white!100] (output) at (4.0, 0.5) {};
+
+\foreach \i in {1,...,3}
+  \foreach \j in {1,...,3}
+    \draw [->] (input-\i) -- (hidden-\j);
+\foreach \i in {1,...,3}
+    \draw [->] (hidden-\i) -- (output);
+
+\node [scale=4] (int) at (-3.5, 1) {$\XXL\int$};
+\node [scale=10] (dt) at (6.5, 0) {$\dt$};
+
+%\draw [decorate,decoration={brace,amplitude=15pt,raise=12pt},yshift=0pt]
+%(1.,0) -- (-1,0) node [black,midway,yshift=-.85cm,xshift=-.00cm] (h-input) {};
+\node[draw, rounded corners, dashed, fit={(input-2) (input-3)}] (h-input) {};
+
+\begin{scope}[on background layer]
+\node [draw, rounded corners, dashed, fill=green!10,inner sep=10pt, fit={(input-1) (input-2)
+(input-3) (hidden-1) (hidden-2) (hidden-3) (output) (h-input)}] (integrand) {};
+\end{scope}
+\node[scale=3, rounded corners, draw, minimum size=.25cm, font=\relsize{4}] (t-node) at (-2, 1.5) {$t$};
+
+\node[scale=3, minimum size=.5cm] (UMNN) at (2, -3) {$\int^{x_#1}_{0} f^#1(t;\boldsymbol{h}^#1) \dt + \beta^#1(h^#1)$ (UMNN)};
+\node[draw, fit={(integrand) (int) (dt) (t-node) (UMNN)}] (integral) {};
+
+
+\node[scale=2, rounded corners, draw, minimum size=.5cm, font=\relsize{4}] (h#1) at (-2, .0) {$\boldsymbol{h}^#1$};
+
+
+\draw [arrows={-triangle 45}, line width=1mm] (h#1) -- (h-input);
+\draw [arrows={-triangle 45}, line width=1mm] (t-node) -- (input-1);
+
+\node[fit={(integral) (t-node)}] (int2) {};
+\node[scale=2, circle, draw, minimum size=1.5cm, font=\relsize{4}] (x#1) at (-8, 0.5) {$x_{#1}$};
+\gettikzxy{(x#1)}{\a}{\yy}
+\gettikzxy{(integral.west)}{\xx}{\a}
+\draw [arrows={-triangle 45}, line width=1mm] (x#1) to (\xx, \yy);
+
+\node[scale=2, circle, draw, minimum size=1.5cm, font=\relsize{4}] (z#1) at (11.5, 0.5) {$z_{#1}$};
+\gettikzxy{(z#1.west)}{\xx}{\a}
+\gettikzxy{(integral.east)}{\a}{\yy}
+\draw [arrows={-triangle 45}, line width=1mm] (integral) to (\xx, \yy);
+
+
+%\draw [arrows={-triangle 45}, line width=1.mm] (integral) to (g);
+}
+\begin{tikzpicture}[x=1.5cm, y=1.5cm, >=stealth]
+
+%% UMNN-FLOW %%
+% Nodes
+\node[scale=3, minimum height=1cm, minimum width=1cm, circle, draw, font=\relsize{4}] (x_in) at (0, 0) {$\mathbf{x}$};
+\node[scale=3, minimum height=1cm, minimum width=1cm, draw, font=\relsize{4}] (g_1) at (3, 0) {$\mathbf{g}_1$};
+\node[scale=3, minimum height=1cm, minimum width=1cm, draw, font=\relsize{4}] (P) at (6, 0) {P};
+\node[scale=3, minimum height=1cm, minimum width=1cm, draw, font=\relsize{4}] (g_2) at (9, 0) {$\mathbf{g}_2$};
+\node[scale=3, font=\relsize{4}] (h_dots) at (12, 0) {$\hdots$};
+\node[scale=3, minimum height=1cm, minimum width=1cm, draw, font=\relsize{4}] (g_k) at (15, 0) {$\mathbf{g}_k$};
+\node[scale=3, minimum height=1cm, minimum width=1cm, circle, draw, font=\relsize{4}] (z) at (18, 0) {$\mathbf{z}$};
+% Arrows
+\draw [arrows={-triangle 45}, line width=1mm] (x_in) -- (g_1);
+\draw [arrows={-triangle 45}, line width=1mm] (g_1) -- (P);
+\draw [arrows={-triangle 45}, line width=1mm] (P) -- (g_2);
+\draw [arrows={-triangle 45}, line width=1mm] (g_2) -- (h_dots);
+\draw [arrows={-triangle 45}, line width=1mm] (h_dots) -- (g_k);
+\draw [arrows={-triangle 45}, line width=1mm] (g_k) -- (z);
+
+%% UMNN-MAF %%
+\begin{scope}[shift={(22.5,-1)}]
+\foreach \m/\l [count=\y] in {1,2,3}
+{
+ \node [circle, draw, minimum size=1cm, fill=white!100] (input-\m) at (0, 3-\y) {};
+}
+\foreach \m/\l [count=\y] in {1,2,3}
+{
+ \node [circle, draw, minimum size=1cm, fill=white!100] (hidden-\m) at (1.5, 3-\y) {};
+}
+
+%\node[neuron missing] (test) at (0., .25){};
+
+
+\foreach \i in {1,...,3}
+  \foreach \j in {\i,...,3}
+    \ifthenelse{\i < \j}{\draw [->] (input-\i) -- (hidden-\j);}{};
+    
+\node [scale=2] (label-MAN) at (.75, 3) {$\mathbf{h}$ (MAN)};
+
+\begin{scope}[on background layer]
+\node [draw, rounded corners, dashed, fill=green!10,inner sep=10pt, fit={(input-1) (input-2)
+(input-3) (hidden-1) (hidden-2) (hidden-3) (label-MAN)}] (MAN){}; 
+\end{scope}
+\foreach \m/\l [count=\y] in {0,1,2}
+{
+ \node [text centered, scale=3] (g^\m) at (4, 4.5-1.5*\y) {$g^\y$};
+}
+
+\node [scale=3] (label-g) at (2.2, -1.7) {$\mathbf{g}(\mathbf{x}; \theta)$ (UMNN-MAF)};
+\node [inner sep=14pt, draw, rounded corners, dashed, fit={(g^1) (g^2) (g^0)}] (g-trans) {};    
+\draw [arrows={-triangle 45}, line width=1mm] (MAN) -- (g-trans);
+
+\node [inner sep=.5pt, draw, fit={(g^1)}] (g-^11) {};  
+\node [inner sep=10pt, draw, fit={(MAN) (g-trans) (label-g)}] (g-tot) {};  
+
+\gettikzxy{(g_k.north)}{\a}{\y}
+\gettikzxy{(g_k.east)}{\x}{\a}
+\gettikzxy{(g-tot.north)}{\a}{\yy}
+\gettikzxy{(g-tot.west)}{\xx}{\a}
+\draw [dashed, line width=.2mm] (\x, \y) to (\xx, \yy);
+
+\gettikzxy{(g_k.south)}{\a}{\y}
+\gettikzxy{(g_k.east)}{\x}{\a}
+\gettikzxy{(g-tot.south)}{\a}{\yy}
+\gettikzxy{(g-tot.west)}{\xx}{\a}
+\draw [dashed, line width=.2mm] (\x, \y) to (\xx, \yy);
+
+\end{scope}
+
+\begin{scope}[shift={(40,-1)}]
+\BIPblock{2}
+\end{scope}
+
+\gettikzxy{(g-^11.north)}{\a}{\y}
+\gettikzxy{(g-^11.east)}{\x}{\a}
+\gettikzxy{(integral.north)}{\a}{\yy}
+\gettikzxy{(integral.west)}{\xx}{\a}
+\draw [dashed, line width=.2mm] (\x, \y) to (\xx, \yy);
+
+\gettikzxy{(g-^11.south)}{\a}{\y}
+\gettikzxy{(g-^11.east)}{\x}{\a}
+\gettikzxy{(integral.south)}{\a}{\yy}
+\gettikzxy{(integral.west)}{\xx}{\a}
+\draw [dashed, line width=.2mm] (\x, \y) to (\xx, \yy);
+
+\end{tikzpicture}
