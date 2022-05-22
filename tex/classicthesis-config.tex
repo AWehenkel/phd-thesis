@@ -284,4 +284,19 @@
 % \usepackage{textcomp}
 %\usepackage[urw-garamond]{mathdesign} <-- no osf support :-(
 \usepackage{cleveref}
+\usepackage{bm}
+\renewcommand*{\mathbf}[1]{\ifmmode\bm{#1}\else\textbf{#1}\fi}
+
+% Math new operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\trace}{trace}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator{\dt}{\, \mathrm{d}\mathit{t}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+
+% Math braces
+\newcommand{\brac}[1]{\left({#1}\right)}
+\newcommand{\sbrac}[1]{\left[{#1}\right]}
+\newcommand{\cbrac}[1]{\left\{{#1}\right\}}
 % ****************************************************************************************************

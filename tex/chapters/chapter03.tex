@@ -18,18 +18,18 @@ A natural solution to this problem is to parameterize the prior, sometimes also 
 
 \section{Variational Auto Encoders}
 We want to learn a generative model of an unknown distribution $p(\mathbf{x})$ given a dataset $X \in \mathbb{R}^{N\times d}$ of $N$ i.i.d observations $\mathbf{x}$ sampled from this unknown distribution.
-The original VAE postulates a two-step generative process in which some unobserved variables $\mathbf{z} \in \mathbb{R}^h$ are first sampled from a prior distribution $p(\mathbf{z})$ and then observations $\mathbf{x}$ are generated from a conditional distribution $p_\mathbf{\theta}(\mathbf{x}|\mathbf{z})$. The generative process can be expressed mathematically as
+The original VAE postulates a two-step generative process in which some unobserved variables $\mathbf{z} \in \mathbb{R}^h$ are first sampled from a prior distribution $p(\mathbf{z})$ and then observations $\mathbf{x}$ are generated from a conditional distribution $p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z})$. The generative process can be expressed mathematically as
 \begin{align}
-     \mathbf{z} \sim p(\mathbf{z}) \quad \text{and} \quad \mathbf{x} \sim p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}).
+     \mathbf{z} \sim p(\mathbf{z}) \quad \text{and} \quad \mathbf{x} \sim p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}).
 \end{align}
-The prior $p(\mathbf{z})$ is chosen Gaussian while the likelihood $p_\mathbf{\theta}(\mathbf{x}|\mathbf{z})$ is modeled with a neural network. The likelihood model decodes latent variables into observations and is thus usually refereed as the decoder in the literature. In its original formulation, the likelihood is parameterized with a multivariate Gaussian $\mathcal{N}(\mathbf{\mu_\theta}(\mathbf{z}), \diag(\sigma_\theta^2(\mathbf{z})))$ when the observations are continuous, and a categorical distribution when they are discrete.
+The prior $p(\mathbf{z})$ is chosen Gaussian while the likelihood $p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z})$ is modeled with a neural network. The likelihood model decodes latent variables into observations and is thus usually refereed as the decoder in the literature. In its original formulation, the likelihood is parameterized with a multivariate Gaussian $\mathcal{N}(\mathbf{\mu}_{\mathbf{\theta}}(\mathbf{z}), \diag(\sigma_{\theta}^2(\mathbf{z})))$ when the observations are continuous, and a categorical distribution when they are discrete.
 
-Training the generative model is achieved by finding the parameters $\mathbf{\theta}$ of the decoder that maximize the sum of the marginal likelihoods of individual points $$p_\mathbf{\theta}(X)= \sum_{\mathbf{x}\in X}\log \int p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) \text{d}\mathbf{z}.$$
+Training the generative model is achieved by finding the parameters $\mathbf{\theta}$ of the decoder that maximize the sum of the marginal likelihoods of individual points $$p_{\mathbf{\theta}}(X)= \sum_{\mathbf{x}\in X}\log \int p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}) p(\mathbf{z}) \text{d}\mathbf{z}.$$
 These integrals are intractable but the introduction of an encoder network that approximates the posterior distribution $q_\phi(\mathbf{z}|\mathbf{x})$ allows maximizing the associated evidence lower bound
 \begin{align}
-    \operatorname{ELBO}&:=\mathbb{E}_q\left[\log \frac{p_\mathbf{\theta} (\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\psi(\mathbf{z}|\mathbf{x})} \right]\label{eq:ELBO_VAE}\\
-    &=\log p_\mathbf{\theta}(\mathbf{x}) - \mathbb{KL}\left[q_\psi(\mathbf{z}|\mathbf{x})||p_\mathbf{\theta} (\mathbf{z}|\mathbf{x})\right]\\
-    &\leq \log p_\mathbf{\theta}(\mathbf{x}).
+    \operatorname{ELBO}&:=\mathbb{E}_q\left[\log \frac{p_{\mathbf{\theta}} (\mathbf{x}|\mathbf{z}) p(\mathbf{z})}{q_\psi(\mathbf{z}|\mathbf{x})} \right]\label{eq:ELBO_VAE}\\
+    &=\log p_{\mathbf{\theta}}(\mathbf{x}) - \mathbb{KL}\left[q_\psi(\mathbf{z}|\mathbf{x})||p_{\mathbf{\theta}} (\mathbf{z}|\mathbf{x})\right]\\
+    &\leq \log p_{\mathbf{\theta}}(\mathbf{x}).
 \end{align}
 
 The $\operatorname{ELBO}$ becomes tighter as the approximate posterior $q_\psi(\mathbf{z}|\mathbf{x})$ gets closer to the true posterior.
@@ -83,20 +83,20 @@ We now introduce our contribution which consists in using a DDPM for modelling t
 We formulate the generative model as
 \begin{align}
     & \mathbf{z}_T \sim \mathcal{N}(\mathbf{0}, \text{I}) \label{eq:VAE_DDPM_1} \\
-    & \mathbf{z}_{t-1|t} \sim p_\mathbf{\phi}(\mathbf{z}_{t-1}|\mathbf{z}_{t})\quad \forall t \in \left[T, \dots, 1\right] \label{eq:VAE_DDPM_2} \\
-    &\mathbf{x} \sim p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0),
+    & \mathbf{z}_{t-1|t} \sim p_{\mathbf{\phi}}(\mathbf{z}_{t-1}|\mathbf{z}_{t})\quad \forall t \in \left[T, \dots, 1\right] \label{eq:VAE_DDPM_2} \\
+    &\mathbf{x} \sim p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0),
 \end{align}
 where $\phi$ denotes the parameters of the reverse diffusion model encoding the prior distribution. \Cref{eq:VAE_DDPM_1,eq:VAE_DDPM_2} implicitly define a prior distribution over the usual latent variables $\mathbf{z}_0$ which is modelled with a reverse diffusion process.
 
-Unfortunately, we cannot train a VAE with a diffusion prior directly on the $\operatorname{ELBO}$ as expressed in \Cref{eq:ELBO_VAE} as $p_\mathbf{\phi}(\mathbf{z}_0)$ cannot be evaluated. However, \Cref{eq:ELBO_VAE} can be further developed as
+Unfortunately, we cannot train a VAE with a diffusion prior directly on the $\operatorname{ELBO}$ as expressed in \Cref{eq:ELBO_VAE} as $p_{\mathbf{\phi}}(\mathbf{z}_0)$ cannot be evaluated. However, \Cref{eq:ELBO_VAE} can be further developed as
 \begin{align}
-    \mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0)\right] - \mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right] +  \mathbb{E}_{q_\psi}\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right]
+    \mathbb{E}_{q_\psi}\left[ \log p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0)\right] - \mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right] +  \mathbb{E}_{q_\psi}\left[\log p_{\mathbf{\phi}}(\mathbf{z}_0)\right]
 \end{align}
 in which a lower bound on the last term can be expressed by \Cref{eq:ELBO_DDPM}. This finally leads to the following expression
 \begin{align}
-    &\mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) +  \mathbb{E}_{q}\left[ \log \frac{p_\phi(\mathbf{z_{0:T}})}{q(\mathbf{z_{1:T}}|\mathbf{z_0})} \right] \right] \\
-    & \leq \mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) + \log p_\mathbf{\phi}(\mathbf{z}_0) \right] \\
-    & \leq  \log p_\mathbf{\theta}(\mathbf{x}),
+    &\mathbb{E}_{q_\psi}\left[ \log p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) +  \mathbb{E}_{q}\left[ \log \frac{p_\phi(\mathbf{z_{0:T}})}{q(\mathbf{z_{1:T}}|\mathbf{z_0})} \right] \right] \\
+    & \leq \mathbb{E}_{q_\psi}\left[ \log p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0) - \log q(\mathbf{z}_0|\mathbf{x}) + \log p_{\mathbf{\phi}}(\mathbf{z}_0) \right] \\
+    & \leq  \log p_{\mathbf{\theta}}(\mathbf{x}),
 \end{align}
 which is a valid ELBO.
 % \begin{align}
@@ -114,7 +114,7 @@ which is a valid ELBO.
 % \gilles{Show this explicitly.}
 Finally, the diffusion prior $p_\phi$ is trained jointly with the approximate posterior $q_\psi$ and the likelihood models $p_\theta$ which are optimized as in a classical VAE. This leads to the following loss function:
 \begin{align}
-    \mathcal{L}(\mathbf{x}; \phi, \theta, \psi) &:= \mathbb{E}_{q_\psi}\left[\log \frac{p_\mathbf{\theta} (\mathbf{x}|\mathbf{z}) }{q_\psi(\mathbf{z}|\mathbf{x})} \right] + \mathbb{E}_{q_\psi}\left[L_\text{DDPM}(\mathbf{z}_0; \phi)\right].
+    \mathcal{L}(\mathbf{x}; \phi, \theta, \psi) &:= \mathbb{E}_{q_\psi}\left[\log \frac{p_{\mathbf{\theta}} (\mathbf{x}|\mathbf{z}) }{q_\psi(\mathbf{z}|\mathbf{x})} \right] + \mathbb{E}_{q_\psi}\left[L_\text{DDPM}(\mathbf{z}_0; \phi)\right].
 \end{align}
 
 % The approximate posterior $q_\beta(\mathbf{z}_{1:T}|\mathbf{z}_0)$ is fixed to a diffusion process, that is a fixed size Markov chain defined as
