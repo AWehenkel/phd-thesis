@@ -251,7 +251,7 @@ Figure~\ref{fig:architecture} summarizes the complete architecture.
 
 % \begin{figure}
 %     \centering
-%     \includegraphics[width=.95\textwidth]{figures/UMNN_Archi.pdf}
+%     \includegraphics[width=.95\textwidth]{chapter05/figures/UMNN_Archi.pdf}
 %     %\includetikz[width=\textwidth]{figure.tikz}
 %     \caption{UMMN-MAF. \gilles{Draw new figure.}\gilles{Write caption.} \url{https://www.overleaf.com/2834511968nzwsmmjwpjky}}
 %     \label{fig:architecture}
@@ -292,7 +292,7 @@ This leads to multiple advantages: it enables the use of any state-of-the-art ne
 More generally, UMNN-MAF relates to works on normalizing flows built upon autoregressive networks and affine transformations.
 \cite{germain_made_2015} first introduced masking as an efficient way to build autoregressive networks, and proposed autoregressive networks for density estimation of high dimensional binary data.
 Masked Autoregressive Flows~\citep{papamakarios_masked_2017} and Inverse Autoregressive Flows~\citep{kingma_improved_2016} have generalized this approach to real data, respectively for density estimation and for latent posterior representation in variational auto-encoders.
-More recently, \cite{TAN}~proposed to stack various autoregressive architectures to create powerful reversible transformations. Meanwhile, \cite{sos}~proposed a new Sum-of-Squares flow that is defined as the integral of a second order polynomial parametrized by an autoregressive NN.
+More recently, \cite{oliva_transformation_2018}~proposed to stack various autoregressive architectures to create powerful reversible transformations. Meanwhile, \cite{jaini_sum--squares_2019}~proposed a new Sum-of-Squares flow that is defined as the integral of a second order polynomial parametrized by an autoregressive NN.
 
 With NICE, \cite{NICE} introduced coupling layers, which correspond to bijective transformations splitting the input vector into two parts. They are defined as
 \begin{align}
@@ -310,7 +310,7 @@ Training can be carried out by backpropagating efficiently through the ODE solve
 Among other applications, NODE can be used to model a continuous normalizing flow with a free-form Jacobian as in FFJORD~\citep{grathwohl_ffjord_2018}.
 Similarly, a UMNN transformation can be seen as a structured neural ordinary differential equation in which the dynamic of the vector field is separable and can be solved efficiently by direct integration.
 
-% Most of the state-of-the-art normalising flows are built upon autoregressive networks and affine transformations. \cite{germain_made_2015} introduced masking as an efficient way to build autoregressive networks and introduced autoregressive networks for density estimation of high dimensional binary data. Masked Autoregressive Flows \citep{MAF} and Inverse Autoregressive Flows \citep{kingma_improved_2016} have generalised the approach for real data respectively for density estimation and for latent posterior representation in Variational Auto-Encoders. More recently, \cite{TAN} proposed to stack many different autoregressive architectures to create powerful reversible transformations.
+% Most of the state-of-the-art normalising flows are built upon autoregressive networks and affine transformations. \cite{germain_made_2015} introduced masking as an efficient way to build autoregressive networks and introduced autoregressive networks for density estimation of high dimensional binary data. Masked Autoregressive Flows \citep{MAF} and Inverse Autoregressive Flows \citep{kingma_improved_2016} have generalised the approach for real data respectively for density estimation and for latent posterior representation in Variational Auto-Encoders. More recently, \cite{oliva_transformation_2018} proposed to stack many different autoregressive architectures to create powerful reversible transformations.
 
 % With NICE, \cite{NICE} have introduced coupling layers which are bijective transformations that split the input vector into two parts. The transformation is defined as follow,
 % \begin{align}
@@ -369,7 +369,7 @@ We also observe that numerical inversion for generating samples yields good resu
 
 \begin{figure}
     \centering
-    \includegraphics[width=.85\textwidth]{figures/toy/all_flow.png}
+    \includegraphics[width=.85\textwidth]{figures/chapter05/toy/all_flow.png}
     \vspace{-0.75em}
     \caption{Density estimation and sampling with a UMNN-MAF network on 2D toy problems. \tbf{Top}: Samples from the empirical distribution $p(\mb{x})$. \tbf{Middle}: Learned density $p(\mb{x};\mb{\theta})$. \tbf{Bottom}: Samples drawn by numerical inversion.
     UMNN-MAF manages to precisely capture multi-modal and/or discontinuous distributions.
@@ -404,12 +404,12 @@ We also observe that numerical inversion for generating samples yields good resu
         \multirow{3}{*}{(b)}
         & MADE - \cite{germain_made_2015}& $3.08_{\pm.03}$ & $-3.56_{\pm.04}$ & $20.98_{\pm.02}$ & $15.59_{\pm.50}$ & $-148.85_{\pm.28}$ & $2.04_{\pm.01}$\\
         & MAF - \cite{papamakarios_masked_2017} & $-0.24_{\pm.01}$ & $-10.08_{\pm.02}$ & $17.70_{\pm.02}$ & $11.75_{\pm.44}$ & $-155.69_{\pm.28}$ & $1.89_{\pm.01}$\\
-        & TAN - \cite{TAN}& $\underline{-0.60}_{\pm.01}$ & $\mb{\underline{-12.06}}_{\pm.02}$ & $\mb{\underline{13.78}}_{\pm.02}$ & $\underline{11.01}_{\pm.48}$ & $\mb{\underline{-159.80}}_{\pm.07}$ & $\underline{1.19}$\\\hline
+        & TAN - \cite{oliva_transformation_2018}& $\underline{-0.60}_{\pm.01}$ & $\mb{\underline{-12.06}}_{\pm.02}$ & $\mb{\underline{13.78}}_{\pm.02}$ & $\underline{11.01}_{\pm.48}$ & $\mb{\underline{-159.80}}_{\pm.07}$ & $\underline{1.19}$\\\hline
 
         \multirow{3}{*}{(c)}
         & NAF - \cite{huang_neural_2018}& $-0.62_{\pm.01}$ & $-11.96_{\pm.33}$ & $15.09_{\pm.40}$ & $\mb{\underline{8.86}}_{\pm.15}$ & $-157.73_{\pm.30}$ & - \\
         & B-NAF - \cite{de_cao_block_2020}& $-0.61_{\pm.01}$ & $\underline{-12.06}_{\pm.09}$ & $14.71_{\pm.38}$ & $8.95_{\pm.07}$ & $-157.36_{\pm.03}$ & -  \\
-        & SOS - \cite{sos}& $-0.60_{\pm .01}$ & $-11.99_{\pm .41}$ & $15.15_{\pm .1}$ & $8.90_{\pm .11}$ & $-157.48_{\pm .41}$ & $1.81$\\
+        & SOS - \cite{jaini_sum--squares_2019}& $-0.60_{\pm .01}$ & $-11.99_{\pm .41}$ & $15.15_{\pm .1}$ & $8.90_{\pm .11}$ & $-157.48_{\pm .41}$ & $1.81$\\
         & \tbf{UMNN-MAF (ours)}
         & $\mb{\underline{-0.63}}_{\pm .01}$
          %\meanstd{0.647866}{0.611536}{0.626134}
@@ -440,7 +440,7 @@ At testing time we use a large number of integration steps ($100$) to compute th
 Table~\ref{tab:tabular_density} summarizes our results, where we can see that on tabular datasets, our method is competitive with other normalizing flows.
 For POWER, our architecture slightly outperforms all others.
 It is also better than other monotonic networks (category (c)) on 3 tabular datasets over 5.
-From these results, we could conclude that Transformation Autoregressive Networks~\citep[TAN, ][]{TAN} is overall the best method for density estimation.
+From these results, we could conclude that Transformation Autoregressive Networks~\citep[TAN, ][]{oliva_transformation_2018} is overall the best method for density estimation.
 It is however important to note that TAN is a flow composed of many heterogeneous transformations (both autoregressive and non-autoregressive).
 For this reason, it should not be directly compared to the other models which respective results are specific to a single architecture.
 However, TAN provides the interesting insight that combining heterogeneous components into a flow leads to better results than an homogeneous flow.
@@ -455,7 +455,7 @@ In comparison, BSDS300, which data dimension is one order of magnitude smaller t
 \begin{figure}[H]
 \centering
     \vspace{-2em}
-    \includegraphics[width=1.\textwidth]{figures/MNIST/MNIST_3_075.png}
+    \includegraphics[width=1.\textwidth]{figures/chapter05/MNIST/MNIST_3_075.png}
     \vspace{-1.em}
     \caption{Samples generated by numerical inversion of a conditional UMNN-MAF trained on MNIST. Samples $\mathbf{z}$ are drawn from an isotropic Gaussian with $\sigma=.75$.  See Appendix \ref{app:supp_results} for more details.}
     \label{fig:MNIST-samp}
