@@ -9,7 +9,7 @@ Finally, we hypothesize that hierarchical VAEs could similarly benefit from the 
 \section{Introduction}
 Over the last few years, the interest of the deep learning community for generative modelling has increased steadily.
 Among the likelihood-based approaches for deep generative modelling, variational autoencoders~\citep[VAEs]{kingma_auto-encoding_2013} stand as one of the most popular, although competing approaches now demonstrate better performance.
-In particular, \citet{ho_denoising_2020,nichol_improved_2021,dhariwal2021diffusion} recently showed that denoising diffusion probabilistic models (DDPMs) are competitive deep generative models, obtaining samples quality similar to those of the best implicit deep generative models such as ProgressiveGAN~\citep{PGANs} and StyleGAN~\citep{karras2019style}.
+In particular, \citet{ho_denoising_2020,nichol_improved_2021,dhariwal2021diffusion} recently showed that denoising diffusion probabilistic models (DDPMs) are competitive deep generative models, obtaining samples quality similar to those of the best implicit deep generative models such as ProgressiveGAN~\citep{karras_progressive_2017} and StyleGAN~\citep{karras2019style}.
 Similarly to VAEs, DDPMs train on a variational bound and may be interpreted under the encoding-decoding framework.
 
 In the original formulation of VAEs, the prior and the posterior distributions over the latent variables are assumed to be both Gaussian.
@@ -38,7 +38,7 @@ In the original VAE, the encoder models the approximate posterior as a condition
 
 The $\operatorname{ELBO}$ loss presents two antagonistic goals to the encoder.
 It should be able to both encodes the data accurately while being as close as possible to the prior distribution. Consequently, the Gaussian assumptions made on both the prior and the posterior distributions are often incompatible and limit the generative performance.
-A possible solution consists in learning a prior distribution that is compatible with the learned posteriors. For example, \citet{PriorAutoreg2019} and \citet{chen_variational_2017} respectively showed that autoregressive models and normalizing flows~\citep[NFs]{rezende2015variational} greatly improve the performance of VAEs when used as prior distributions.
+A possible solution consists in learning a prior distribution that is compatible with the learned posteriors. For example, \citet{habibian_video_2019} and \citet{chen_variational_2017} respectively showed that autoregressive models and normalizing flows~\citep[NFs]{rezende2015variational} greatly improve the performance of VAEs when used as prior distributions.
 In the following we present how denoising diffusion probabilistic models can be used to improve the performance of classical VAEs.
 
 \section{Diffusion Models}
