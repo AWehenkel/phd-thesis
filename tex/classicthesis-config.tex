@@ -284,6 +284,7 @@
 % \usepackage{textcomp}
 %\usepackage[urw-garamond]{mathdesign} <-- no osf support :-(
 \usepackage{cleveref}
+\newcommand{\figref}[1]{Fig.~\ref{#1}}
 \usepackage{bm}
 \renewcommand*{\mathbf}[1]{\ifmmode\bm{#1}\else\textbf{#1}\fi}
 
@@ -299,4 +300,11 @@
 \newcommand{\brac}[1]{\left({#1}\right)}
 \newcommand{\sbrac}[1]{\left[{#1}\right]}
 \newcommand{\cbrac}[1]{\left\{{#1}\right\}}
+
+% TikZ
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds,shapes}
+\usetikzlibrary{automata,arrows}
+
+
 % ****************************************************************************************************

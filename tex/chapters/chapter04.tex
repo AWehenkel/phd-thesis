@@ -9,16 +9,16 @@ Second, we show that a fundamental leap of capacity emerges when the depth of af
 Third, we prove the non-universality of the affine normalizing flow, regardless of its depth. 
 \end{remark}
 \section{Introduction}
-Normalizing flows~\citep[NF, ][]{NF} have gained popularity in the recent years because of their unique ability to model complex data distributions while allowing both for sampling and exact density computation.
+Normalizing flows~\citep[NF, ][]{rezende2015variational} have gained popularity in the recent years because of their unique ability to model complex data distributions while allowing both for sampling and exact density computation.
 This family of deep neural networks combines a base distribution with a series of invertible transformations while keeping track of the change of density that is caused by each transformation.
 
 
 %Many applications of NFs have already been developed as demonstrated by \cite{parallel_wavenet} for speech synthesis, by \cite{NF} for variational inference and many others.
-% This research community keeps on improving the architectures, always leading to better models. Some architectures based on monotonic transformations have even been proved to be universal density estimators \cite{neural-spline-flows, NAF, BNAF, UMNN}.
+% This research community keeps on improving the architectures, always leading to better models. Some architectures based on monotonic transformations have even been proved to be universal density estimators \cite{neural-spline-flows, huang_neural_2018, BNAF, UMNN}.
 
 Probabilistic graphical models (PGMs) are well-established mathematical tools that combine graph and probability theory to ease the manipulation of joint distributions. They are commonly used to visualize and reason about the set of independencies in probabilistic models.
 %In addition to be effective tools for proofs and reasoning, these mathematical frameworks directly translates into machine learning models. %that can be learned from data with dedicated algorithms and lead to effective representation of joint distributions.
-Among PGMs, Bayesian networks~\citep[BN, ][]{Pearl-BN} offer a nice balance between readability and modeling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{d-separation}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
+Among PGMs, Bayesian networks~\citep[BN, ][]{pearl_bayesian_2011} offer a nice balance between readability and modeling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{geiger_d-separation_1990}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
 %\gilles{Since space is limited, I would shorten the two first paragraphs.}
 
 In this note, we revisit NFs as Bayesian networks.
@@ -32,25 +32,25 @@ Finally, we prove the non-universality of affine normalizing flows.
 \section{Background}
 \subsection{Normalizing flows}
 %\antoine{Rewrite, go straight to the point, simplify notations}
-A normalizing flow is defined as a sequence of invertible transformation steps $\mb{g}_k : \mathbb{R}^d \to \mathbb{R}^d$  ($k=1, ..., K$) that are composed together to create an expressive invertible mapping $\mb{g} = \mb{g}_1 \circ \dots \circ \mb{g}_K : \mathbb{R}^d \to \mathbb{R}^d$. %It is common for normalizing flows to stack the same parametric function $\mb{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For the sake of readability we denote $\mb{u}_i$ as $\mb{g}: \mathbb{R}^d \to \mathbb{R}^d$ when the index $i$ has no role in the discussion.
+A normalizing flow is defined as a sequence of invertible transformation steps $\mathbf{g}_k : \mathbb{R}^d \to \mathbb{R}^d$  ($k=1, ..., K$) that are composed together to create an expressive invertible mapping $\mathbf{g} = \mathbf{g}_1 \circ \dots \circ \mathbf{g}_K : \mathbb{R}^d \to \mathbb{R}^d$. %It is common for normalizing flows to stack the same parametric function $\mathbf{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For the sake of readability we denote $\mathbf{u}_i$ as $\mathbf{g}: \mathbb{R}^d \to \mathbb{R}^d$ when the index $i$ has no role in the discussion.
 %\paragraph{Density estimation}
 %NFs are most commonly used for density estimation, that map empirical samples to unstructured noise.
-This mapping can be used to perform density estimation, using $\mb{g}(\cdot ;\mb{\theta}): \mbb{R}^d \rightarrow \mbb{R}^d$ to map a sample $\mb{x} \in \mathbb{R}^d$ to a latent vector $\mb{z} \in \mbb{R}^d$ equipped with a density $p_{\mb{z}}(\mb{z})$.
-The transformation $\mb{g}$ implicitly defines a density $p(\mb{x}; \mb{\theta})$ as given by the change of variables formula,
+This mapping can be used to perform density estimation, using $\mathbf{g}(\cdot ;\mathbf{\theta}): \mathbb{R}^d \rightarrow \mathbb{R}^d$ to map a sample $\mathbf{x} \in \mathbb{R}^d$ to a latent vector $\mathbf{z} \in \mathbb{R}^d$ equipped with a density $p_{\mathbf{z}}(\mathbf{z})$.
+The transformation $\mathbf{g}$ implicitly defines a density $p(\mathbf{x}; \mathbf{\theta})$ as given by the change of variables formula,
 \begin{equation*}
-    p(\mb{x}; \mb{\theta}) = p_{\mb{z}}(\mb{g}(\mb{x};\mb{\theta})) \left| \det  J_{\mb{g}(\mb{x};\mb{\theta})} \right|, \label{eq:NF_DE}
+    p(\mathbf{x}; \mathbf{\theta}) = p_{\mathbf{z}}(\mathbf{g}(\mathbf{x};\mathbf{\theta})) \left| \det  J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})} \right|, \label{eq:NF_DE}
 \end{equation*}
-where $J_{\mb{g}(\mb{x};\mb{\theta})}$ is the Jacobian of $\mb{g}(\mb{x};\mb{\theta})$ with respect to $\mb x$.
-The resulting model is trained by maximizing the likelihood of the data $\{\mb{x}^1, ..., \mb{x}^N\}$. NFs can also be used for data generation tasks while keeping track of the density of the generated samples such as to improve the latent distribution in variational auto-encoders \citep{NF}.
-In the rest of this paper, we will not distinguish between $\mb{g}$ and $\mb{g}_k$ when the discussion will be focused on only one of these steps $\mb{g}_k$.
+where $J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ with respect to $\mathbf x$.
+The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$. NFs can also be used for data generation tasks while keeping track of the density of the generated samples such as to improve the latent distribution in variational auto-encoders \citep{rezende2015variational}.
+In the rest of this paper, we will not distinguish between $\mathbf{g}$ and $\mathbf{g}_k$ when the discussion will be focused on only one of these steps $\mathbf{g}_k$.
 
-In general, steps $\mb{g}$ can take any form as long as they define a bijective map. Here, we focus on a sub-class of normalizing flows for which these steps can be mathematically described as
+In general, steps $\mathbf{g}$ can take any form as long as they define a bijective map. Here, we focus on a sub-class of normalizing flows for which these steps can be mathematically described as
 \begin{equation*}
-    \mb{g}(\mb{x}) = \begin{bmatrix}
-g^1(x_{1}; \mb{c}^1(\mb{x})) & \hdots & g^d(x_{d}; \mb{c}^d(\mb{x}))
+    \mathbf{g}(\mathbf{x}) = \begin{bmatrix}
+g^1(x_{1}; \mathbf{c}^1(\mathbf{x})) & \hdots & g^d(x_{d}; \mathbf{c}^d(\mathbf{x}))
 \end{bmatrix},\label{eq:gnf}
 \end{equation*}
-where the $\mb{c}^i$ are denoted as the \tbf{conditioners} and constrain the structure of the Jacobian of $\mb{g}$. The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. These are usually defined as affine or strictly monotonic functions, with the latter being the most general class of invertible scalar continuous functions.
+where the $\mathbf{c}^i$ are denoted as the \textbf{conditioners} and constrain the structure of the Jacobian of $\mathbf{g}$. The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. These are usually defined as affine or strictly monotonic functions, with the latter being the most general class of invertible scalar continuous functions.
 In this note, we mainly discuss affine normalizers that can be expressed as
 $g(x;m, s) = x\exp(s) + m$
 where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner.
@@ -59,13 +59,13 @@ where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner.
 
 \subsection{Bayesian networks}
 
-Bayesian networks allow for a compact and natural representation of probability distributions by exploiting conditional independence. More precisely, a BN is a directed acyclic graph (DAG) which structure encodes for the conditional independencies through the concept of d-separation~\citep{d-separation}. Equivalently, its skeleton supports an efficient factorization of the joint distribution.
+Bayesian networks allow for a compact and natural representation of probability distributions by exploiting conditional independence. More precisely, a BN is a directed acyclic graph (DAG) which structure encodes for the conditional independencies through the concept of d-separation~\citep{geiger_d-separation_1990}. Equivalently, its skeleton supports an efficient factorization of the joint distribution.
 
-A BN is able to model a distribution $p$ if and only if it is an I-map with respect to $p$. That is, iff the set of independencies stated by the BN structure is a subset of the independencies that holds for $p$. Equivalently, a BN is a valid representation of a random vector $\mb{x}$ iff its density $p_{\mb{x}}(\mb{x})$ can be factorized by the BN structure as
+A BN is able to model a distribution $p$ if and only if it is an I-map with respect to $p$. That is, iff the set of independencies stated by the BN structure is a subset of the independencies that holds for $p$. Equivalently, a BN is a valid representation of a random vector $\mathbf{x}$ iff its density $p_{\mathbf{x}}(\mathbf{x})$ can be factorized by the BN structure as
 \begin{equation}
-    p_{\mb{x}}(\mb{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
+    p_{\mathbf{x}}(\mathbf{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
 \end{equation}
-where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mb{x}$ because it does not state any independence, leading to a factorization that results in the chain rule.
+where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mathbf{x}$ because it does not state any independence, leading to a factorization that results in the chain rule.
 
 
 \begin{figure}
@@ -86,7 +86,7 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
             \path (x2) edge[-latex] (x3);
             \path (x2) edge[-latex] (x4);
             \path (x3) edge[-latex] (x4);
-            %\node (b) at (1,-3) {(\textbf{b})};
+            %\node (b) at (1,-3) {(\tex\textbf{b})};
         \end{tikzpicture}
     }
 %\hspace{1.5em}
@@ -129,7 +129,7 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
             \foreach \x in {1,...,4}
                 \path (z\x) edge (x\x);
         \end{tikzpicture}}
-\caption{Bayesian networks for single-step normalizing flows on a vector $\mb{x} = [x_1, x_2, x_3, x_4]^T$. (\tbf{a}) BN for an autoregressive conditioner. (\tbf{b}) BN for a coupling conditioner. (\tbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
+\caption{Bayesian networks for single-step normalizing flows on a vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. (\textbf{a}) BN for an autoregressive conditioner. (\textbf{b}) BN for a coupling conditioner. (\textbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
     \end{figure}
 \begin{figure}
     \centering
@@ -187,27 +187,27 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
 \section{Normalizing flows as Bayesian networks}
 \subsection{Autoregressive conditioners}
 Autoregressive conditioners can be expressed as
-$$\mb{c}^i(\mb{x}) = \mb{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right),$$ where $\mb{h}^i: \mathbb{R}^{i-1} \rightarrow \mathbb{R}^l$ are functions of the first $i-1$ components of $\mb{x}$ and whose output size depends on architectural choices.
-These conditioners constrain the Jacobian of $\mb{g}$ to be lower triangular, making the computation of its determinant $\mc{O}(d)$.
-The multivariate density $p(\mb{x}; \mb{\theta})$ induced by $\mb{g}(\mb{x};\mb{\theta})$ and $p_{\mb{z}}(\mb{z})$ can be expressed as a product of $d$ univariate conditional densities,
+$$\mathbf{c}^i(\mathbf{x}) = \mathbf{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right),$$ where $\mathbf{h}^i: \mathbb{R}^{i-1} \rightarrow \mathbb{R}^l$ are functions of the first $i-1$ components of $\mathbf{x}$ and whose output size depends on architectural choices.
+These conditioners constrain the Jacobian of $\mathbf{g}$ to be lower triangular, making the computation of its determinant $\mc{O}(d)$.
+The multivariate density $p(\mathbf{x}; \mathbf{\theta})$ induced by $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ and $p_{\mathbf{z}}(\mathbf{z})$ can be expressed as a product of $d$ univariate conditional densities,
 \begin{align}
-    p(\mb{x}; \mb{\theta}) = p(x_1; \mb{\theta})\prod^{d}_{i=2}p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta}). \label{eq:AF-fact}
+    p(\mathbf{x}; \mathbf{\theta}) = p(x_1; \mathbf{\theta})\prod^{d}_{i=2}p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta}). \label{eq:AF-fact}
 \end{align}
-When $p_{\mb{z}}(\mb{z})$ is a factored distribution $p_{\mb{z}}(\mb{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding function $g^i$ encodes for the conditional $p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta})$.
+When $p_{\mathbf{z}}(\mathbf{z})$ is a factored distribution $p_{\mathbf{z}}(\mathbf{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding function $g^i$ encodes for the conditional $p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta})$.
 An explicit connection between BNs and autoregressive conditioners can be made if we define $\mathcal{P}_i = \{x_1, \hdots, x_{i-1}\}$ and compare \eqref{eq:AF-fact} with \eqref{eq:BN-fact}.  Therefore, and as illustrated in \figref{fig:mono-step-flows-a}, autoregressive conditioners can be seen as a way to model the conditional factors of a BN that does not state any independence.
 \subsection{Coupling conditioners}
-Coupling conditioners~\cite{RealNVP} are another popular type of conditioners used in normalizing flows. The conditioners $\mb{c}^i$ made from coupling layers are defined as
+Coupling conditioners~\cite{dinh_density_2017} are another popular type of conditioners used in normalizing flows. The conditioners $\mathbf{c}^i$ made from coupling layers are defined as
 \begin{align*}
-    \mb{c}^i(\mb{x}) =
+    \mathbf{c}^i(\mathbf{x}) =
     \begin{cases}
-    \underline{\mb{h}}^i \quad \text{if} \quad i < k\\
-    \mb{h}^i(\mb{x}_{<k}) \quad \text{if} \quad i \geq k\\
+    \underline{\mathbf{h}}^i \quad \text{if} \quad i < k\\
+    \mathbf{h}^i(\mathbf{x}_{<k}) \quad \text{if} \quad i \geq k\\
     \end{cases}
 \end{align*}
-where the $\underline{\mb{h}}^i$ symbol define constant values. As for autoregressive conditioners, the Jacobian of $\mb{g}$ made of coupling layers is lower triangular. Assuming a factored latent distribution, the density associated with these conditioners can be written as follows:
+where the $\underline{\mathbf{h}}^i$ symbol define constant values. As for autoregressive conditioners, the Jacobian of $\mathbf{g}$ made of coupling layers is lower triangular. Assuming a factored latent distribution, the density associated with these conditioners can be written as follows:
 \begin{align*}
-    p(\mb{x}; \mb{\theta}) &= \prod^{k-1}_{i=1} p(x_i)\prod^{d}_{i=k} p(x_i|\mb{x}_{< k}),\\
-    \text{where} \quad & p(x_i) = p(g^i(x_i; \underline{\mb{h}}^i))\frac{\partial g^i(x_i; \underline{\mb{h}}^i)}{\partial x_i} \\ \text{and} \quad & p(x_i|\mb{x}_{< k}) = p(g^i(x_i; \mb{h}^i(\mb{x}_{<k})) \frac{\partial g^i(x_i; \mb{h}^i(\mb{x}_{<k}))}{\partial x_i}.
+    p(\mathbf{x}; \mathbf{\theta}) &= \prod^{k-1}_{i=1} p(x_i)\prod^{d}_{i=k} p(x_i|\mathbf{x}_{< k}),\\
+    \text{where} \quad & p(x_i) = p(g^i(x_i; \underline{\mathbf{h}}^i))\frac{\partial g^i(x_i; \underline{\mathbf{h}}^i)}{\partial x_i} \\ \text{and} \quad & p(x_i|\mathbf{x}_{< k}) = p(g^i(x_i; \mathbf{h}^i(\mathbf{x}_{<k})) \frac{\partial g^i(x_i; \mathbf{h}^i(\mathbf{x}_{<k}))}{\partial x_i}.
 \end{align*}
 The factors define valid 1D conditional probability distributions because they can be seen as 1D changes of variables between $z_i$ and $x_i$. This factorization can be graphically expressed by a BN as shown in \figref{fig:mono-step-flows-b}. In addition, we can see \figref{fig:mono-step-flows-b} as the marginal BN of \figref{fig:mono-step-flows-c} which fully describes the stochastic process modeled by a NF that is made of a single transformation step and a coupling conditioner.
 In contrast to autoregressive conditioners, coupling layers are not by themselves universal density approximators, even when associated with very expressive normalizers $g^i$.
@@ -222,7 +222,7 @@ The structural benefits of this stacking strategy can be explained from the pers
 
 First, a BN that explicitly includes latent variables is faithful as long as the sub-graph made only of those latent nodes is an I-map with respect to their distribution.
 Normalizing flows composed of multiple transformation layers can therefore be viewed as single transformation flows whose latent distribution is itself recursively modeled by a normalizing flow.
-As an example, \figref{fig:two-steps-flows} illustrates a NF made of two transformation steps with coupling conditioners. It can be observed that the latent vector $\mb{u}$ is itself a normalizing flow  whose distribution can be factored out by a class of BN.
+As an example, \figref{fig:two-steps-flows} illustrates a NF made of two transformation steps with coupling conditioners. It can be observed that the latent vector $\mathbf{u}$ is itself a normalizing flow  whose distribution can be factored out by a class of BN.
 
 Second, from the BN associated to a NF, we observe that additional layers relax the independence assumptions defined by its conditioners.
 The distribution modeled by the flow gets more entangled at each additional layer.
@@ -266,21 +266,18 @@ In general, we note that edges between two nodes in a BN do not model dependence
             \path (u21) edge[-latex] (x2);
 
         \end{tikzpicture}
-     \caption{The Bayesian network of a three-steps normalizing flow on vector $\mathbf{x} = [x_1, x_2]^T \in \mathbb{R}^4$. It can be observed that the distribution of the intermediate latent variables, and at the end of the vector $\mb{x}$, becomes more entangled at each additional transformation step. Considering the undirected edges as affine relationships, we see that while $u_1^1$ and $u_2^1$ are affine transformations of the latent $\mb{z}$, the vector $\mb{x}$ cannot be expressed as a linear function of the latent $\mb{z}$.}
+     \caption{The Bayesian network of a three-steps normalizing flow on vector $\mathbf{x} = [x_1, x_2]^T \in \mathbb{R}^4$. It can be observed that the distribution of the intermediate latent variables, and at the end of the vector $\mathbf{x}$, becomes more entangled at each additional transformation step. Considering the undirected edges as affine relationships, we see that while $u_1^1$ and $u_2^1$ are affine transformations of the latent $\mathbf{z}$, the vector $\mathbf{x}$ cannot be expressed as a linear function of the latent $\mathbf{z}$.}
      \label{fig:2d-three-steps-flows}
-     \vspace{-1.5em}
-
-
 \end{figure}
 
 
 \section{Affine normalizing flows unlock their capacity with 3 transformation steps}
 
 We now show how some of the limitations of affine normalizers can be relaxed by stacking multiple transformation steps.
-We also discuss why some limitations cannot be relaxed even with a large number of transformation steps. We intentionally put aside monotonic normalizers because they have already been proven to lead to universal density approximators when the conditioner is autoregressive~\cite{NAF}.
-We focus our discussion on a multivariate normal with an identity covariance matrix as base distribution $p_{\mb{z}}(\mb{z})$. %The use of other base distribution is discussed later.
+We also discuss why some limitations cannot be relaxed even with a large number of transformation steps. We intentionally put aside monotonic normalizers because they have already been proven to lead to universal density approximators when the conditioner is autoregressive~\cite{huang_neural_2018}.
+We focus our discussion on a multivariate normal with an identity covariance matrix as base distribution $p_{\mathbf{z}}(\mathbf{z})$. %The use of other base distribution is discussed later.
 
-We first observe from \figref{fig:mono-step-flows} that in a NF with a single transformation step at least one component of $\mb{x}$ is a function of only one latent variable.
+We first observe from \figref{fig:mono-step-flows} that in a NF with a single transformation step at least one component of $\mathbf{x}$ is a function of only one latent variable.
 If the normalizer is affine and the base distribution is normal, then this necessarily implies that the marginal distribution of this component is normal as well, which will very likely not lead to a good fit.
 We easily see that adding steps relaxes this constraint.
 A more interesting question to ask is what exactly the modeling capacity gain for each additional step of affine normalizer is. Shall we add steps to increase capacity or shall we increase the capacity of each step instead?
@@ -324,19 +321,16 @@ For $d > 2$, autoregressive and coupling conditioners do not correspond to the s
     \tikzset{edge/.style = {->,-latex}}
 
     \node[inner sep=0pt] (graphical) at (0,0)
-    {\includegraphics[width=.46\textwidth]{all_flows.png}};
-    \node[] () at (-7.2, 5) {1 step};
-    \node[] () at (-4.4, 5) {2 steps};
-    \node[] () at (-1.5, 5) {3 steps};
-    \node[] () at (1.45, 5) {4 steps};
-    \node[] () at (4.3, 5) {5 steps};
-    \node[] () at (7.3, 5.08) {Universal};
+    {\includegraphics[width=.96\textwidth]{tex/figures/chapter04/all_flows.png}};
+    \node[] () at (-10.2, 7) {1 step};
+    \node[] () at (-6.4, 7) {2 steps};
+    \node[] () at (-2.5, 7) {3 steps};
+    \node[] () at (2, 7) {4 steps};
+    \node[] () at (6.3, 7) {5 steps};
+    \node[] () at (10.8, 7) {Universal};
 \end{tikzpicture}
-\hspace{-1.5em}
     \caption{Evolution of an affine normalizing flow's capacity as the number of steps increases. For comparison, the density learned by a universal density approximator is shown on the last column.}
     \label{fig:BN-steps}
-    \vspace{-1.em}
-
 \end{figure}
 \begin{figure}
     \centering
@@ -356,11 +350,9 @@ For $d > 2$, autoregressive and coupling conditioners do not correspond to the s
             \path (uKI) edge (xI);
             %\node (b) at (1,-3) {(\textbf{b})};
         \end{tikzpicture}
-    \hspace{-1.5em}
 
     \caption{The equivalent BN of a component with a unique latent variable as ancestor.}
     \label{fig:BN-x-I}
-    \vspace{-2.2em}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -370,10 +362,10 @@ We argue that affine normalizers do not lead to universal density approximators 
 
 
 To prove the non-universality of affine normalizing flows, one only needs to provide a counter-example.
-Let us consider the simple setup in which one component $x_I$ of the random vector $\mb x$ is independent from all the other components.
+Let us consider the simple setup in which one component $x_I$ of the random vector $\mathbf x$ is independent from all the other components.
 Let us also assume that $x_I$ is distributed under a non-normal distribution.
 We can then consider two cases.
-First, $x_I$ has only one component of the latent vector $\mb z$ as an ancestor. This implies that the equivalent BN would be as in \figref{fig:BN-x-I}, hence that $x_I$ is a linear function of this ancestor and is therefore normally distributed.
+First, $x_I$ has only one component of the latent vector $\mathbf z$ as an ancestor. This implies that the equivalent BN would be as in \figref{fig:BN-x-I}, hence that $x_I$ is a linear function of this ancestor and is therefore normally distributed.
 Else, $x_I$ has $n$ components of the latent vector as ancestors.
 However, this second case would imply that at least one undirected edge is removed from the original BN considered in Section~\ref{sec:multiple-step-flow-as-BN}.
 This cannot happen since it would deadly hurt the bijectivity of the flow.
