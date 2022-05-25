@@ -31,9 +31,9 @@
 \usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
 
 % Math text commands
-\newcommand{\mc}{\mathcal}
-\newcommand{\mb}{\boldsymbol}
-\newcommand{\mbb}{\mathbb}
+\newcommand{\mathcal}{\mathcal}
+\newcommand{\mathbf}{\boldsymbol}
+\newcommand{\mathbb}{\mathbb}
 
 % Math new operators
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -51,7 +51,7 @@
 % Comments commands:
 \newcommand{\gilles}[1]{\textcolor{red}{[GL: #1]}}
 \newcommand{\antoine}[1]{\textcolor{orange}{[AW: #1]}}
-\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\textbf}[1]{\textbf{#1}}
 
 \newcommand{\diag}{\operatorname{diag}}
 
@@ -287,7 +287,7 @@ On CelebA however, we observe in \Cref{tab:results} that diffusion priors outper
 
     \begin{tabular}{l | c c c | c c c}
         \hline\hline
-        \textit{Dataset} & \multicolumn{3}{c|}{\tbf{CelebA}} & \multicolumn{3}{c}{\tbf{CIFAR10}} \\
+        \textit{Dataset} & \multicolumn{3}{c|}{\textbf{CelebA}} & \multicolumn{3}{c}{\textbf{CIFAR10}} \\
         \hline
         \textit{Latent Size} & $40$ & $100$ & $200$ & $40$ & $100$ & $200$ \\ \hline
         \textit{Gaussian} & $154.3$ & $149.4$ & $139.1$ & $176.0$ & $126.2$ & $123.9$ \\ 

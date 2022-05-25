@@ -98,23 +98,35 @@
 \include{chapters/chapter01}\cleardoublepage
 \include{chapters/chapter02}\cleardoublepage
 %\ctparttex{}
-\part{Black-box generative modeling}\label{part:1}
+\part{Deep generative modeling}\label{part:1}
 \include{chapters/chapter03}\cleardoublepage
 \include{chapters/chapter04}\cleardoublepage
-\include{chapters/chapter05}\cleardoublepage
-\include{chapters/chapter06}\cleardoublepage
+\include{chapters/chapter05}%\cleardoublepage
 
 %\ctparttex{}
 \part{Hybrid generative modeling}\label{part:2}
+
+\null\vfill
+
+{\centering
+\parbox{\textwidth}{%
+  \raggedright{\huge\itshape%
+   If I have seen further, it is by standing on shoulders of giants.\par\bigskip
+  }
+  \raggedleft\Large\MakeUppercase{Isaac Newton (1675)}\par%
+}}
+
+\vfill\vfill
+
+\include{chapters/chapter06}\cleardoublepage
 \include{chapters/chapter07}\cleardoublepage
-\include{chapters/chapter08}\cleardoublepage
 
 \addtocontents{toc}{\protect\vspace*{\baselineskip}\protect}
 \cleardoublepage
 \makeatletter
 \def\toclevel@chapter{-1}
 \makeatother
-\include{chapters/chapter09}
+\include{chapters/chapter08}
 
 
 % Back pages ==================================================================

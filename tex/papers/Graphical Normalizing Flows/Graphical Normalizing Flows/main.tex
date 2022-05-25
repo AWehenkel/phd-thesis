@@ -45,9 +45,9 @@
 \usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
 
 % Math text commands
-\newcommand{\mc}{\mathcal}
-\newcommand{\mb}{\boldsymbol}
-\newcommand{\mbb}{\mathbb}
+\newcommand{\mathcal}{\mathcal}
+\newcommand{\mathbf}{\boldsymbol}
+\newcommand{\mathbb}{\mathbb}
 
 % Math new operators
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -66,7 +66,7 @@
 \newcommand{\sbrac}[1]{\left[{#1}\right]}
 \newcommand{\cbrac}[1]{\left\{{#1}\right\}}
 
-\newcommand{\bestresult}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \mb{\m_{{\pm \s}}}}$}
+\newcommand{\bestresult}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \mathbf{\m_{{\pm \s}}}}$}
 \newcommand{\result}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \m_{\scriptstyle \pm \s}}$}
 
 \usepackage{mathtools}
@@ -81,9 +81,9 @@
 % Comments commands:
 \newcommand{\gilles}[1]{\textcolor{red}{[GL: #1]}}
 \newcommand{\antoine}[1]{\textcolor{orange}{[AW: #1]}}
-\newcommand{\tbf}[1]{\textbf{#1}}
+\newcommand{\textbf}[1]{\textbf{#1}}
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
-\newcommand{\tabref}[1]{Table~\ref{#1}}
+\newcommand{\Cref}[1]{Table~\ref{#1}}
 
 %\usepackage{tikz}
 % \usepackage{includetikz}
@@ -175,11 +175,11 @@ Driven by the objective of integrating intuition into normalizing flows and the 
 \section{Background}
 
 \paragraph{Bayesian networks}
-A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $\mb{x} = \left[x_1, \hdots, x_d\right]^T \in \mathbb{R}^d$ be a random vector distributed under $p_{\mb{x}}$. A BN associated to $\mb{x}$ is a directed acyclic graph made of $d$ vertices representing the components $x_i$ of $\mb{x}$. In this kind of network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $\mb{x}$ iff its density can be factorized as 
+A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $\mathbf{x} = \left[x_1, \hdots, x_d\right]^T \in \mathbb{R}^d$ be a random vector distributed under $p_{\mathbf{x}}$. A BN associated to $\mathbf{x}$ is a directed acyclic graph made of $d$ vertices representing the components $x_i$ of $\mathbf{x}$. In this kind of network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $\mathbf{x}$ iff its density can be factorized as 
 \begin{align}
-    p_{\mb{x}}(\mb{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
+    p_{\mathbf{x}}(\mathbf{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
 \end{align} 
-where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mb{x}$ because it does not state any independence and leads to a factorization that corresponds to the chain rule. However, in practice we seek for a sparse and valid BN which models most of the independence between the components of $\mb{x}$, leading to an efficient factorization of the modeled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
+where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mathbf{x}$ because it does not state any independence and leads to a factorization that corresponds to the chain rule. However, in practice we seek for a sparse and valid BN which models most of the independence between the components of $\mathbf{x}$, leading to an efficient factorization of the modeled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
 %In our experiments the parameters of the neural networks encoding for the monotonic transformations $g^i$ are shared, they take as input a one hot encoding vector that represents the index $i$.
 
 %BNs and probabilistic graphical models in general are popular because they compactly describe probability distributions over random vectors. First, a sparse network will lead to an efficient factorization of the probability distribution. Indeed, the more sparse the BN is, the smaller the average size of the input space of the conditioning factors is. Second, the d-separation algorithm is an efficient method to check the independence between group of components, making the assumptions made by the model easily readable by a human. 
@@ -252,41 +252,41 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
         \end{tikzpicture}
         \caption{} \label{fig:mono-step-flows-c}
     \end{subfigure}
-    \caption{Bayesian networks equivalent to normalizing flows made of a single transformation step. (\tbf{a}) Autoregressive conditioner. (\tbf{b}) Coupling conditioner. (\tbf{c}) Coupling conditioner, with latent variables  shown explicitly. Double circles stand for deterministic functions of the parents.} \label{fig:mono-step-flows}
+    \caption{Bayesian networks equivalent to normalizing flows made of a single transformation step. (\textbf{a}) Autoregressive conditioner. (\textbf{b}) Coupling conditioner. (\textbf{c}) Coupling conditioner, with latent variables  shown explicitly. Double circles stand for deterministic functions of the parents.} \label{fig:mono-step-flows}
     %\vspace{-2em}
 \end{figure}
 
 %\antoine{Be clear that a DAG structure induce a BN.}
 \paragraph{Normalizing flows}
 %\antoine{Rewrite, go straight to the point, simplify notations}
-A normalizing flow is defined as a sequence of invertible transformation steps $\mb{g}_k : \mathbb{R}^d \to \mathbb{R}^d$  ($k=1, ..., K$)  composed together to create an expressive invertible mapping $\mb{g} := \mb{g}_1 \circ \dots \circ \mb{g}_K : \mathbb{R}^d \to \mathbb{R}^d$. %It is common for normalizing flows to stack the same parametric function $\mb{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For the sake of readability we denote $\mb{u}_i$ as $\mb{g}: \mathbb{R}^d \to \mathbb{R}^d$ when the index $i$ has no role in the discussion.
+A normalizing flow is defined as a sequence of invertible transformation steps $\mathbf{g}_k : \mathbb{R}^d \to \mathbb{R}^d$  ($k=1, ..., K$)  composed together to create an expressive invertible mapping $\mathbf{g} := \mathbf{g}_1 \circ \dots \circ \mathbf{g}_K : \mathbb{R}^d \to \mathbb{R}^d$. %It is common for normalizing flows to stack the same parametric function $\mathbf{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For the sake of readability we denote $\mathbf{u}_i$ as $\mathbf{g}: \mathbb{R}^d \to \mathbb{R}^d$ when the index $i$ has no role in the discussion.
 %\paragraph{Density estimation}
 %NFs are most commonly used for density estimation, that map empirical samples to unstructured noise.
-This mapping can be used to perform density estimation, using $\mb{g}(\cdot ;\mb{\theta}): \mbb{R}^d \rightarrow \mbb{R}^d$ to map a sample $\mb{x} \in \mathbb{R}^d$ onto a latent vector $\mb{z} \in \mbb{R}^d$ equipped with a prescribed density $p_{\mb{z}}(\mb{z})$ such as an isotropic Normal.
-The transformation $\mb{g}$ implicitly defines a density $p(\mb{x}; \mb{\theta})$ as given by the change of variables formula,
+This mapping can be used to perform density estimation, using $\mathbf{g}(\cdot ;\mathbf{\theta}): \mathbb{R}^d \rightarrow \mathbb{R}^d$ to map a sample $\mathbf{x} \in \mathbb{R}^d$ onto a latent vector $\mathbf{z} \in \mathbb{R}^d$ equipped with a prescribed density $p_{\mathbf{z}}(\mathbf{z})$ such as an isotropic Normal.
+The transformation $\mathbf{g}$ implicitly defines a density $p(\mathbf{x}; \mathbf{\theta})$ as given by the change of variables formula,
 \begin{equation}
-    p(\mb{x}; \mb{\theta}) = p_{\mb{z}}(\mb{g}(\mb{x};\mb{\theta})) \left| \det  J_{\mb{g}(\mb{x};\mb{\theta})} \right|, \label{eq:NF_DE}
+    p(\mathbf{x}; \mathbf{\theta}) = p_{\mathbf{z}}(\mathbf{g}(\mathbf{x};\mathbf{\theta})) \left| \det  J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})} \right|, \label{eq:NF_DE}
 \end{equation}
-where $J_{\mb{g}(\mb{x};\mb{\theta})}$ is the Jacobian of $\mb{g}(\mb{x};\mb{\theta})$ with respect to $\mb x$. The resulting model is trained by maximizing the likelihood of the model's parameters $\mb{\theta}$ given the training dataset $\mb{X} = \{\mb{x}^1, ..., \mb{x}^N\}$.
-% It is also common to use NFs to model complex data generation while keeping track of the density of the generated samples. This is achieved by applying the invertible transformation $\mb{g}$ on the unstructured noise.
-Unless needed, we will not distinguish between $\mb{g}$ and $\mb{g}_k$ for the rest of our discussion.
-%In the rest of this paper, we will not do the distinction between $\mb{g}$ and $\mb{g}_k$ when the discussion will be focused on only one of these steps $\mb{g}_k$.
+where $J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ with respect to $\mathbf x$. The resulting model is trained by maximizing the likelihood of the model's parameters $\mathbf{\theta}$ given the training dataset $\mathbf{X} = \{\mathbf{x}^1, ..., \mathbf{x}^N\}$.
+% It is also common to use NFs to model complex data generation while keeping track of the density of the generated samples. This is achieved by applying the invertible transformation $\mathbf{g}$ on the unstructured noise.
+Unless needed, we will not distinguish between $\mathbf{g}$ and $\mathbf{g}_k$ for the rest of our discussion.
+%In the rest of this paper, we will not do the distinction between $\mathbf{g}$ and $\mathbf{g}_k$ when the discussion will be focused on only one of these steps $\mathbf{g}_k$.
 
-In general the steps $\mb{g}$ can take any form as long as they define a bijective map. Here, we focus  on a sub-class of normalizing flows for which the steps can be mathematically described as 
+In general the steps $\mathbf{g}$ can take any form as long as they define a bijective map. Here, we focus  on a sub-class of normalizing flows for which the steps can be mathematically described as 
 \begin{align}
-    \mb{g}(\mb{x}) = \begin{bmatrix}
-g^1(x_{1}; \mb{c}^1(\mb{x}))  & \hdots & g^d(x_{d}; \mb{c}^d(\mb{x}))
+    \mathbf{g}(\mathbf{x}) = \begin{bmatrix}
+g^1(x_{1}; \mathbf{c}^1(\mathbf{x}))  & \hdots & g^d(x_{d}; \mathbf{c}^d(\mathbf{x}))
 \end{bmatrix}^T,\label{eq:gnf}
 \end{align}
-where the $\mb{c}^i$ are the \tbf{conditioners} which role is to constrain the structure of the Jacobian of $\mb{g}$. 
+where the $\mathbf{c}^i$ are the \textbf{conditioners} which role is to constrain the structure of the Jacobian of $\mathbf{g}$. 
 %In this work, we propose a new conditioner architecture inspired by Bayesian Networks. 
-The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. They are often referred to as transformers, however in this work we will use the term \tbf{normalizers} to avoid any confusion with attention-based transformer architectures. 
+The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. They are often referred to as transformers, however in this work we will use the term \textbf{normalizers} to avoid any confusion with attention-based transformer architectures. 
 
 %In the following, we discuss in details the some conditioner architectures, that are autoregressive and coupling layers. Based on the observation made, we propose a new conditioner architecture that corresponds to optimize the structure of the Jacobian. 
 
 The conditioners examined in this work can be combined with any normalizer. In particular, we consider affine and monotonic normalizers. An affine normalizer $g: \mathbb{R} \times \mathbb{R}^2 \rightarrow \mathbb{R}$ can be expressed as
 $g(x;m, s) = x\exp(s) + m$, where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner. There exist multiple methods to parameterize monotonic normalizers \citep{huang2018neural, de2020block, neural-spline-flows, sos}, but in this work we rely on Unconstrained Monotonic Neural Networks~\citep[UMNNs, ][]{UMNN} which can be expressed as
-$g(x; \mb{c}) = \int^x_0 f(t, \mb{c}) dt + \beta(\mb{c})$, where $\mb{c} \in \mathbb{R}^{|\mb{c}|}$ is an embedding made by the conditioner and $f: \mathbb{R}^{|\mb{c}| + 1} \rightarrow \mathbb{R}^+$ and  $\beta: \mathbb{R}^d\rightarrow\mathbb{R}$ are two neural networks respectively with a strictly positive scalar output and a real scalar output. \cite{huang2018neural} proved NFs built with autoregressive conditioners and monotonic normalizers are universal density approximators of continuous random variables.
+$g(x; \mathbf{c}) = \int^x_0 f(t, \mathbf{c}) dt + \beta(\mathbf{c})$, where $\mathbf{c} \in \mathbb{R}^{|\mathbf{c}|}$ is an embedding made by the conditioner and $f: \mathbb{R}^{|\mathbf{c}| + 1} \rightarrow \mathbb{R}^+$ and  $\beta: \mathbb{R}^d\rightarrow\mathbb{R}$ are two neural networks respectively with a strictly positive scalar output and a real scalar output. \cite{huang2018neural} proved NFs built with autoregressive conditioners and monotonic normalizers are universal density approximators of continuous random variables.
 
 
 
@@ -300,14 +300,14 @@ $g(x; \mb{c}) = \int^x_0 f(t, \mb{c}) dt + \beta(\mb{c})$, where $\mb{c} \in \ma
 \paragraph{Autoregressive conditioners}
 Due to computing speed considerations, NFs are usually composed of transformations for which the determinant of the Jacobian can be computed efficiently, as otherwise its evaluation would scale cubically with the input dimension. 
 A common solution is to use autoregressive conditioners, i.e., such that 
-$$\mb{c}^i(\mb{x}) = \mb{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right)$$ are functions $\mb{h}^i$ of the first $i-1$ components of $\mb{x}$. This particular form constrains the Jacobian of $\mb{g}$ to be lower triangular, which makes the computation of its determinant $\mc{O}(d)$. 
-%Enforcing the bijectivity of each component $g^i$ is then sufficient to make $\mb{g}$ bijective as well.
+$$\mathbf{c}^i(\mathbf{x}) = \mathbf{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right)$$ are functions $\mathbf{h}^i$ of the first $i-1$ components of $\mathbf{x}$. This particular form constrains the Jacobian of $\mathbf{g}$ to be lower triangular, which makes the computation of its determinant $\mathcal{O}(d)$. 
+%Enforcing the bijectivity of each component $g^i$ is then sufficient to make $\mathbf{g}$ bijective as well.
 
-For the multivariate density $p(\mb{x}; \mb{\theta})$ induced by $\mb{g}(\mb{x};\mb{\theta})$ and $p_{\mb{z}}(\mb{z})$, we can use the chain rule to express the joint probability of $\mb{x}$ as a product of $d$ univariate conditional densities, 
+For the multivariate density $p(\mathbf{x}; \mathbf{\theta})$ induced by $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ and $p_{\mathbf{z}}(\mathbf{z})$, we can use the chain rule to express the joint probability of $\mathbf{x}$ as a product of $d$ univariate conditional densities, 
 \begin{align}
-    p(\mb{x}; \mb{\theta}) = p(x_1; \mb{\theta})\prod^{d}_{i=2}p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta}). \label{eq:AF-fact}
+    p(\mathbf{x}; \mathbf{\theta}) = p(x_1; \mathbf{\theta})\prod^{d}_{i=2}p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta}). \label{eq:AF-fact}
 \end{align}
-When $p_{\mb{z}}(\mb{z})$ is a factored distribution $p_{\mb{z}}(\mb{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding functions $g^i$ and embedding vectors $\mb{c}^i$ encode for the conditional $p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta})$. Therefore, and as illustrated in \figref{fig:mono-step-flows-a}, autoregressive transformations can be seen as a way to model the conditional factors of a BN that does not state any independence but relies on a predefined node ordering. This becomes clear if we define $\mathcal{P}_i = \{x_1, \hdots, x_{i-1}\}$ and compare \eqref{eq:AF-fact} with \eqref{eq:BN-fact}.
+When $p_{\mathbf{z}}(\mathbf{z})$ is a factored distribution $p_{\mathbf{z}}(\mathbf{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding functions $g^i$ and embedding vectors $\mathbf{c}^i$ encode for the conditional $p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta})$. Therefore, and as illustrated in \figref{fig:mono-step-flows-a}, autoregressive transformations can be seen as a way to model the conditional factors of a BN that does not state any independence but relies on a predefined node ordering. This becomes clear if we define $\mathcal{P}_i = \{x_1, \hdots, x_{i-1}\}$ and compare \eqref{eq:AF-fact} with \eqref{eq:BN-fact}.
 
 The complexity of the conditional factors  strongly depends on the ordering of the vector components. While not hurting the universal representation capacity of normalizing flows, the arbitrary ordering used in autoregressive transformations leads to poor inductive bias and to factors that are most of the time difficult to learn. 
 %\cite{chickering-NP-hard} proved that finding the best topological ordering is NP-hard for discrete BN. This result suggests that for real values the problem of finding an ordering that leads to the smallest hypothesis class for the factors is difficult as well. 
@@ -315,19 +315,19 @@ In practice, one often alleviates the arbitrariness of the ordering by stacking 
 
 %
 \paragraph{Coupling conditioners}
-Coupling layers~\citep{NICE} are another popular type of conditioners that lead to a bipartite structure. The conditioners $\mb{c}^i$ made from coupling layers are defined as
+Coupling layers~\citep{NICE} are another popular type of conditioners that lead to a bipartite structure. The conditioners $\mathbf{c}^i$ made from coupling layers are defined as
 \begin{align*}
-    \mb{c}^i(\mb{x}) = 
+    \mathbf{c}^i(\mathbf{x}) = 
     \begin{cases} 
-    \underline{\mb{h}}^i \quad \text{if} \quad i \leq k\\
-    \mb{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_k \end{bmatrix}^T\right) \quad \text{if} \quad i > k\\
+    \underline{\mathbf{h}}^i \quad \text{if} \quad i \leq k\\
+    \mathbf{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_k \end{bmatrix}^T\right) \quad \text{if} \quad i > k\\
     \end{cases}
 \end{align*}
-where the underlined $\underline{\mb{h}}^i \in \mathbb{R}^{|\mb{c}|}$ denote constant values and $k \in \{1, \hdots, d\}$ is a hyper-parameter usually set to $\floor*{\frac{d}{2}}$. 
-% The mapping $\mb{g}(\mb{x};\mb{\theta})$ made from coupling layers can be generically written as:
-% $$\mb{g}(\mb{x};\mb{\theta}) = \left[ x_1, \hdots, x_k, g^1(x_{k+1}, \mathbf{x}_{1:k}; \mathbf{\theta}), \hdots, g^{d-k-1}(x_{d}, \mathbf{x}_{1:k}; \mathbf{\theta}) \right].$$
-% Similarly to autoregressive transforms, if the $g^i$ functions are invertible with respect to $x_{k + i}$ then $\mb{g}$ is a bijective mapping. 
-As for autoregressive conditioners, the Jacobian of $\mb{g}$ made of coupling layers is lower triangular.  
+where the underlined $\underline{\mathbf{h}}^i \in \mathbb{R}^{|\mathbf{c}|}$ denote constant values and $k \in \{1, \hdots, d\}$ is a hyper-parameter usually set to $\floor*{\frac{d}{2}}$. 
+% The mapping $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ made from coupling layers can be generically written as:
+% $$\mathbf{g}(\mathbf{x};\mathbf{\theta}) = \left[ x_1, \hdots, x_k, g^1(x_{k+1}, \mathbf{x}_{1:k}; \mathbf{\theta}), \hdots, g^{d-k-1}(x_{d}, \mathbf{x}_{1:k}; \mathbf{\theta}) \right].$$
+% Similarly to autoregressive transforms, if the $g^i$ functions are invertible with respect to $x_{k + i}$ then $\mathbf{g}$ is a bijective mapping. 
+As for autoregressive conditioners, the Jacobian of $\mathbf{g}$ made of coupling layers is lower triangular.  
 Again, and as shown in \figref{fig:mono-step-flows-b} and \ref{fig:mono-step-flows-c}, these transformations can be seen as a specific class of BN where $\mathcal{P}_i=\{\}$ for $i \leq k$ and $\mathcal{P}_i = \{1, ..., k\}$ for $i > k$. 
 D-separation can be used to read off the independencies stated by this class of BNs such as the conditional independence between each pair in $\mathbf{x}_{k+1:d}$ knowing $\mathbf{x}_{1:k}$. 
 For this reason, and in contrast to autoregressive transformations, coupling layers are not by themselves universal density approximators even when associated with very expressive normalizers $g^i$ \citep{wehenkel2020you}.
@@ -336,12 +336,12 @@ In practice, these bipartite structural independencies can be relaxed by stackin
 
 % We can prove that coupling and autoregressive layers can be modeled by the BN shown on \figref{fig:mono-step-flows} when the latent variables are independent between each other. To do so, we show that the change of variable theorem is equivalent to the marginalization over the latent variables of the full distribution described by the BNs. The development for autoregressive layers is:
 % \begin{align}
-%     p(\mb{x}) &= \int_{\mathbb{R}^d}p(\mb{x}, \mb{z}) d\mb{z} %= \int_{\mathbb{R}^d}p(\mb{x}| \mb{z}) p(\mb{z}) d\mb{z}
+%     p(\mathbf{x}) &= \int_{\mathbb{R}^d}p(\mathbf{x}, \mathbf{z}) d\mathbf{z} %= \int_{\mathbb{R}^d}p(\mathbf{x}| \mathbf{z}) p(\mathbf{z}) d\mathbf{z}
 %     \\
-%     %&=\int_{\mathbb{R}^d} p(\mb{z})\prod^d_{i=1}p(x_i| z_i, \mb{x}_{1:i-1}) d\mb{z}\\
-%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(z)p_{x_i}(x_i|z_i=z, \mb{x}_{1:i-1}) dz\\
-%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(g^i(x, \mb{x}_{1:i-1}))\delta_{g^i(x_i, \mb{x}_{1:i-1})}(g^i(x, \mb{x}_{1:i-1})) \left| \frac{d g^i(x, \mb{x}_{1:i-1})}{dx} \right| dx\\
-%     &= \prod^d_{i=1} p_{z_i}(g^i(x_i, \mb{x}_{1:i-1})) \left| \frac{d g^i(x_i, \mb{x}_{1:i-1})}{dx} \right|.
+%     %&=\int_{\mathbb{R}^d} p(\mathbf{z})\prod^d_{i=1}p(x_i| z_i, \mathbf{x}_{1:i-1}) d\mathbf{z}\\
+%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(z)p_{x_i}(x_i|z_i=z, \mathbf{x}_{1:i-1}) dz\\
+%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(g^i(x, \mathbf{x}_{1:i-1}))\delta_{g^i(x_i, \mathbf{x}_{1:i-1})}(g^i(x, \mathbf{x}_{1:i-1})) \left| \frac{d g^i(x, \mathbf{x}_{1:i-1})}{dx} \right| dx\\
+%     &= \prod^d_{i=1} p_{z_i}(g^i(x_i, \mathbf{x}_{1:i-1})) \left| \frac{d g^i(x_i, \mathbf{x}_{1:i-1})}{dx} \right|.
 % \end{align}
 % We observe that only the diagonal terms of the Jacobian appears in the last equation which is a key property of autoregressive and coupling conditioners. A similar development can be made for coupling layers. Moreover, the introduction of latent variables into the pictures allows to generalize the discussion for multiple steps NF.
 
@@ -451,7 +451,7 @@ In practice, these bipartite structural independencies can be relaxed by stackin
 %         \end{tikzpicture}
 %         \caption{} \label{fig:two-steps-flows-b}
 %     \end{subfigure}
-%     \caption{Bayesian Networks of two-steps Normalizing Flows on vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. %(\tbf{a}) The conditioners are coupling layers. (\tbf{b}) The conditioners are autoregressive layers.
+%     \caption{Bayesian Networks of two-steps Normalizing Flows on vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. %(\textbf{a}) The conditioners are coupling layers. (\textbf{b}) The conditioners are autoregressive layers.
 %     }%\label{fig:two-steps-flows-a}
 %     \label{fig:two-steps-flows}
 % \end{figure}
@@ -461,12 +461,12 @@ In practice, these bipartite structural independencies can be relaxed by stackin
   \caption{Sampling} \label{alg:inversion}
   \small
   \begin{algorithmic}[1]
-    \State $\mb{z} \sim \mathcal{N}(\mb{0}, I)$
-    \State $\mb{x} \gets \mb{z}$
+    \State $\mathbf{z} \sim \mathcal{N}(\mathbf{0}, I)$
+    \State $\mathbf{x} \gets \mathbf{z}$
     \Repeat
-      \State $\mb{c}^i \gets \mb{h}^i(\mb{x} \odot A_{i, :}) \quad \forall i \in \{1, \dots, d\}$
-      \State $x_i \gets (g^i)^{-1}(z_i; \mb{c}^i, \mb{\theta}) \quad \forall i \in \{1, \dots, d\}$
-    \Until{$\mb{x}$ converged}
+      \State $\mathbf{c}^i \gets \mathbf{h}^i(\mathbf{x} \odot A_{i, :}) \quad \forall i \in \{1, \dots, d\}$
+      \State $x_i \gets (g^i)^{-1}(z_i; \mathbf{c}^i, \mathbf{\theta}) \quad \forall i \in \{1, \dots, d\}$
+    \Until{$\mathbf{x}$ converged}
   \end{algorithmic}
 \end{algorithm}
 \end{figure}
@@ -475,21 +475,21 @@ In practice, these bipartite structural independencies can be relaxed by stackin
 \subsection{Graphical conditioners}
 Following up on the previous discussion, we introduce the graphical conditioner architecture. 
 We motivate our approach by observing that the topological ordering (a.k.a. ancestral ordering) of any BN leads to a lower triangular adjacency matrix whose determinant is equal to the product of its diagonal terms (proof in Appendix \ref{app:proof-jac-gnf}). 
-Therefore, conditioning factors $\mb{c}^i(\mb{x})$ selected by following a BN adjacency matrix necessarily lead to a transformation $\mb{g}$ whose Jacobian determinant remains efficient to compute. 
+Therefore, conditioning factors $\mathbf{c}^i(\mathbf{x})$ selected by following a BN adjacency matrix necessarily lead to a transformation $\mathbf{g}$ whose Jacobian determinant remains efficient to compute. 
 
-Formally, given a BN with adjacency matrix $A \in \{0, 1\}^{d\times d}$, we define the \tbf{graphical conditioner} as being
+Formally, given a BN with adjacency matrix $A \in \{0, 1\}^{d\times d}$, we define the \textbf{graphical conditioner} as being
 \begin{align}
-    \mb{c}^i(\mb{x}) = \mb{h}^i(\mb{x} \odot A_{i,:}),
+    \mathbf{c}^i(\mathbf{x}) = \mathbf{h}^i(\mathbf{x} \odot A_{i,:}),
     %\begin{bmatrix}
-% g^1(x_{1}; \mb{c}^1(\mb{x} \odot A_{: \to 1})) & \hdots &  g^i(x_{i}; \mb{c}^i(\mb{x} \odot A_{: \to i})) & \hdots & g^d(x_{d}; \mb{c}^d(\mb{x} \odot A_{: \to d}))
+% g^1(x_{1}; \mathbf{c}^1(\mathbf{x} \odot A_{: \to 1})) & \hdots &  g^i(x_{i}; \mathbf{c}^i(\mathbf{x} \odot A_{: \to i})) & \hdots & g^d(x_{d}; \mathbf{c}^d(\mathbf{x} \odot A_{: \to d}))
 % \end{bmatrix},
 \label{eq:gnf}
 \end{align}
-where $\mb{x} \odot A_{i,:}$ is the element-wise product between the vector $\mb{x}$ and the $i^{\text{th}}$ row of $A$ -- i.e., the binary vector $A_{i, :}$ is used to mask on $\mb{x}$.
+where $\mathbf{x} \odot A_{i,:}$ is the element-wise product between the vector $\mathbf{x}$ and the $i^{\text{th}}$ row of $A$ -- i.e., the binary vector $A_{i, :}$ is used to mask on $\mathbf{x}$.
 % we model the distribution of the joint vector as follows:
 % \begin{align}
 %     p_{\mathbf{x}}(\mathbf{x}) &= \prod^d_{i=1}p(x_i|\mathcal{P}_i)\\
-%     &= \prod^d_{i=1} p_z(g^i(x_i, \mb{x} \odot A_{: \to i};  \mathbf{\theta})) \left| \frac{d g^i(x_i, \mb{x} \odot A_{: \to i};  \mathbf{\theta})}{dx_i} \right|,
+%     &= \prod^d_{i=1} p_z(g^i(x_i, \mathbf{x} \odot A_{: \to i};  \mathbf{\theta})) \left| \frac{d g^i(x_i, \mathbf{x} \odot A_{: \to i};  \mathbf{\theta})}{dx_i} \right|,
 % \end{align}
 % where the $g^i$ are invertible scalar functions that maps $x_i$ to a latent variable conditioned on its parents in the corresponding Bayesian Network.
 NFs built with this new conditioner architecture can be inverted by sequentially inverting each component in the topological ordering.
@@ -500,7 +500,7 @@ In our implementation the neural networks modeling the $h^i$ functions are share
 The graphical conditioner architecture can be used to learn the conditional factors in a continuous BN while elegantly setting structural independencies prescribed from domain knowledge. In addition, the inverse of NFs built with graphical conditioners is a simple as it is for autoregressive and coupling conditioners, Algorithm \ref{alg:inversion} describes an inversion procedure.
 We also now note how these two conditioners are just special cases in which the adjacency matrix reflects the classes of BNs discussed in Section~\ref{sec:NF-BN}. 
 % \gilles{State how coupling and autoregressive are just special cases of the graphical conditioner.}
-% In our experiments we parameterize the functions $\mb{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mb{x} \odot A_{i,:}$. \gilles{Is it the right place for this last sentence?}
+% In our experiments we parameterize the functions $\mathbf{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mathbf{x} \odot A_{i,:}$. \gilles{Is it the right place for this last sentence?}
 
 \subsection{Learning the topology}\label{sec:learn_topo}
 %\antoine{Proof of BN remains efficient to calculate - topological order}
@@ -521,19 +521,19 @@ Structure learning}~\citep[NO TEARS, ][]{DAG-1}, we convert the combinatorial op
 \text{s.t.} & \ \ w(A) = 0,
 \end{aligned}
 \end{align}
-where $\mathcal{G}(A)$ is the graph induced by the weighted adjacency matrix $A$ and $F: \mathbb{R}^{d \times d}\rightarrow \mathbb{R}$ is the log-likelihood of the graphical NF $\mb{g}$ plus a regularization term, i.e., 
+where $\mathcal{G}(A)$ is the graph induced by the weighted adjacency matrix $A$ and $F: \mathbb{R}^{d \times d}\rightarrow \mathbb{R}$ is the log-likelihood of the graphical NF $\mathbf{g}$ plus a regularization term, i.e., 
 \begin{align}
-     F(A) = \sum^N_{j=1}\log\big(p(\mb{x}^j; \mb{\theta})\big) + \lambda_{\ell_1} ||A||_1, \label{eq:score}
+     F(A) = \sum^N_{j=1}\log\big(p(\mathbf{x}^j; \mathbf{\theta})\big) + \lambda_{\ell_1} ||A||_1, \label{eq:score}
 \end{align}
-% Plugging in for $F$ the likelihood given by $\mb g$, we arrive to the following sequence of problems:
-% %In this work, the score is the likelihood given by a NF $\mb{g}(\cdot; \mb{\theta})$ made of a graphical conditioner combined with any kind of normalizer. This leads to the following sequence of problems:
+% Plugging in for $F$ the likelihood given by $\mathbf g$, we arrive to the following sequence of problems:
+% %In this work, the score is the likelihood given by a NF $\mathbf{g}(\cdot; \mathbf{\theta})$ made of a graphical conditioner combined with any kind of normalizer. This leads to the following sequence of problems:
 
 % \begin{align}
-%     \max_{\mb{\theta}, A}  \mathbb{E}_{\gamma_1, \gamma_2}\left[\sum^N_{i=1}\log\big(p(\mb{x}^i; \mb{\theta})\big)\right] - \lambda_t w(A) - \frac{\mu_t}{2} w(A)^2, \label{eq:Loss}%\nonumber
+%     \max_{\mathbf{\theta}, A}  \mathbb{E}_{\gamma_1, \gamma_2}\left[\sum^N_{i=1}\log\big(p(\mathbf{x}^i; \mathbf{\theta})\big)\right] - \lambda_t w(A) - \frac{\mu_t}{2} w(A)^2, \label{eq:Loss}%\nonumber
 % \end{align}
-where $\lambda_{\ell_1}$ is an $\ell_1$-regularization coefficient and $N$ is the number of training samples $\mb{x}^i$. The likelihood is computed as
+where $\lambda_{\ell_1}$ is an $\ell_1$-regularization coefficient and $N$ is the number of training samples $\mathbf{x}^i$. The likelihood is computed as
 \begin{align}
-    p(\mb{x}; \mb{\theta})=& p_{\mb{z}}(\mb{g}(\mb{x}; \mb{\theta})) \prod_{i=1}^{d} \left| \frac{\partial g^i(x_i;\mb{h}^i(\mb{x} \odot A_{i,:}), \mb{\theta})}{\partial x_i} \right|. \nonumber
+    p(\mathbf{x}; \mathbf{\theta})=& p_{\mathbf{z}}(\mathbf{g}(\mathbf{x}; \mathbf{\theta})) \prod_{i=1}^{d} \left| \frac{\partial g^i(x_i;\mathbf{h}^i(\mathbf{x} \odot A_{i,:}), \mathbf{\theta})}{\partial x_i} \right|. \nonumber
 \end{align}
 % \gilles{We should state directly that $F$ is the likelihood evaluated through the NF.} 
 The function $w(A)$ that enforces the acyclicity is expressed as suggested by \citet{DAG-2} as
@@ -541,7 +541,7 @@ $$w(A) := \tr\left((I + \alpha A)^d\right) - d \propto	\tr\left(\sum^d_{k=1} \al
 where $\alpha \in \mathbb{R}_+$ is a hyper-parameter that avoids exploding values for $w(A)$.
 In the case of positively valued $A$, an element $(i, j)$ of $A^k = \underbrace{A A...A}_{\text{k terms}}$ is non-null if and only if there exists a path going from node $j$ to node $i$ that is made of exactly $k$ edges. Intuitively $w(A)$ expresses to which extent the graph is cyclic. Indeed, the diagonal elements $(i, i)$ of $A^k$ will be as large as there are many paths made of edges that correspond to large values in $A$ from a node to itself in $k$ steps.
 
-In comparison to our work, \citet{DAG-1} use a quadratic loss on the corresponding linear structural equation model (SEM) as the score function $F(A)$. By attaching normalizing flows to topology learning, our method has a continuously adjustable level of complexity and does not make any strong assumptions on the form of the conditional factors. %Indeed, it has a continuously adjustable level of complexity as set by the capacity of the normalizers $g^i$ and the functions $\mb{h}^i$. %\antoine{@GL: I slightly rephrased is it more clear? Anyway I wonder if this should not be in the related works section instead?!}
+In comparison to our work, \citet{DAG-1} use a quadratic loss on the corresponding linear structural equation model (SEM) as the score function $F(A)$. By attaching normalizing flows to topology learning, our method has a continuously adjustable level of complexity and does not make any strong assumptions on the form of the conditional factors. %Indeed, it has a continuously adjustable level of complexity as set by the capacity of the normalizers $g^i$ and the functions $\mathbf{h}^i$. %\antoine{@GL: I slightly rephrased is it more clear? Anyway I wonder if this should not be in the related works section instead?!}
 %\antoine{Rewrite the paragraph}
 
 \subsection{Stochastic adjacency matrix}
@@ -551,7 +551,7 @@ $$A'_{i, j} = \frac{e^{\frac{\log(\sigma(A_{i,j}^2)) + \gamma_1}{T}}}{e^{\frac{\
 where $\gamma_1, \gamma_2 \sim \text{Gumbel}(0, 1)$ and $\sigma(a) = 2(\text{sigmoid}(2a^2) - \frac{1}{2})$ normalizes the values of $A$ between $0$ and $1$, being close to $1$ for large values and close to zero for values close to $0$. The hyper-parameter $T$ controls the sampling temperature and is fixed to $0.5$ in all our experiments. 
 In contrast to directly using the matrix $A$, this stochastic transformation referred to as the Gumbel-Softmax trick in the literature \citep{gumbel1, gumbel2} allows to create a direct and continuously differentiable relationship between the weights of the edges and the quantity of information that can transit between two nodes. Indeed, the probability mass of the random variables $A'_{i,j}$ is mainly located around $0$ and $1$, and its expected value converges to $1$ when $A_{i,j}$ increases. 
 
-%We denote this conditioner based on a Bayesian Network a \tbf{graphical conditioner}. \antoine{improve}
+%We denote this conditioner based on a Bayesian Network a \textbf{graphical conditioner}. \antoine{improve}
 %\antoine{link with gumber softmax for https://arxiv.org/pdf/1611.01144.pdf and https://arxiv.org/pdf/1611.00712.pdf}
 \subsection{Optimization} \label{sec:optim}
 We rely on the augmented Lagrangian approach to solve the constrained optimization problem \eqref{eq:DAG-relax} as initially proposed by \citet{DAG-1}. This optimization procedure requires solving iteratively the following sub-problems:
@@ -570,7 +570,7 @@ We provide additional details about the optimization procedure used in our exper
 \section{Experiments}
 In this section, we demonstrate some applications of graphical NFs in addition to unifying NFs and BN under a common framework. We first demonstrate how pre-loading a known or hypothesized DAG structure can help finding an accurate distribution of the data. Then, we show that learning the graph topology leads to relevant BNs that support generalization well when combined with $\ell_1$-penalization. Finally, we demonstrate that mono-step normalizing flows made of graphical conditioners are competitive density estimators. 
 \subsection{On the importance of graph topology}
-The following experiments are performed on four distinct datasets, three of which are synthetic, such that we can define a ground-truth minimal Bayesian network, and the fourth is a causal protein-signaling network derived from single-cell data \citep{proteins}. Additional information about the datasets are provided in \tabref{tab:ds_desc} and in Appendix \ref{app:top_dataset}. For each experimental run we first randomly permute the features before training the model in order to compare autoregressive and graphical conditioners fairly.
+The following experiments are performed on four distinct datasets, three of which are synthetic, such that we can define a ground-truth minimal Bayesian network, and the fourth is a causal protein-signaling network derived from single-cell data \citep{proteins}. Additional information about the datasets are provided in \Cref{tab:ds_desc} and in Appendix \ref{app:top_dataset}. For each experimental run we first randomly permute the features before training the model in order to compare autoregressive and graphical conditioners fairly.
 \paragraph{Prescribed topology}
 \begin{table}
     \caption{Datasets description. $d$=Dimension of the data. $V$=Number of edges in the ground truth Bayesian Network.} \label{tab:ds_desc}
@@ -582,16 +582,16 @@ The following experiments are performed on four distinct datasets, three of whic
     \begin{tabular}{l l l l l}
         \hline\hline
         Dataset & $d$ & $V$ & Train & Test\\ \hline
-        \tbf{Arithmetic Circuit} & $8$ & $8$ & $10,000$ & $5,000$\\
-        \tbf{8 Pairs}& $16$ & $8$  & $10,000$ & $5,000$\\
-        \tbf{Tree}  & $7$ & $8$ & $10,000$ & $5,000$\\
-        \tbf{Protein} & $11$ & $20$ & $6,000$ & $1,466$\\
+        \textbf{Arithmetic Circuit} & $8$ & $8$ & $10,000$ & $5,000$\\
+        \textbf{8 Pairs}& $16$ & $8$  & $10,000$ & $5,000$\\
+        \textbf{Tree}  & $7$ & $8$ & $10,000$ & $5,000$\\
+        \textbf{Protein} & $11$ & $20$ & $6,000$ & $1,466$\\
         \hline
-        \tbf{POWER} & $6$ & $\leq 15$ & $1,659,917$ & $204,928$\\
-        \tbf{GAS} & $8$ & $\leq 28$ & $852,174$ & $105,206$\\
-        \tbf{HEPMASS} & $21$ & $\leq 210$ & $315,123$ & $174,987$\\
-        \tbf{MINIBOONE} & $43$ & $\leq 903$ & $29,556$ & $3,648$\\
-        \tbf{BSDS300} & $63$ & $\leq 1,953$ & $1,000,000$ & $250,000$\\
+        \textbf{POWER} & $6$ & $\leq 15$ & $1,659,917$ & $204,928$\\
+        \textbf{GAS} & $8$ & $\leq 28$ & $852,174$ & $105,206$\\
+        \textbf{HEPMASS} & $21$ & $\leq 210$ & $315,123$ & $174,987$\\
+        \textbf{MINIBOONE} & $43$ & $\leq 903$ & $29,556$ & $3,648$\\
+        \textbf{BSDS300} & $63$ & $\leq 1,953$ & $1,000,000$ & $250,000$\\
         \hline \hline
     \end{tabular}
 \end{table}
@@ -608,10 +608,10 @@ The following experiments are performed on four distinct datasets, three of whic
     \begin{tabular}{l c c c c}
         \hline\hline
         Conditioner & Graphical & Autoreg. \\  \hline
-        \tbf{Arithmetic Circuit} & \bestresult{3.986817}{0.155741} & \result{3.059781}{0.381778} \\
-        \tbf{8 Pairs}& \bestresult{-9.398858}{0.061945} & \result{-11.503608}{0.271145}\\
-        \tbf{Tree}  & \bestresult{-6.845759}{0.016316} & \result{-6.960843}{0.054900}\\
-        \tbf{Protein} & \result{6.460093}{0.075050} & \bestresult{7.516195}{0.099126}\\
+        \textbf{Arithmetic Circuit} & \bestresult{3.986817}{0.155741} & \result{3.059781}{0.381778} \\
+        \textbf{8 Pairs}& \bestresult{-9.398858}{0.061945} & \result{-11.503608}{0.271145}\\
+        \textbf{Tree}  & \bestresult{-6.845759}{0.016316} & \result{-6.960843}{0.054900}\\
+        \textbf{Protein} & \result{6.460093}{0.075050} & \bestresult{7.516195}{0.099126}\\
         \hline
         \hline
     \end{tabular}
@@ -620,7 +620,7 @@ The following experiments are performed on four distinct datasets, three of whic
 
 Rarely do real data come with their associated Bayesian network however oftentimes experts want to hypothesize a network topology and to rely on it for the downstream tasks. Sometimes the topology is  known a priori, as an example the sequence of instructions in stochastic simulators can usually be translated into a graph topology (e.g. in probabilistic programming \citep{proba_prog, wood}). In both cases, graphical conditioners allow to explicitly take advantage of this to build density estimators while keeping the assumptions made about the network topology valid. 
 
-\tabref{tab:known_topo} presents the test likelihood of autoregressive and graphical normalizing flows on the four datasets. The flows are made of a single step and use monotonic normalizers. The neural network architectures are all identical. Further details on the experimental settings as well as additional results for affine normalizers are respectively provided in Appendix \ref{app:top_dataset_descri} and \ref{app:top_dataset_exp}. \emph{We observe how using correct BN structures lead to good test performance in \tabref{tab:known_topo}.} %that the a priori knowledge of the structure embedded into the graphical conditioners clearly lead to better test performance in comparison to autoregressive flows. 
+\Cref{tab:known_topo} presents the test likelihood of autoregressive and graphical normalizing flows on the four datasets. The flows are made of a single step and use monotonic normalizers. The neural network architectures are all identical. Further details on the experimental settings as well as additional results for affine normalizers are respectively provided in Appendix \ref{app:top_dataset_descri} and \ref{app:top_dataset_exp}. \emph{We observe how using correct BN structures lead to good test performance in \Cref{tab:known_topo}.} %that the a priori knowledge of the structure embedded into the graphical conditioners clearly lead to better test performance in comparison to autoregressive flows. 
 Surprisingly, the performance on the protein dataset are not improved when using the ground truth graph. We observed during our experiments (see Appendix \ref{app:top_dataset_exp}) that learning the topology from this dataset sometimes led to improved density estimation performance with respect to the ground truth graph. The limited dataset size does not allow us to answer if this comes from to the limited capacity of the flow and/or from the erroneous assumptions in the ground truth graph. However, we stress out that the graphical flow respects the assumed causal structure in opposition to the autoregressive flow.
 
 %Interestingly, graphical conditioners respect the independence assumptions explicitly made by the prescribed topology in opposition to other flow architectures. 
@@ -637,7 +637,7 @@ Surprisingly, the performance on the protein dataset are not improved when using
         \includegraphics[width=1.\textwidth]{figures/A_mat_8pairs.pdf}
     \caption{}\label{fig:8_MIX_L1_DAG}
     \end{subfigure}
-    \caption{\tbf{(a)}: Test log-likelihood as a function of $\ell_1$-penalization on \tbf{8 pairs} dataset. The upper bound is the average result when given a prescribed topology, the lower bound is the result with an autoregressive conditioner. \emph{Learning the right topology leads to better results than autoregressive conditioners.} \tbf{(b)}: The blacked cells corresponds to one correct topology of the 8 pairs dataset and the grey cells to the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with $\lambda_{\ell_1} = 4$. \emph{The optimization discovers a relevant BN (equivalent to the ground truth)}.}
+    \caption{\textbf{(a)}: Test log-likelihood as a function of $\ell_1$-penalization on \textbf{8 pairs} dataset. The upper bound is the average result when given a prescribed topology, the lower bound is the result with an autoregressive conditioner. \emph{Learning the right topology leads to better results than autoregressive conditioners.} \textbf{(b)}: The blacked cells corresponds to one correct topology of the 8 pairs dataset and the grey cells to the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with $\lambda_{\ell_1} = 4$. \emph{The optimization discovers a relevant BN (equivalent to the ground truth)}.}
     \label{fig:8_MIX_L1}
 \end{figure}
 \begin{figure}
@@ -708,7 +708,7 @@ The adjacency matrix discovered by optimizing \eqref{eq:loss} (with $ \lambda_{\
     
     \begin{tabular}{l l  c c c c c}
         \hline\hline
-        &\scalebox{.8}{Dataset} & \scalebox{.6}{\tbf{POWER}} & \scalebox{.6}{\tbf{GAS}} & \scalebox{.6}{\tbf{HEPMASS}} & \scalebox{.6}{\tbf{MINIBOONE}} & \scalebox{.6}{\tbf{BSDS300}} \\
+        &\scalebox{.8}{Dataset} & \scalebox{.6}{\textbf{POWER}} & \scalebox{.6}{\textbf{GAS}} & \scalebox{.6}{\textbf{HEPMASS}} & \scalebox{.6}{\textbf{MINIBOONE}} & \scalebox{.6}{\textbf{BSDS300}} \\
         \hline
         
         \multirow{3}{*}{\scalebox{.8}{(a)}}
@@ -768,16 +768,16 @@ The adjacency matrix discovered by optimizing \eqref{eq:loss} (with $ \lambda_{\
 \end{table}
 
 
-In these experiments, we compare autoregressive, coupling and graphical conditioners with no $\ell_1$-penalization on benchmark tabular datasets as introduced by \cite{MAF} for density estimation. See \tabref{tab:ds_desc} for a description. We evaluate each conditioner in combination with monotonic and affine normalizers.
+In these experiments, we compare autoregressive, coupling and graphical conditioners with no $\ell_1$-penalization on benchmark tabular datasets as introduced by \cite{MAF} for density estimation. See \Cref{tab:ds_desc} for a description. We evaluate each conditioner in combination with monotonic and affine normalizers.
 % Inspired by the experimental setup of \cite{MAF}, we compare the methods on diverse datasets (POWER, GAS, HEPMASS, MINIBOONE and BSDS300). 
 We only compare NFs with a single transformation step because our focus is on the conditioner capacity. We observed during preliminary experiments that stacking multiple conditioners  improves the performance slightly, however the gain is marginal compared to the loss of interpretability. To provide a fair comparison we have fixed in advance the neural architectures used to parameterize the normalizers and conditioners as well as the training parameters by taking inspiration from those used by \citet{UMNN} and \citet{MAF}. The variable ordering of each dataset is randomly permuted at each run. All hyper-parameters are provided in Appendix \ref{app:archi-tabular} and a public implementation will be released on Github. 
 %The compared flows are made of monotonic or affine normalizers combined with either a coupling, an autoregressive or a graphical conditioner. 
 
-First, \tabref{tab:tabular_density} presents the test log-likelihood obtained by each architecture. These results indicate that graphical conditioners offer the best performance in general. Unsurprisingly, coupling layers show the worst performance, due to the arbitrarily assumed independencies. Autoregressive and graphical conditioners show very similar performance for monotonic normalizers, the latter being slightly better on 4 out of the 5 datasets. \tabref{tab:tabular_density_all} contextualizes the performance of graphical normalizing flows with respect to the most popular normalizing flow architectures.
+First, \Cref{tab:tabular_density} presents the test log-likelihood obtained by each architecture. These results indicate that graphical conditioners offer the best performance in general. Unsurprisingly, coupling layers show the worst performance, due to the arbitrarily assumed independencies. Autoregressive and graphical conditioners show very similar performance for monotonic normalizers, the latter being slightly better on 4 out of the 5 datasets. \Cref{tab:tabular_density_all} contextualizes the performance of graphical normalizing flows with respect to the most popular normalizing flow architectures.
 %which are the state-of-the-art results for density estimation. 
 Comparing the results together, we see that while additional steps lead to noticeable improvements for affine normalizers (MAF), benefits are questionable for monotonic transformations. Overall, graphical normalizing flows made of a single transformation step are competitive with the best flow architectures with the added value that they can directly be translated into their equivalent BNs. \emph{From these results we stress out that single step graphical NFs are able to model complex densities on par with SOTA while they offer new ways of introducing domain knowledge.}
 
-Second, \tabref{tab:edges} presents the number of edges in the BN associated with each flow. For \textsc{power} and \textsc{gas}, the number of edges found by the graphical conditioners is close or equal to the maximum number of edges. Interestingly, graphical conditioners outperform  autoregressive conditioners on these two tasks, demonstrating the value of finding an appropriate ordering particularly when using affine normalizers. Moreover, graphical conditioners correspond to BNs whose sparsity is largely greater than for autoregressive conditioners while providing equivalent if not better performance. The depth \citep{depth-dag} of the equivalent BN directly limits the number of steps required to inverse the flow. Thus sparser graphs that are inevitably shallower correspond to NFs for which sampling, i.e. computing their inverse, is faster.
+Second, \Cref{tab:edges} presents the number of edges in the BN associated with each flow. For \textsc{power} and \textsc{gas}, the number of edges found by the graphical conditioners is close or equal to the maximum number of edges. Interestingly, graphical conditioners outperform  autoregressive conditioners on these two tasks, demonstrating the value of finding an appropriate ordering particularly when using affine normalizers. Moreover, graphical conditioners correspond to BNs whose sparsity is largely greater than for autoregressive conditioners while providing equivalent if not better performance. The depth \citep{depth-dag} of the equivalent BN directly limits the number of steps required to inverse the flow. Thus sparser graphs that are inevitably shallower correspond to NFs for which sampling, i.e. computing their inverse, is faster.
 \begin{table}
     \caption{Average log-likelihood on test data over 3 runs, under-scripted error bars are equal to the standard deviation. Results are reported in nats, higher is better. The results followed by a star are copied from the literature and the number of steps in the flow is indicated in parenthesis for each architecture. \textit{Graphical normalizing flows reach density estimation performance on par with the most popular flow architectures whereas it is only made of 1 transformation step.}} \label{tab:tabular_density_all}
     \centering
@@ -787,7 +787,7 @@ Second, \tabref{tab:edges} presents the number of edges in the BN associated wit
     
     \begin{tabular}{l  c c c c c}
         \hline\hline
-        \scalebox{.8}{Dataset} & \scalebox{.6}{\tbf{POWER}} & \scalebox{.6}{\tbf{GAS}} & \scalebox{.6}{\tbf{HEPMASS}} & \scalebox{.6}{\tbf{MINIBOONE}} & \scalebox{.6}{\tbf{BSDS300}} \\
+        \scalebox{.8}{Dataset} & \scalebox{.6}{\textbf{POWER}} & \scalebox{.6}{\textbf{GAS}} & \scalebox{.6}{\textbf{HEPMASS}} & \scalebox{.6}{\textbf{MINIBOONE}} & \scalebox{.6}{\textbf{BSDS300}} \\
         \hline
         % Graph.-Aff. (1)
         %     & \result{-2.7979636666666665}{0.00799790907397394}
@@ -853,7 +853,7 @@ Second, \tabref{tab:edges} presents the number of edges in the BN associated wit
     
     \begin{tabular}{l c c c c c}
         \hline\hline
-        Dataset & \tbf{P} & \tbf{G} & \tbf{H} & \tbf{M} & \tbf{B} \\
+        Dataset & \textbf{P} & \textbf{G} & \textbf{H} & \textbf{M} & \textbf{B} \\
         \hline
         Graph.-Aff. & $15$   & $26$  & $152$  & $277$  & $471$  \\
         Graph.-Mon. & $15$    & $27$  & $159$  & $265$  & $1594$  \\
@@ -878,11 +878,11 @@ Second, \tabref{tab:edges} presents the number of edges in the BN associated wit
 %         \hline
 %         Method & Coupling & Autoregressive & Graph.-Affine & Graph.-Monotonic 
 %         \hline \\
-%         \tbf{POWER}& $9$  & $15$ & $15$  & $15$ \\
-%         \tbf{GAS}& $16$ & $28$ & $26$  & $27$ \\
-%         \tbf{HEPMASS} & $110$  & $210$ & $152$ & $159$ \\
-%         \tbf{MINIBOONE}& $462$ & $903$ & $277$  & $265$  \\
-%         \tbf{BSDS300} & $992$  & $1953$ & $471$  & $1594$ \\
+%         \textbf{POWER}& $9$  & $15$ & $15$  & $15$ \\
+%         \textbf{GAS}& $16$ & $28$ & $26$  & $27$ \\
+%         \textbf{HEPMASS} & $110$  & $210$ & $152$ & $159$ \\
+%         \textbf{MINIBOONE}& $462$ & $903$ & $277$  & $265$  \\
+%         \textbf{BSDS300} & $992$  & $1953$ & $471$  & $1594$ \\
 %          \hline
         
 %     \end{tabular}

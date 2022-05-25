@@ -13,7 +13,7 @@ For tabular data the best performing architecture has been found after some prel
     
     \begin{tabular}{c c c c c c c c}
         \hline
-        Dataset & \tbf{POWER} & \tbf{GAS} & \tbf{HEPMASS} & \tbf{MINIBOONE} & \tbf{BSDS300} & \tbf{MNIST} & \tbf{2D Toys}  \\
+        Dataset & \textbf{POWER} & \textbf{GAS} & \textbf{HEPMASS} & \textbf{MINIBOONE} & \textbf{BSDS300} & \textbf{MNIST} & \textbf{2D Toys}  \\
         \hline
         Lipschitz & - & - & - & - & $2.5$ & $1.5$ & -\\
         N\textdegree  integ. steps & rand & rand & rand & rand & rand & $25$ & $50$ \\
@@ -39,7 +39,7 @@ Table \ref{tab:vae_train_config} presents the architectural settings of the norm
     \renewcommand{\arraystretch}{1.5}
     \begin{tabular}{c c c c c}
         \hline
-        Dataset & \tbf{MNIST} & \tbf{Freyfaces} & \tbf{Omniglot} & \tbf{Caltech 101}  \\
+        Dataset & \textbf{MNIST} & \textbf{Freyfaces} & \textbf{Omniglot} & \textbf{Caltech 101}  \\
         \hline
         Lipschitz & - & - & - & - \\
         N\textdegree  integ. steps & rand & rand & rand & rand  \\
@@ -69,21 +69,21 @@ Table \ref{tab:vae_train_config} presents the architectural settings of the norm
 \small
 \begin{tabular}{ll}
     \textit{Input:}  & $x$: A tensor of scalar values that represent the superior integration bounds. \\
-     & $\mb{h}$: A tensor of vectors that representing embeddings.\\
-     \textit{Output:}  & $F$: A tensor of scalar values that represent the integral of $\int_{0}^{x} f(t;\mb{h})\dt$ .\\
+     & $\mathbf{h}$: A tensor of vectors that representing embeddings.\\
+     \textit{Output:}  & $F$: A tensor of scalar values that represent the integral of $\int_{0}^{x} f(t;\mathbf{h})\dt$ .\\
      \textit{Hyper-parameters:} & $f$: A derivable function $\mathbb{R}\rightarrow \mathbb{R}$.\\
      &$N$: The number of integration steps.
 \end{tabular}
 \small
 \begin{algorithmic}[1]
-\Procedure{forward}{$x$, $\mb{h}$; $f$, $N$}
+\Procedure{forward}{$x$, $\mathbf{h}$; $f$, $N$}
 \LineComment{Compute weights and evaluation steps for Clenshaw-Curtis quadrature}
-\State $\mb{w}$, $\mb{\delta}_x$ = \Call{compute\_cc\_weights}{$N$}
+\State $\mathbf{w}$, $\mathbf{\delta}_x$ = \Call{compute\_cc\_weights}{$N$}
 \State $F = 0$
 \For{$i \in \left[ 1, \text{$N$} \right]$}
-\State $x_i$ = $x_0 +  \frac{1}{2}(x - x_0)(\mb{\delta}_x[i] + 1)$ \Comment{Compute the next point to evaluate}
-\State $\delta_F = f(x_i; \mb{h})$
-\State $F$ = $F + \mb{w}[i] \delta_F$
+\State $x_i$ = $x_0 +  \frac{1}{2}(x - x_0)(\mathbf{\delta}_x[i] + 1)$ \Comment{Compute the next point to evaluate}
+\State $\delta_F = f(x_i; \mathbf{h})$
+\State $F$ = $F + \mathbf{w}[i] \delta_F$
 \EndFor
 \State $F = \frac{F}{2} (x-x_0)$
 \State \Return $F$
@@ -94,11 +94,11 @@ Table \ref{tab:vae_train_config} presents the architectural settings of the norm
 \small
 \begin{tabular}{ll}
     \textit{Inputs:}  & $x$: A tensor of scalar values that represent the superior integration bounds. \\
-     & $\mb{h}$: A tensor of vectors that representing embeddings.\\
-     & $\nabla_{out}:$ The derivatives of the loss function with respect to $\int_{0}^{x} f(t;\mb{h})\dt$ for all $x$.\\
-     \textit{Outputs:}  & $\nabla_x$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to x.\\
-     & $\nabla_{\mb{\theta}}$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to f parameters.\\
-     & $\nabla_{\mb{h}}$: The gradient of $\int_{0}^{x} f(t;\mb{h})\dt$ with respect to h.\\
+     & $\mathbf{h}$: A tensor of vectors that representing embeddings.\\
+     & $\nabla_{out}:$ The derivatives of the loss function with respect to $\int_{0}^{x} f(t;\mathbf{h})\dt$ for all $x$.\\
+     \textit{Outputs:}  & $\nabla_x$: The gradient of $\int_{0}^{x} f(t;\mathbf{h})\dt$ with respect to x.\\
+     & $\nabla_{\mathbf{\theta}}$: The gradient of $\int_{0}^{x} f(t;\mathbf{h})\dt$ with respect to f parameters.\\
+     & $\nabla_{\mathbf{h}}$: The gradient of $\int_{0}^{x} f(t;\mathbf{h})\dt$ with respect to h.\\
      \textit{Hyper-parameters:} & $f$: A derivable function $\mathbb{R}\rightarrow \mathbb{R}$.\\
      &$N$: The number of integration steps.
 \end{tabular}
@@ -106,21 +106,21 @@ Table \ref{tab:vae_train_config} presents the architectural settings of the norm
 \begin{algorithmic}[1]
 \Procedure{backward}{$x$, $h$, $\nabla_{out}$; $f$, $N$}
 \LineComment{Compute weights and evaluation steps for Clenshaw-Curtis quadrature}
-\State $\mb{w}$, $\mb{\delta}_x$ = \Call{compute\_cc\_weights}{$N$} 
-\State $F, \nabla_{\mb{\theta}}, \nabla_{\mb{h}} = 0, 0, 0$
+\State $\mathbf{w}$, $\mathbf{\delta}_x$ = \Call{compute\_cc\_weights}{$N$} 
+\State $F, \nabla_{\mathbf{\theta}}, \nabla_{\mathbf{h}} = 0, 0, 0$
 \For{$i \in \left[ 1, N \right]$}
-\State $x_i$ = $x_0 + \frac{1}{2} (x - x_0)(\mb{\delta}_x[i] + 1)$\Comment{Compute the next point to evaluate}
-\State $\delta_F$ =$f(x_i; \mb{h})$
- \LineComment{Sum up for all samples of the batch the gradients with respect to inputs $\mb{h}$ }
-\State $\delta_{\nabla_{\mb{h}}}$ = $ \sum_{j=1}^{B} \nabla_{{\mb{h}}^j}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
-\LineComment{Sum up for all samples of the batch the gradients with respect to parameters $\mb{\theta}$ }
-\State $\delta_{\nabla_{\mb{\theta}}}$ = $ \sum_{j=1}^{B} \nabla_{\mb{\theta}}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
-\State $\nabla_{\mb{h}}$ = $\nabla_{\mb{h}} + \mb{w}[i] \delta_{\nabla_{\mb{h}}}$
-\State $\nabla_{\mb{\theta}}$ = $\nabla_{\mb{\theta}} + \mb{w}[i] \delta_{\nabla_{\mb{\theta}}}$
+\State $x_i$ = $x_0 + \frac{1}{2} (x - x_0)(\mathbf{\delta}_x[i] + 1)$\Comment{Compute the next point to evaluate}
+\State $\delta_F$ =$f(x_i; \mathbf{h})$
+ \LineComment{Sum up for all samples of the batch the gradients with respect to inputs $\mathbf{h}$ }
+\State $\delta_{\nabla_{\mathbf{h}}}$ = $ \sum_{j=1}^{B} \nabla_{{\mathbf{h}}^j}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
+\LineComment{Sum up for all samples of the batch the gradients with respect to parameters $\mathbf{\theta}$ }
+\State $\delta_{\nabla_{\mathbf{\theta}}}$ = $ \sum_{j=1}^{B} \nabla_{\mathbf{\theta}}\left(\delta_F^j\right) \nabla_{out}^j (x^j-x_0^j)$
+\State $\nabla_{\mathbf{h}}$ = $\nabla_{\mathbf{h}} + \mathbf{w}[i] \delta_{\nabla_{\mathbf{h}}}$
+\State $\nabla_{\mathbf{\theta}}$ = $\nabla_{\mathbf{\theta}} + \mathbf{w}[i] \delta_{\nabla_{\mathbf{\theta}}}$
 \EndFor
 \LineComment Gradients with respect to superior integration bound.
-\State $\nabla_x = f(x, \mb{h}) \nabla_{out}$
-\State \Return $\nabla_x$, $\nabla_{\mb{\theta}}$, $\nabla_{\mb{h}}$
+\State $\nabla_x = f(x, \mathbf{h}) \nabla_{out}$
+\State \Return $\nabla_x$, $\nabla_{\mathbf{\theta}}$, $\nabla_{\mathbf{h}}$
 \EndProcedure
 \end{algorithmic}
 \vspace{1em}

@@ -1,791 +1,325 @@
-\chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
+\chapter{Hybrid Generative Models}\label{ch:07}
 
 \begin{remark}{Outline}
-???
+Hybrid modelling reduces the misspecification of expert models by combining them with machine learning (ML) components learned from data. Like for many ML algorithms, hybrid model performance guarantees are limited to the training distribution. Leveraging the insight that the expert model is usually valid even outside the training domain, we overcome this limitation by introducing a hybrid data augmentation strategy termed \textit{expert augmentation}. Based on a probabilistic formalization of hybrid modelling, we show why expert augmentation improves generalization. Finally, we validate the practical benefits of augmented hybrid models on a set of controlled experiments, modelling dynamical systems described by ordinary and partial differential equations.
+
 \end{remark}
 
-
 \section{Introduction}
-Normalizing flows~\citep[NFs, ][]{NF, tabak2010density, tabak2013family, rippel2013high} have proven to be an effective way to model complex data distributions with neural networks. These models map data points to latent variables through an invertible function while keeping track of the change of density caused by the transformation. In contrast to variational auto-encoders (VAEs) and generative adversarial networks (GANs), NFs provide access to the exact likelihood of the model's parameters, hence offering a sound and direct way to optimize the network parameters. Normalizing flows have proven to be of practical interest as demonstrated by \citet{parallel_wavenet, kim2018flowavenet} and \citet{ prenger2019waveglow} for speech synthesis, by \citet{NF, kingma2016improved} and \citet{berg2018sylvester} for variational inference or by \citet{SNL} and \citet{greenberg2019automatic} for simulation-based inference. Yet, their usage as a base component of the machine learning toolbox is still limited in comparison to GANs or VAEs. Recent efforts have been made by \citet{flows-review} and \citet{flow_review_2} to define the fundamental principles of flow design and by \citet{neural-spline-flows} to provide coding tools for modular implementations. We argue that normalizing flows would gain in popularity by offering stronger inductive bias as well as more interpretability. %Moreover, some fundamental properties of NFs are still to be understood and we believe that to do so could lead to long-term improvements in the field.% and by being more intuitive to build. %\cite{flows-tori} makes a similar observation to motivate their flow on non-euclidean space.
-%\antoine{And improvement if better understood}
+Generalization to unseen data is a key property of a useful model. When training and test data are independently and identically distributed~(IID), one way to check generalization is by evaluating the model on a held out subset of the training data or with k-fold cross validation. Unfortunately, this setting is often unrealistic because the training scenario is rarely fully representative of the test scenario. This has motivated lot of recent research efforts to focus on  the robustness of ML models  \citep{gulrajani2020search,geirhos2020shortcut,koh2021wilds}. Common strategies can be broadly grouped in two categories: The first class of methods aims at aligning specific properties of the model (e.g., invariance, equivariance, monotonicity, etc.) with expertise on the problem of interest \citep{cubuk2019autoaugment, graph_net_molecule, universal_equivariance, alphago}. The second category is data focused \citep{groupDRO_ICLR, IRM, krueger2021out, creager2021environment} and leverages variations present in the training data, e.g. by minimizing worst case sub-group performance, to achieve robustness.
 
-Sometimes forgotten in favor of more data oriented methods, probabilistic graphical models (PGMs) have been popular for modeling complex data distributions while being relatively simple to build and read \citep{PGM-book, johnson2016composing}. Among PGMs, Bayesian networks~\citep[BNs, ][]{Pearl-BN} offer an appealing balance between modeling capacity and simplicity. Most notably, these models have been at the basis of expert systems before the big data era (e.g. \citep{BN-app-1, BN-app-2, BN-app-3}) and were commonly used to merge qualitative expert knowledge and quantitative information together. On the one hand, experts stated independence assumptions that should be encoded by the structure of the network. On the other hand, data were used to estimate the parameters of the conditional probabilities/densities encoding the quantitative aspects of the data distribution. %B-net are closely related to the field of causality by being a super-set of causal graphical models.
-These models have progressively received less attention from the machine learning community in favor of other methods that scale better with the dimensionality of the data. %Moreover, practical applications for continuous data stands on a strong hypothesis on the class of distributions combined with linear dependence relationships that limits the modeling capacities.
-% most of the results for continuous data have been found with Gaussian assumption and linear relationships combined with Gaussian distributions \citep{geiger1994learning} or by discretization \citep{friedman1998bayesian}, they do not offer any standard way to model continuous data.
-%\antoine{Causal Models?}
-
-% Driven by the ambition to bring intuition into normalizing flows and the already proven relevance of BNs for combining qualitative and quantitative reasoning, we review normalizing flows under the lens of Bayesian networks. We show that autoregressive and coupling transformations can be seen as BNs with a predefined topology. Based on the gained insights, we propose a new building block that allows normalizing flows to be directly related to BNs without any constraint on the topology, laying additional space for inductive bias into normalizing flows.
-Driven by the objective of integrating intuition into normalizing flows and the proven relevance of BNs for combining qualitative and quantitative reasoning, we summarize our contributions as follows:
-\textbf{(i)} From the insight that coupling and autoregressive transformations can be reduced to Bayesian networks with a fixed topology, we introduce the more general graphical conditioner for normalizing flows, featuring either a prescribed or a learnable BN topology; \textbf{(ii)} We show that using a correct prescribed topology leads to improvements in the modeled density compared to autoregressive methods. When the topology is not known we observe that, with the right amount of $\ell_1$-penalization, graphical conditioners discover relevant relationships; \textbf{(iii)} In addition, we show that graphical normalizing flows perform well in a large variety of density estimation tasks compared to classical black-box flow architectures.
-% \begin{itemize}
-%     %\item We provide a new vision of coupling and autoregressive transformations as Bayesian Networks.
-%     %\item Thanks to this new tool, we provide proofs and insights on some of the fundamental properties of Normalizing Flows.
-%     \item From the insight that coupling and autoregressive transformations can be reduced to Bayesian networks with a fixed topology, we introduce the more general graphical conditioner for normalizing flows, featuring either a prescribed or a learnable BN topology.
-%     \item We show that using a correct prescribed topology leads to improvements in the modeled density compared to autoregressive methods. When the topology is not known we observe that, with the right amount of $\ell_1$-penalization, graphical conditioners discover relevant relationships.
-%     \item In addition, we show that graphical normalizing flows perform well in a large variety of density estimation tasks compared to classical black-box flow architectures.
-%     %They are not only competitive as a black-box normalizing flow, but also provide an operational way to introduce domain knowledge into neural network based density estimation.
-% \end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%% Section 2
-\section{Background}
-
-\paragraph{Bayesian networks}
-A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $\mb{x} = \left[x_1, \hdots, x_d\right]^T \in \mathbb{R}^d$ be a random vector distributed under $p_{\mb{x}}$. A BN associated to $\mb{x}$ is a directed acyclic graph made of $d$ vertices representing the components $x_i$ of $\mb{x}$. In this kind of network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $\mb{x}$ iff its density can be factorized as
-\begin{align}
-    p_{\mb{x}}(\mb{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
-\end{align}
-where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mb{x}$ because it does not state any independence and leads to a factorization that corresponds to the chain rule. However, in practice we seek for a sparse and valid BN which models most of the independence between the components of $\mb{x}$, leading to an efficient factorization of the modeled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
-%In our experiments the parameters of the neural networks encoding for the monotonic transformations $g^i$ are shared, they take as input a one hot encoding vector that represents the index $i$.
-
-%BNs and probabilistic graphical models in general are popular because they compactly describe probability distributions over random vectors. First, a sparse network will lead to an efficient factorization of the probability distribution. Indeed, the more sparse the BN is, the smaller the average size of the input space of the conditioning factors is. Second, the d-separation algorithm is an efficient method to check the independence between group of components, making the assumptions made by the model easily readable by a human.
-%It is also worth noting that many strong results in causality are related to causal graphical models which are a sub-class of BN where edges describe causal relationships between vertices.
-
-
-\begin{figure}
+\begin{figure}[t]
     \centering
-    \begin{subfigure}{.29\textwidth}
-        \centering
-        \begin{tikzpicture}[
-          node distance=.7cm and 1.cm,
-          var_x/.style={draw, circle, text width=.4cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \path (x1) edge[-latex] (x2);
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \path (x3) edge[-latex] (x4);
-            %\node (b) at (1,-3) {(\textbf{b})};
-        \end{tikzpicture}
-        \caption{} \label{fig:mono-step-flows-a}
-    \end{subfigure}~\hspace{-4.8em}
-    \begin{subfigure}{.3\textwidth}
-    \centering
-        \begin{tikzpicture}[
-          node distance=.7cm and 1.cm,
-          var_x/.style={draw, circle, text width=.4cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            %\node (a) at (1,-3) {(\textbf{a})};
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-        \end{tikzpicture}
-        \caption{} \label{fig:mono-step-flows-b}
-    \end{subfigure}
-\\
-    \begin{subfigure}{.5\textwidth}
-    \centering
-        \begin{tikzpicture}[
-            node distance=.7cm and 1.cm,
-            var_z/.style={draw,circle,text width=.4cm,align=center},
-            var_x/.style={draw, circle, double, text width=.35cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \node[var_z, left=of x1] (z1) {$z_1$};
-            \node[var_z, right=of x2] (z2) {$z_2$};
-            \node[var_z, left=of x3] (z3) {$z_3$};
-            \node[var_z, right=of x4] (z4) {$z_4$};
-            %\node (c) at (1,-3) {(\textbf{c})};
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \foreach \x in {1,...,4}
-                \path (z\x) edge[-latex] (x\x);
-        \end{tikzpicture}
-        \caption{} \label{fig:mono-step-flows-c}
-    \end{subfigure}
-    \caption{Bayesian networks equivalent to normalizing flows made of a single transformation step. (\tbf{a}) Autoregressive conditioner. (\tbf{b}) Coupling conditioner. (\tbf{c}) Coupling conditioner, with latent variables  shown explicitly. Double circles stand for deterministic functions of the parents.} \label{fig:mono-step-flows}
-    %\vspace{-2em}
-\end{figure}
-
-%\antoine{Be clear that a DAG structure induce a BN.}
-\paragraph{Normalizing flows}
-%\antoine{Rewrite, go straight to the point, simplify notations}
-A normalizing flow is defined as a sequence of invertible transformation steps $\mb{g}_k : \mathbb{R}^d \to \mathbb{R}^d$  ($k=1, ..., K$)  composed together to create an expressive invertible mapping $\mb{g} := \mb{g}_1 \circ \dots \circ \mb{g}_K : \mathbb{R}^d \to \mathbb{R}^d$. %It is common for normalizing flows to stack the same parametric function $\mb{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For the sake of readability we denote $\mb{u}_i$ as $\mb{g}: \mathbb{R}^d \to \mathbb{R}^d$ when the index $i$ has no role in the discussion.
-%\paragraph{Density estimation}
-%NFs are most commonly used for density estimation, that map empirical samples to unstructured noise.
-This mapping can be used to perform density estimation, using $\mb{g}(\cdot ;\mb{\theta}): \mbb{R}^d \rightarrow \mbb{R}^d$ to map a sample $\mb{x} \in \mathbb{R}^d$ onto a latent vector $\mb{z} \in \mbb{R}^d$ equipped with a prescribed density $p_{\mb{z}}(\mb{z})$ such as an isotropic Normal.
-The transformation $\mb{g}$ implicitly defines a density $p(\mb{x}; \mb{\theta})$ as given by the change of variables formula,
-\begin{equation}
-    p(\mb{x}; \mb{\theta}) = p_{\mb{z}}(\mb{g}(\mb{x};\mb{\theta})) \left| \det  J_{\mb{g}(\mb{x};\mb{\theta})} \right|, \label{eq:NF_DE}
-\end{equation}
-where $J_{\mb{g}(\mb{x};\mb{\theta})}$ is the Jacobian of $\mb{g}(\mb{x};\mb{\theta})$ with respect to $\mb x$. The resulting model is trained by maximizing the likelihood of the model's parameters $\mb{\theta}$ given the training dataset $\mb{X} = \{\mb{x}^1, ..., \mb{x}^N\}$.
-% It is also common to use NFs to model complex data generation while keeping track of the density of the generated samples. This is achieved by applying the invertible transformation $\mb{g}$ on the unstructured noise.
-Unless needed, we will not distinguish between $\mb{g}$ and $\mb{g}_k$ for the rest of our discussion.
-%In the rest of this paper, we will not do the distinction between $\mb{g}$ and $\mb{g}_k$ when the discussion will be focused on only one of these steps $\mb{g}_k$.
-
-In general the steps $\mb{g}$ can take any form as long as they define a bijective map. Here, we focus  on a sub-class of normalizing flows for which the steps can be mathematically described as
-\begin{align}
-    \mb{g}(\mb{x}) = \begin{bmatrix}
-g^1(x_{1}; \mb{c}^1(\mb{x}))  & \hdots & g^d(x_{d}; \mb{c}^d(\mb{x}))
-\end{bmatrix}^T,\label{eq:gnf}
-\end{align}
-where the $\mb{c}^i$ are the \tbf{conditioners} which role is to constrain the structure of the Jacobian of $\mb{g}$.
-%In this work, we propose a new conditioner architecture inspired by Bayesian Networks.
-The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. They are often referred to as transformers, however in this work we will use the term \tbf{normalizers} to avoid any confusion with attention-based transformer architectures.
-
-%In the following, we discuss in details the some conditioner architectures, that are autoregressive and coupling layers. Based on the observation made, we propose a new conditioner architecture that corresponds to optimize the structure of the Jacobian.
-
-The conditioners examined in this work can be combined with any normalizer. In particular, we consider affine and monotonic normalizers. An affine normalizer $g: \mathbb{R} \times \mathbb{R}^2 \rightarrow \mathbb{R}$ can be expressed as
-$g(x;m, s) = x\exp(s) + m$, where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner. There exist multiple methods to parameterize monotonic normalizers \citep{huang2018neural, de2020block, neural-spline-flows, sos}, but in this work we rely on Unconstrained Monotonic Neural Networks~\citep[UMNNs, ][]{UMNN} which can be expressed as
-$g(x; \mb{c}) = \int^x_0 f(t, \mb{c}) dt + \beta(\mb{c})$, where $\mb{c} \in \mathbb{R}^{|\mb{c}|}$ is an embedding made by the conditioner and $f: \mathbb{R}^{|\mb{c}| + 1} \rightarrow \mathbb{R}^+$ and  $\beta: \mathbb{R}^d\rightarrow\mathbb{R}$ are two neural networks respectively with a strictly positive scalar output and a real scalar output. \cite{huang2018neural} proved NFs built with autoregressive conditioners and monotonic normalizers are universal density approximators of continuous random variables.
-
-
-
-%%%%%%%%%%%%% Section 3
-\section{Normalizing flows as Bayesian networks} \label{sec:NF-BN}
-%\antoine{improve the section, cite the other paper and explicit that a DAG <=> BN}
-% In this section we review autoregressive and coupling conditioners through the lens of BNs. These two conditioners are among the most popular building blocks for normalizing flows. We first show that each module can be interpreted as a specific class of BN and then present a general vision of normalizing flows built with these blocks.
-
-%\subsection{Conditioners as BNs}
-
-\paragraph{Autoregressive conditioners}
-Due to computing speed considerations, NFs are usually composed of transformations for which the determinant of the Jacobian can be computed efficiently, as otherwise its evaluation would scale cubically with the input dimension.
-A common solution is to use autoregressive conditioners, i.e., such that
-$$\mb{c}^i(\mb{x}) = \mb{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right)$$ are functions $\mb{h}^i$ of the first $i-1$ components of $\mb{x}$. This particular form constrains the Jacobian of $\mb{g}$ to be lower triangular, which makes the computation of its determinant $\mc{O}(d)$.
-%Enforcing the bijectivity of each component $g^i$ is then sufficient to make $\mb{g}$ bijective as well.
-
-For the multivariate density $p(\mb{x}; \mb{\theta})$ induced by $\mb{g}(\mb{x};\mb{\theta})$ and $p_{\mb{z}}(\mb{z})$, we can use the chain rule to express the joint probability of $\mb{x}$ as a product of $d$ univariate conditional densities,
-\begin{align}
-    p(\mb{x}; \mb{\theta}) = p(x_1; \mb{\theta})\prod^{d}_{i=2}p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta}). \label{eq:AF-fact}
-\end{align}
-When $p_{\mb{z}}(\mb{z})$ is a factored distribution $p_{\mb{z}}(\mb{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding functions $g^i$ and embedding vectors $\mb{c}^i$ encode for the conditional $p(x_{i}|\mb{x}_{1:i-1}; \mb{\theta})$. Therefore, and as illustrated in \figref{fig:mono-step-flows-a}, autoregressive transformations can be seen as a way to model the conditional factors of a BN that does not state any independence but relies on a predefined node ordering. This becomes clear if we define $\mathcal{P}_i = \{x_1, \hdots, x_{i-1}\}$ and compare \eqref{eq:AF-fact} with \eqref{eq:BN-fact}.
-
-The complexity of the conditional factors  strongly depends on the ordering of the vector components. While not hurting the universal representation capacity of normalizing flows, the arbitrary ordering used in autoregressive transformations leads to poor inductive bias and to factors that are most of the time difficult to learn.
-%\cite{chickering-NP-hard} proved that finding the best topological ordering is NP-hard for discrete BN. This result suggests that for real values the problem of finding an ordering that leads to the smallest hypothesis class for the factors is difficult as well.
-In practice, one often alleviates the arbitrariness of the ordering by stacking multiple autoregressive transformations combined with random permutations on top of each other. %In subsection \ref{sub-seq:multiple-steps-flow}, we provide arguments that explain why stacking multiple transformations can improve performance even if one step NFs can already be universal density approximators.
-
-%
-\paragraph{Coupling conditioners}
-Coupling layers~\citep{NICE} are another popular type of conditioners that lead to a bipartite structure. The conditioners $\mb{c}^i$ made from coupling layers are defined as
-\begin{align*}
-    \mb{c}^i(\mb{x}) =
-    \begin{cases}
-    \underline{\mb{h}}^i \quad \text{if} \quad i \leq k\\
-    \mb{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_k \end{bmatrix}^T\right) \quad \text{if} \quad i > k\\
-    \end{cases}
-\end{align*}
-where the underlined $\underline{\mb{h}}^i \in \mathbb{R}^{|\mb{c}|}$ denote constant values and $k \in \{1, \hdots, d\}$ is a hyper-parameter usually set to $\floor*{\frac{d}{2}}$.
-% The mapping $\mb{g}(\mb{x};\mb{\theta})$ made from coupling layers can be generically written as:
-% $$\mb{g}(\mb{x};\mb{\theta}) = \left[ x_1, \hdots, x_k, g^1(x_{k+1}, \mathbf{x}_{1:k}; \mathbf{\theta}), \hdots, g^{d-k-1}(x_{d}, \mathbf{x}_{1:k}; \mathbf{\theta}) \right].$$
-% Similarly to autoregressive transforms, if the $g^i$ functions are invertible with respect to $x_{k + i}$ then $\mb{g}$ is a bijective mapping.
-As for autoregressive conditioners, the Jacobian of $\mb{g}$ made of coupling layers is lower triangular.
-Again, and as shown in \figref{fig:mono-step-flows-b} and \ref{fig:mono-step-flows-c}, these transformations can be seen as a specific class of BN where $\mathcal{P}_i=\{\}$ for $i \leq k$ and $\mathcal{P}_i = \{1, ..., k\}$ for $i > k$.
-D-separation can be used to read off the independencies stated by this class of BNs such as the conditional independence between each pair in $\mathbf{x}_{k+1:d}$ knowing $\mathbf{x}_{1:k}$.
-For this reason, and in contrast to autoregressive transformations, coupling layers are not by themselves universal density approximators even when associated with very expressive normalizers $g^i$ \citep{wehenkel2020you}.
-In practice, these bipartite structural independencies can be relaxed by stacking multiple layers, and may even recover an autoregressive structure. They also lead to useful inductive bias, such as in the multi-scale architecture with checkerboard masking~\citep{RealNVP, GLOW}.
-%, which is still the most efficient method to apply flow based methods on images as empirically shown by \cite{GLOW}. %These results owes a lot to the inductive bias of multi-scale architectures which takes advantage of the hierarchical structures of images.
-
-% We can prove that coupling and autoregressive layers can be modeled by the BN shown on \figref{fig:mono-step-flows} when the latent variables are independent between each other. To do so, we show that the change of variable theorem is equivalent to the marginalization over the latent variables of the full distribution described by the BNs. The development for autoregressive layers is:
-% \begin{align}
-%     p(\mb{x}) &= \int_{\mathbb{R}^d}p(\mb{x}, \mb{z}) d\mb{z} %= \int_{\mathbb{R}^d}p(\mb{x}| \mb{z}) p(\mb{z}) d\mb{z}
-%     \\
-%     %&=\int_{\mathbb{R}^d} p(\mb{z})\prod^d_{i=1}p(x_i| z_i, \mb{x}_{1:i-1}) d\mb{z}\\
-%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(z)p_{x_i}(x_i|z_i=z, \mb{x}_{1:i-1}) dz\\
-%     &=\prod^d_{i=1} \int_{\mathbb{R}} p_{z_i}(g^i(x, \mb{x}_{1:i-1}))\delta_{g^i(x_i, \mb{x}_{1:i-1})}(g^i(x, \mb{x}_{1:i-1})) \left| \frac{d g^i(x, \mb{x}_{1:i-1})}{dx} \right| dx\\
-%     &= \prod^d_{i=1} p_{z_i}(g^i(x_i, \mb{x}_{1:i-1})) \left| \frac{d g^i(x_i, \mb{x}_{1:i-1})}{dx} \right|.
-% \end{align}
-% We observe that only the diagonal terms of the Jacobian appears in the last equation which is a key property of autoregressive and coupling conditioners. A similar development can be made for coupling layers. Moreover, the introduction of latent variables into the pictures allows to generalize the discussion for multiple steps NF.
-
- %To counter this drawbacks these layers are often stack on top of each other with a random permutation
-%\gilles{insist on the fact that in either case, the ordering and the topology is quite arbitrary}
-
-% \subsection{Multiple steps flows}\label{sub-seq:multiple-steps-flow}
-% Both autoregressive and coupling conditioners require to fix arbitrarily the ordering and the topology. Unfortunately, in general, the best ordering and topology are not straightforward to guess. It is why normalizing flows are rarely made of only one step. Instead, multiple steps are stacked on top of each others. This increases the capacity of the flow both in terms of structural dependencies and of the representation capacity of the flow. Usually between two transformations the ordering of the vector components is permuted. Introduced by \cite{TAN}, linear flow steps are sometimes used as a generalization of permutation to allow the output vector to be linearly transformed. However, these flow steps also require to fix arbitrarily the permutation.
-
-% %We have shown that some one-step normalizing flows' conditioners corresponds to modeling a distribution with a BN with pre-defined topology.
-% The comparison between NF and BN can be extended to multiple steps NF by adding latent variables into the picture. The multiple-steps flows is a BN with additional intermediate latent variables whose connection are defined by the corresponding additional NF step. As an example \figref{fig:two-steps-flows} presents a two-step NF made of coupling conditioners. %This new vision of normalizing flows brings new reasoning tools to explain the impact of adding new steps.
-% Now, it can be observed that additional layers in NFs relax some usual independence assumptions between latent variables. By this mean, the distribution modeled by the flow gets more entangled at each additional layer. In particular, the \figref{fig:two-steps-flows-a} shows that for coupling layers, the additional step relaxes the strong conditional independence hypothesis between $x_1$ and $x_2$ of the mono-step NF of \figref{fig:mono-step-flows-c}. It can be observed that on \figref{fig:two-steps-flows-a}, $x_1$ and $x_2$ have common ancestors ($z_3$ and $z_4$) whereas they are clearly assumed independent in \figref{fig:mono-step-flows-b}. %In appendix \ref{app:indep-coupling}, we show that a minimum of three steps of coupling layers are required to prevent the model to assume some independence between the vector components.
-
-% The mitigation of independence is not the only reason to stack multiple steps. Indeed, empirical results show that adding steps into the flows often improve the model. This is the case even for mono-step autoregressive flows, whereas these models do not state any independence. This is especially true when the normalizers are simple transformations such as affine functions, as shown in \ref{sec:exp-tabular-density}. Possibly, the gain of multiple steps flows comes from the greater degree of freedom that is granted to the model by the additional steps. As an example, it can be observed from the two-steps NF of \figref{fig:two-steps-flows-b} that $x_1$ and $x_4$ have the four latent variables $z_i$ as common ancestors whereas they had only $z_1$ in the mono-step flow shown on \figref{fig:mono-step-flows-a}. This relaxes the way the flow can model the relationship between $x_1$ and $x_4$ in comparison to the mono-step case. Moreover, complex macroscopic interactions between variables can often be explained by simpler microscopic interactions, adding layers can be seen as modeling such simpler microscopic interactions. %\gilles{overall, make this sub-section slightly shorter?}
-
-% \begin{figure}
-%     %\centering
-%     \begin{subfigure}{.5\textwidth}
-%         \begin{tikzpicture}[
-%           node distance=.5cm and .35cm,
-%           mynode/.style={draw,circle,text width=.45cm,align=center},
-%           var_x/.style={draw, circle, double, text width=.45cm, align=center}
-%         ]
-
-%             \node[var_x] (u1) {$u_1$};
-%             \node[var_x, right=of u1] (u2) {$u_2$};
-%             \node[var_x, below=of u1] (u3) {$u_3$};
-%             \node[var_x, right=of u3] (u4) {$u_4$};
-
-%             \node[mynode, left=of u1] (z1) {$z_1$};
-%             \node[mynode, right=of u2] (z2) {$z_2$};
-%             \node[mynode, left=of u3] (z3) {$z_3$};
-%             \node[mynode, right=of u4] (z4) {$z_4$};
-
-%             \node[var_x, right=of z2] (x1) {$x_1$};
-%             \node[var_x, right=of x1] (x2) {$x_2$};
-%             \node[var_x, right=of z4] (x3) {$x_3$};
-%             \node[var_x, right=of x3] (x4) {$x_4$};
-%             %\node (a) at (2.6,-3) {(\textbf{a})};
-%             %\path (x1) edge[-latex] (x2);
-%             \path (x1) edge[-latex] (x3);
-%             \path (x1) edge[-latex] (x4);
-%             \path (x2) edge[-latex] (x3);
-%             \path (x2) edge[-latex] (x4);
-%             %\path (x3) edge[-latex] (x4);
-%             \foreach \x in {1,2}
-%                 \path (u\x) edge[-latex,  bend left=40] (x\x);
-
-%             \foreach \x in {3,4}
-%                 \path (u\x) edge[-latex,  bend left=-40] (x\x);
-
-%             %\path (z4) edge[-latex] (z3);
-%             \path (u4) edge[-latex] (u2);
-%             \path (u4) edge[-latex] (u1);
-%             \path (u3) edge[-latex] (u2);
-%             \path (u3) edge[-latex] (u1);
-%             \path (u4) edge[-latex] (u1);
-%             \foreach \x in {1, 2, 3,4}
-%                 \path (z\x) edge[-latex] (u\x);
-%             %\path (z2) edge[-latex] (z1);
-%         \end{tikzpicture}
-%         \caption{} \label{fig:two-steps-flows-a}
-%     \end{subfigure}
-%     \begin{subfigure}{.5\textwidth}
-%         \begin{tikzpicture}[
-%             node distance=.5cm and .35cm,
-%             mynode/.style={draw,circle,text width=.45cm,align=center},
-%           var_x/.style={draw, circle, double, text width=.45cm, align=center}
-%         ]
-%             \node[var_x] (u1) {$u_1$};
-%             \node[var_x, right=of u1] (u2) {$u_2$};
-%             \node[var_x, below=of u1] (u3) {$u_3$};
-%             \node[var_x, right=of u3] (u4) {$u_4$};
-
-%             \node[mynode, left=of u1] (z1) {$z_1$};
-%             \node[mynode, right=of u2] (z2) {$z_2$};
-%             \node[mynode, left=of u3] (z3) {$z_3$};
-%             \node[mynode, right=of u4] (z4) {$z_4$};
-
-%             \node[var_x, right=of z2] (x1) {$x_1$};
-%             \node[var_x, right=of x1] (x2) {$x_2$};
-%             \node[var_x, right=of z4] (x3) {$x_3$};
-%             \node[var_x, right=of x3] (x4) {$x_4$};
-%             %\node (b) at (2.6,-3) {(\textbf{b})};
-%             \path (x1) edge[-latex] (x2);
-%             \path (x1) edge[-latex] (x3);
-%             \path (x1) edge[-latex] (x4);
-%             \path (x2) edge[-latex] (x3);
-%             \path (x2) edge[-latex] (x4);
-%             \path (x3) edge[-latex] (x4);
-%             \foreach \x in {1,2}
-%                 \path (u\x) edge[-latex,  bend left=40] (x\x);
-
-%             \foreach \x in {3,4}
-%                 \path (u\x) edge[-latex,  bend left=-40] (x\x);
-
-%             \path (u4) edge[-latex] (u3);
-%             \path (u4) edge[-latex] (u2);
-%             \path (u4) edge[-latex] (u1);
-%             \path (u3) edge[-latex] (u2);
-%             \path (u3) edge[-latex] (u1);
-%             \path (u4) edge[-latex] (u1);
-%             \path (u2) edge[-latex] (u1);
-
-%             \foreach \x in {1, 2, 3,4}
-%                 \path (z\x) edge[-latex] (u\x);
-%         \end{tikzpicture}
-%         \caption{} \label{fig:two-steps-flows-b}
-%     \end{subfigure}
-%     \caption{Bayesian Networks of two-steps Normalizing Flows on vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. %(\tbf{a}) The conditioners are coupling layers. (\tbf{b}) The conditioners are autoregressive layers.
-%     }%\label{fig:two-steps-flows-a}
-%     \label{fig:two-steps-flows}
-% \end{figure}
-
-\begin{figure}[h]
-\begin{algorithm}[H]
-  \caption{Sampling} \label{alg:inversion}
-  \small
-  \begin{algorithmic}[1]
-    \State $\mb{z} \sim \mathcal{N}(\mb{0}, I)$
-    \State $\mb{x} \gets \mb{z}$
-    \Repeat
-      \State $\mb{c}^i \gets \mb{h}^i(\mb{x} \odot A_{i, :}) \quad \forall i \in \{1, \dots, d\}$
-      \State $x_i \gets (g^i)^{-1}(z_i; \mb{c}^i, \mb{\theta}) \quad \forall i \in \{1, \dots, d\}$
-    \Until{$\mb{x}$ converged}
-  \end{algorithmic}
-\end{algorithm}
-\end{figure}
-%%%%%%%%%%%%%%%% Section 4
-\section{Graphical normalizing flow}
-\subsection{Graphical conditioners}
-Following up on the previous discussion, we introduce the graphical conditioner architecture.
-We motivate our approach by observing that the topological ordering (a.k.a. ancestral ordering) of any BN leads to a lower triangular adjacency matrix whose determinant is equal to the product of its diagonal terms (proof in Appendix \ref{app:proof-jac-gnf}).
-Therefore, conditioning factors $\mb{c}^i(\mb{x})$ selected by following a BN adjacency matrix necessarily lead to a transformation $\mb{g}$ whose Jacobian determinant remains efficient to compute.
-
-Formally, given a BN with adjacency matrix $A \in \{0, 1\}^{d\times d}$, we define the \tbf{graphical conditioner} as being
-\begin{align}
-    \mb{c}^i(\mb{x}) = \mb{h}^i(\mb{x} \odot A_{i,:}),
-    %\begin{bmatrix}
-% g^1(x_{1}; \mb{c}^1(\mb{x} \odot A_{: \to 1})) & \hdots &  g^i(x_{i}; \mb{c}^i(\mb{x} \odot A_{: \to i})) & \hdots & g^d(x_{d}; \mb{c}^d(\mb{x} \odot A_{: \to d}))
-% \end{bmatrix},
-\label{eq:gnf}
-\end{align}
-where $\mb{x} \odot A_{i,:}$ is the element-wise product between the vector $\mb{x}$ and the $i^{\text{th}}$ row of $A$ -- i.e., the binary vector $A_{i, :}$ is used to mask on $\mb{x}$.
-% we model the distribution of the joint vector as follows:
-% \begin{align}
-%     p_{\mathbf{x}}(\mathbf{x}) &= \prod^d_{i=1}p(x_i|\mathcal{P}_i)\\
-%     &= \prod^d_{i=1} p_z(g^i(x_i, \mb{x} \odot A_{: \to i};  \mathbf{\theta})) \left| \frac{d g^i(x_i, \mb{x} \odot A_{: \to i};  \mathbf{\theta})}{dx_i} \right|,
-% \end{align}
-% where the $g^i$ are invertible scalar functions that maps $x_i$ to a latent variable conditioned on its parents in the corresponding Bayesian Network.
-NFs built with this new conditioner architecture can be inverted by sequentially inverting each component in the topological ordering.
-In our implementation the neural networks modeling the $h^i$ functions are shared to save memory and they take an additional input that one-hot encodes the value $i$. An alternative approach would be to use a masking scheme similar to what is done by \citet{MADE} in MADE as suggested by \cite{DAG-3}.
- %Finally, a sufficient condition for a function to be bijective is to have an invertible Jacobian everywhere on its domain. This is satisfied if graphical conditioners are combined with properly defined normalizers.
-
-
-The graphical conditioner architecture can be used to learn the conditional factors in a continuous BN while elegantly setting structural independencies prescribed from domain knowledge. In addition, the inverse of NFs built with graphical conditioners is a simple as it is for autoregressive and coupling conditioners, Algorithm \ref{alg:inversion} describes an inversion procedure.
-We also now note how these two conditioners are just special cases in which the adjacency matrix reflects the classes of BNs discussed in Section~\ref{sec:NF-BN}.
-% \gilles{State how coupling and autoregressive are just special cases of the graphical conditioner.}
-% In our experiments we parameterize the functions $\mb{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mb{x} \odot A_{i,:}$. \gilles{Is it the right place for this last sentence?}
-
-\subsection{Learning the topology}\label{sec:learn_topo}
-%\antoine{Proof of BN remains efficient to calculate - topological order}
-In many cases, defining the whole structure of a BN is not possible due to a lack of knowledge about the problem at hand.
-Fortunately, not only is the density at each node learnable, but also the DAG structure itself:
-defining an arbitrary topology and ordering, as it is implicitly the case for autoregressive and coupling conditioners, is not necessary.
-
-Building upon \textit{Non-combinatorial Optimization via Trace Exponential and Augmented lagRangian for
-Structure learning}~\citep[NO TEARS, ][]{DAG-1}, we convert the combinatorial optimization of score-based learning of a DAG into a continuous optimization by relaxing the domain of $A$ to real numbers instead of binary values. That is,
-\begin{align}\label{eq:DAG-relax}
-\begin{aligned}
-\max_{A\in\mathbb{R}^{d\times d}} & \ \ F(A) \\
-\text{s.t.} & \ \ \mathcal{G}(A) \in \mathsf{DAGs}
-\end{aligned}
-\quad \iff \quad
-\begin{aligned}
-\max_{A\in\mathbb{R}^{d\times d}} & \ \  F(A) \\
-\text{s.t.} & \ \ w(A) = 0,
-\end{aligned}
-\end{align}
-where $\mathcal{G}(A)$ is the graph induced by the weighted adjacency matrix $A$ and $F: \mathbb{R}^{d \times d}\rightarrow \mathbb{R}$ is the log-likelihood of the graphical NF $\mb{g}$ plus a regularization term, i.e.,
-\begin{align}
-     F(A) = \sum^N_{j=1}\log\big(p(\mb{x}^j; \mb{\theta})\big) + \lambda_{\ell_1} ||A||_1, \label{eq:score}
-\end{align}
-% Plugging in for $F$ the likelihood given by $\mb g$, we arrive to the following sequence of problems:
-% %In this work, the score is the likelihood given by a NF $\mb{g}(\cdot; \mb{\theta})$ made of a graphical conditioner combined with any kind of normalizer. This leads to the following sequence of problems:
-
-% \begin{align}
-%     \max_{\mb{\theta}, A}  \mathbb{E}_{\gamma_1, \gamma_2}\left[\sum^N_{i=1}\log\big(p(\mb{x}^i; \mb{\theta})\big)\right] - \lambda_t w(A) - \frac{\mu_t}{2} w(A)^2, \label{eq:Loss}%\nonumber
-% \end{align}
-where $\lambda_{\ell_1}$ is an $\ell_1$-regularization coefficient and $N$ is the number of training samples $\mb{x}^i$. The likelihood is computed as
-\begin{align}
-    p(\mb{x}; \mb{\theta})=& p_{\mb{z}}(\mb{g}(\mb{x}; \mb{\theta})) \prod_{i=1}^{d} \left| \frac{\partial g^i(x_i;\mb{h}^i(\mb{x} \odot A_{i,:}), \mb{\theta})}{\partial x_i} \right|. \nonumber
-\end{align}
-% \gilles{We should state directly that $F$ is the likelihood evaluated through the NF.}
-The function $w(A)$ that enforces the acyclicity is expressed as suggested by \citet{DAG-2} as
-$$w(A) := \tr\left((I + \alpha A)^d\right) - d \propto	\tr\left(\sum^d_{k=1} \alpha^k A^k\right),$$
-where $\alpha \in \mathbb{R}_+$ is a hyper-parameter that avoids exploding values for $w(A)$.
-In the case of positively valued $A$, an element $(i, j)$ of $A^k = \underbrace{A A...A}_{\text{k terms}}$ is non-null if and only if there exists a path going from node $j$ to node $i$ that is made of exactly $k$ edges. Intuitively $w(A)$ expresses to which extent the graph is cyclic. Indeed, the diagonal elements $(i, i)$ of $A^k$ will be as large as there are many paths made of edges that correspond to large values in $A$ from a node to itself in $k$ steps.
-
-In comparison to our work, \citet{DAG-1} use a quadratic loss on the corresponding linear structural equation model (SEM) as the score function $F(A)$. By attaching normalizing flows to topology learning, our method has a continuously adjustable level of complexity and does not make any strong assumptions on the form of the conditional factors. %Indeed, it has a continuously adjustable level of complexity as set by the capacity of the normalizers $g^i$ and the functions $\mb{h}^i$. %\antoine{@GL: I slightly rephrased is it more clear? Anyway I wonder if this should not be in the related works section instead?!}
-%\antoine{Rewrite the paragraph}
-
-\subsection{Stochastic adjacency matrix}
-In order to learn the BN topology from the data, the adjacency matrix must be relaxed to contain reals instead of booleans. It also implies that the graph induced by $A$ does not formally define a DAG during training. Work using NO TEARS to perform topology learning directly plug the real matrix $A$ in \eqref{eq:DAG-relax} \citep{DAG-1, DAG-2, DAG-3, DAG-4} however this is inadequate because the quantity of information going from node $j$ to node $i$ does not continuously relate to the value of $A_{i,j}$. Either the information is null if $A_{i,j} = 0$ or it passes completely if not. Instead, %, we suggest to let the information flow be proportional to $|A_{i,j}|$. To this end,
-we propose to build the stochastic pseudo binary valued matrix $A'$ from $A$, defined as
-$$A'_{i, j} = \frac{e^{\frac{\log(\sigma(A_{i,j}^2)) + \gamma_1}{T}}}{e^{\frac{\log(\sigma(A_{i,j}^2)) + \gamma_1}{T}} + e^{\frac{\log(1 - \sigma(A_{i,j}^2)) + \gamma_2}{T}}}, $$
-where $\gamma_1, \gamma_2 \sim \text{Gumbel}(0, 1)$ and $\sigma(a) = 2(\text{sigmoid}(2a^2) - \frac{1}{2})$ normalizes the values of $A$ between $0$ and $1$, being close to $1$ for large values and close to zero for values close to $0$. The hyper-parameter $T$ controls the sampling temperature and is fixed to $0.5$ in all our experiments.
-In contrast to directly using the matrix $A$, this stochastic transformation referred to as the Gumbel-Softmax trick in the literature \citep{gumbel1, gumbel2} allows to create a direct and continuously differentiable relationship between the weights of the edges and the quantity of information that can transit between two nodes. Indeed, the probability mass of the random variables $A'_{i,j}$ is mainly located around $0$ and $1$, and its expected value converges to $1$ when $A_{i,j}$ increases.
-
-%We denote this conditioner based on a Bayesian Network a \tbf{graphical conditioner}. \antoine{improve}
-%\antoine{link with gumber softmax for https://arxiv.org/pdf/1611.01144.pdf and https://arxiv.org/pdf/1611.00712.pdf}
-\subsection{Optimization} \label{sec:optim}
-We rely on the augmented Lagrangian approach to solve the constrained optimization problem \eqref{eq:DAG-relax} as initially proposed by \citet{DAG-1}. This optimization procedure requires solving iteratively the following sub-problems:
-\begin{align}
-    \max_{A} \mathbb{E}_{\gamma_1, \gamma_2}\left[F(A)\right] - \lambda_t w(A) - \frac{\mu_t}{2} w(A)^2, \label{eq:loss}
-\end{align}
-where $\lambda_t$ and $\mu_t$ respectively denote the Lagrangian multiplier and penalty coefficients of the sub-problem $t$.
-
- We solve these optimization problems with mini-batch stochastic gradient ascent. We update the values of $\gamma_t$ and $\mu_t$ as suggested by \cite{DAG-2} when the validation loss does not improve for 10 consecutive epochs. Once $w(A)$ equals $0$, the adjacency matrix is acyclic up to numerical errors. We recover an exact DAG by thresholding the elements of $A$ while checking for acyclicity with a path finding algorithm.
-% It is worth noting that during training the graph represented by the matrix $A$ can be cyclic making the computation of the log-likelihood as above only approximately correct. However, the method eventually converges to a solution that satisfies the constraint, making the final optimization steps correct in terms of the likelihood.
-We provide additional details about the optimization procedure used in our experiments in Appendix~\ref{app:optim}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%% Section 6
-\section{Experiments}
-In this section, we demonstrate some applications of graphical NFs in addition to unifying NFs and BN under a common framework. We first demonstrate how pre-loading a known or hypothesized DAG structure can help finding an accurate distribution of the data. Then, we show that learning the graph topology leads to relevant BNs that support generalization well when combined with $\ell_1$-penalization. Finally, we demonstrate that mono-step normalizing flows made of graphical conditioners are competitive density estimators.
-\subsection{On the importance of graph topology}
-The following experiments are performed on four distinct datasets, three of which are synthetic, such that we can define a ground-truth minimal Bayesian network, and the fourth is a causal protein-signaling network derived from single-cell data \citep{proteins}. Additional information about the datasets are provided in \tabref{tab:ds_desc} and in Appendix \ref{app:top_dataset}. For each experimental run we first randomly permute the features before training the model in order to compare autoregressive and graphical conditioners fairly.
-\paragraph{Prescribed topology}
-\begin{table}
-    \caption{Datasets description. $d$=Dimension of the data. $V$=Number of edges in the ground truth Bayesian Network.} \label{tab:ds_desc}
-    \centering
-    \scriptsize
-    \setlength{\tabcolsep}{2pt}
-    \renewcommand{\arraystretch}{1.5}
-
-    \begin{tabular}{l l l l l}
-        \hline\hline
-        Dataset & $d$ & $V$ & Train & Test\\ \hline
-        \tbf{Arithmetic Circuit} & $8$ & $8$ & $10,000$ & $5,000$\\
-        \tbf{8 Pairs}& $16$ & $8$  & $10,000$ & $5,000$\\
-        \tbf{Tree}  & $7$ & $8$ & $10,000$ & $5,000$\\
-        \tbf{Protein} & $11$ & $20$ & $6,000$ & $1,466$\\
-        \hline
-        \tbf{POWER} & $6$ & $\leq 15$ & $1,659,917$ & $204,928$\\
-        \tbf{GAS} & $8$ & $\leq 28$ & $852,174$ & $105,206$\\
-        \tbf{HEPMASS} & $21$ & $\leq 210$ & $315,123$ & $174,987$\\
-        \tbf{MINIBOONE} & $43$ & $\leq 903$ & $29,556$ & $3,648$\\
-        \tbf{BSDS300} & $63$ & $\leq 1,953$ & $1,000,000$ & $250,000$\\
-        \hline \hline
-    \end{tabular}
-\end{table}
-\begin{table}
-%\vspace{1em}
-    \caption{Graphical vs autoregressive conditioners combined with monotonic normalizers. Average log-likelihood on test data over 5 runs, under-scripted error bars are equal to the standard deviation.
-    Results are reported in nats; higher is better.
-    The best performing architecture for each dataset is written in bold. \emph{Graphical conditioners clearly lead to improved density estimation when given a relevant prescribed topology in 3 out of the 4 datasets.}} \label{tab:known_topo}
-    \centering
-    \scriptsize
-    \setlength{\tabcolsep}{1pt}
-    \renewcommand{\arraystretch}{1.5}
-
-    \begin{tabular}{l c c c c}
-        \hline\hline
-        Conditioner & Graphical & Autoreg. \\  \hline
-        \tbf{Arithmetic Circuit} & \bestresult{3.986817}{0.155741} & \result{3.059781}{0.381778} \\
-        \tbf{8 Pairs}& \bestresult{-9.398858}{0.061945} & \result{-11.503608}{0.271145}\\
-        \tbf{Tree}  & \bestresult{-6.845759}{0.016316} & \result{-6.960843}{0.054900}\\
-        \tbf{Protein} & \result{6.460093}{0.075050} & \bestresult{7.516195}{0.099126}\\
-        \hline
-        \hline
-    \end{tabular}
+    \vspace{-.5em}
+    \includegraphics[width=.49\textwidth]{figures/chapter07/improved_diffusion.png}
+    \vspace{-2.em}
+    \caption{APHYNITY, an existing hybrid modelling strategy, is unable to predict accurately the dynamic of a 2D diffusion reaction for a shifted test distribution although it predicts well configuration that follows the training distribution. On the opposite, APHYNITY+, the same model fine-tuned with our data augmentation, generalizes to shifted distributions as expected from the validity of the underlying physics.}
+    \label{fig:diffusion_shift}
     \vspace{-1em}
-\end{table}
-
-Rarely do real data come with their associated Bayesian network however oftentimes experts want to hypothesize a network topology and to rely on it for the downstream tasks. Sometimes the topology is  known a priori, as an example the sequence of instructions in stochastic simulators can usually be translated into a graph topology (e.g. in probabilistic programming \citep{proba_prog, wood}). In both cases, graphical conditioners allow to explicitly take advantage of this to build density estimators while keeping the assumptions made about the network topology valid.
-
-\tabref{tab:known_topo} presents the test likelihood of autoregressive and graphical normalizing flows on the four datasets. The flows are made of a single step and use monotonic normalizers. The neural network architectures are all identical. Further details on the experimental settings as well as additional results for affine normalizers are respectively provided in Appendix \ref{app:top_dataset_descri} and \ref{app:top_dataset_exp}. \emph{We observe how using correct BN structures lead to good test performance in \tabref{tab:known_topo}.} %that the a priori knowledge of the structure embedded into the graphical conditioners clearly lead to better test performance in comparison to autoregressive flows.
-Surprisingly, the performance on the protein dataset are not improved when using the ground truth graph. We observed during our experiments (see Appendix \ref{app:top_dataset_exp}) that learning the topology from this dataset sometimes led to improved density estimation performance with respect to the ground truth graph. The limited dataset size does not allow us to answer if this comes from to the limited capacity of the flow and/or from the erroneous assumptions in the ground truth graph. However, we stress out that the graphical flow respects the assumed causal structure in opposition to the autoregressive flow.
-
-%Interestingly, graphical conditioners respect the independence assumptions explicitly made by the prescribed topology in opposition to other flow architectures.
-
-
-\paragraph{Learning the topology}
-\begin{figure}
-    \begin{subfigure}{.27\textwidth}
-    \includegraphics[width=.99\textwidth]{figures/8-MIX.pdf}
-    \caption{}\label{fig:8_MIX_L1_test}
-    \end{subfigure}
-    \begin{subfigure}{.2\textwidth}~
-    \centering
-        \includegraphics[width=1.\textwidth]{figures/A_mat_8pairs.pdf}
-    \caption{}\label{fig:8_MIX_L1_DAG}
-    \end{subfigure}
-    \caption{\tbf{(a)}: Test log-likelihood as a function of $\ell_1$-penalization on \tbf{8 pairs} dataset. The upper bound is the average result when given a prescribed topology, the lower bound is the result with an autoregressive conditioner. \emph{Learning the right topology leads to better results than autoregressive conditioners.} \tbf{(b)}: The blacked cells corresponds to one correct topology of the 8 pairs dataset and the grey cells to the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with $\lambda_{\ell_1} = 4$. \emph{The optimization discovers a relevant BN (equivalent to the ground truth)}.}
-    \label{fig:8_MIX_L1}
 \end{figure}
+
+The data oriented methods, which include Group-DRO~\citep{groupDRO_ICLR} and Invariant Risk Minimization~\citep[][IRM]{IRM}, can be very appealing because they only require implicit specification of invariances via domains or environments. However, these methods' performance is limited to variations present in the training data and the inductive bias of the ML algorithm. This may be insufficient when the modelling problem is too complex or the variations of interest are not present in the training data. On the other hand, methods based on domain-specific expertise do not suffer from such limitations. Embedding expertise into a model can be done via architectural inductive biases \citep{lecun_cnn, gnn}, data augmentation \citep{cubuk2019autoaugment}, or a learning objective \citep{lagrangian_nn} that enforces established symmetries of the problem. As an example, simple data augmentation techniques combined with convolutions lead to excellent performance on natural image problems \citep{cubuk2019autoaugment}. Another natural approach to embed expertise in ML models, and the one studied in this paper, is called hybrid learning (HyL). HyL combines an expert model (e.g., physics-motivated equations) with a learned component that improves the expert model so that the combination better fits real-world data. A particularity of HyL is the central role played by the expertise, which is supposed to provide a simple and well-grounded parametric description of the process considered. HyL usually considers the expert model as an analytical function, or as a set of equations, that relates the expert parameters to the quantity of interest. The expert model is often motivated by the underlying physics of the system considered. Hence, we will use the terms \textit{expert} model and \textit{physical} model interchangeably.
+
+In recent work \citep{APHYNITY, HVAE, latent_ode_pharma, hl_1, hl_2, hl_3}, HyL demonstrated success in complementing partial physical models and improving the inference of the corresponding parameters. However, contrarily to the common belief that HyL achieves better generalization than black box ML models, we argue that hybrid models do not meet their promise regarding robustness. Although HyL achieves strong performance on IID test distributions by exploiting the inductive bias of the expert models, we show that their performance collapses when the test domain is not included in the training domain. This is unsatisfactory as the expert model is typically well-defined for a range of parameters that can correspond to realistic data far outside of the training distribution. A test distribution not covered by the training data, but for which an expert model exists, happens often in the real world. As an example, \citet{latent_ode_pharma} apply HyL to a pharmacological model describing the effect of a COVID-19 treatment for which only a limited quantity of real-world data is available. In this context, although the underlying biochemical dynamic of treatments is well modelled, data is often scarce and biased. Therefore, the hybrid model does not necessarily generalize to configurations that are well modelled by the pharmacological model but unseen during training.
+
+We introduce \textit{expert augmentations} for training augmented hybrid models~(AHMs), a procedure that extends the range of validity of hybrid models and improves generalization as pictured by \figref{fig:diffusion_shift}. Our contribution is to first formalise the HyL problem as: 1) Learning a probabilistic model partially defined by the expert model; 2) Performing inference over this probabilistic hybrid model. In this context, we show that HyL is vulnerable to distribution shifts for which the expert model is well defined (see Figure \ref{fig:diffusion_shift}, bottom row). Motivated by our analysis, we propose to fine-tune the hybrid model on an expert-augmented dataset that includes distribution shifts (see results of augmentation in Figure \ref{fig:diffusion_shift}, middle row). These expert augmentations only rely on the hybrid model itself, leveraging that the expert model is also well-defined outside of the training distribution. Our experiments on various controlled HyL problems demonstrate that AHMs achieve multiple orders of magnitude superior generalization in realistic situations and can be applied to any state-of-the-art HyL algorithm.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 2 Hybrid learning %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hybrid learning}
 \begin{figure}
     \centering
-    \includegraphics[width=.2\textwidth]{figures/proteins_shuffle_learned.pdf}
-    \caption{The adjacency matrix of the protein interaction network. The blacked cells are the directed connections proposed by domain experts and the grey is the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with  $\lambda_{\ell_1} = 12$. \emph{In a realistic setting, the optimization leads to a graph that shares a lot with the one designed by experts.}}    \label{fig:protein_net}
+    \begin{tikzpicture}[
+          node distance=.5cm and .5cm,
+          mynode/.style={draw,circle,text width=.6cm,align=center},
+          phantom_node/.style={circle,text width=.6cm,align=center},
+          halo/.style={line join=round,
+          double,line cap=round,double distance=#1,shorten >=-#1/2,shorten <=-#1/2},
+          halo/.default=7mm]
+        \node[mynode] (zp) {$Z_e$};
+        \node[mynode, right=of zp] (x) {$X$};
+        \node[mynode, right=of x] (za) {$Z_a$};
+        \node[mynode, below=of zp] (yp) {$Y_e$};
+        \node[mynode, below=of za] (y) {$Y$};
+        \path (zp) edge[-latex] (yp);
+        \path (x) edge[-latex] (yp);
+        \path (x) edge[-latex] (y);
+        \path (yp) edge[-latex] (y);
+        \path (za) edge[-latex] (y);
+        \path (za) edge[-latex] (y);
 
+        \coordinate (A) at ([yshift=.1cm,xshift=-.1cm]zp.north west);
+        \coordinate (B) at ([yshift=.1cm,xshift=.15cm]x.north east);
+        \coordinate (C) at ([xshift=-.1cm,yshift=-.15cm]yp.south west);
+        \coordinate (D) at ([yshift=-1.1cm,xshift=.1cm]x.south);
+
+        \coordinate (A_right) at ([yshift=.5cm,xshift=0cm]A);
+        \node at (A_right) [right] {Expert model};
+
+        \draw[dashed] plot[smooth cycle] coordinates {(A) (B) (D) (C)};
+
+
+    \end{tikzpicture}
+    \caption{A hybrid probabilistic model which describes the relationship between the input $X$ and the output $Y$ for a configuration of the system as defined by the latent variables $Z_e$ and $Z_a$. The prescribed expert model defines the conditional density $p(y_e|z_e, x)$, where $Y_e$ is an approximation of $Y$. Hybrid learning aims at learning the conditional distribution $p(y|z_a, y_e, x)$.}
+    \label{fig:gen_bnet}
+    \vspace{-1em}
 \end{figure}
-The $\lambda_{\ell_1}$ coefficient introduced in \eqref{eq:score} controls the sparsity of the optimized BN, allowing to avoid some spurious connections. We now analyze the effect of sparsity on the density estimation performance. \figref{fig:8_MIX_L1_test} shows the test log-likelihood as a function of the $\ell_1$-penalization on the 8 pairs dataset. We observe that the worst results are obtained when there is no penalization. Indeed, in this case the algorithm finds multiple spurious connections between independent vector's components and then overfits on these incorrect relationships. Another extreme case shows up when the effect of penalization is too strong, in this case, the learning procedure underfits the data because it ignores too many relevant connections. It can also be concluded from the plot that the optimal $\ell_1$-penalization performs on par with the ground truth topology, and certainly better than the autoregressive conditioner. Additional results on the other datasets provided in Appendix \ref{app:top_dataset} lead to similar conclusions.
 
-\paragraph{Protein network}
-The adjacency matrix discovered by optimizing \eqref{eq:loss} (with $ \lambda_{\ell_1} = 12$) on the protein network dataset is shown in \figref{fig:protein_net}. All the connections discovered by the method correspond to ground truth connections. Unsurprisingly, their orientation do not always match with what is expected by the experts. Overall we can see that the optimization procedure is able to find relevant connections between variables and avoids spurious ones when the $\ell_1$-penalization is optimized. Previous work on topology learning such as \cite{DAG-1,DAG-2, DAG-3} compare their method to others by looking at the topology discovered on the same dataset. Here we do not claim that learning the topology with a graphical conditioner improves over previous methods. Indeed, we believe that the difference between the methods mainly relies on the hypothesis and/or inductive biased made on the conditional densities. Which method would perform better is dependent on the application. Moreover, the Structural Hamiltonian Distance (SHD) and the Structural Inference Distance (SID), often used to compare BNs, are not well motivated in general. On the one hand the SHD does not take into account the independence relationships modeled with Bayesian networks, as an example the SHD between the graph found on 8 pairs dataset of \figref{fig:8_MIX_L1_DAG} and one possible ground truth is non zero whereas the two BNs are equivalent. On the other hand the SID aims to compare causal graphs whereas the methods discussed here do not learn causal relationships. In general BN topology identification is an ill posed problem and thus we believe using these metrics to compare different methods without additional downstream context is irrelevant. However, we conclude from \figref{fig:8_MIX_L1_DAG} and \figref{fig:protein_net} that the scores computed with graphical NFs can be used to learn relevant BN structures.%In contrast to the previously mentioned methods, we perform a train test split on the full dataset.
-% \begin{figure}
-%     % \centering
-%     % \begin{subfigure}{.45\textwidth}
-%     % \centering
-%     %     \begin{tikzpicture}[
-%     %           node distance=.7cm and .7cm,
-%     %           var_x/.style={draw, circle, text width=.35cm, align=center}
-%     %         ]
-%     %             \node[var_x] (x1) {$x_1$};
-%     %             \node[var_x, below=of x1] (x2) {$x_2$};
-%     %             \node[var_x, right=of x2] (x3) {$x_3$};
-%     %             \node[var_x, right=of x1] (x4) {$x_4$};
-%     %             \node[var_x, right=of x4] (x7) {$x_7$};
-%     %             \node[var_x, right=of x3] (x6) {$x_6$};
-%     %             \node[var_x, right=of x7] (x8) {$x_8$};
-%     %             \node[var_x, right=of x6] (x5) {$x_5$};
+In order to show that our proposed expert augmentations lead to robust models, we first formalize hybrid learning with the probabilistic model depicted in \figref{fig:gen_bnet}. In this Bayesian network, capital letters denote random variables (e.g., $Y$) and, in the following, we will use calligraphic letters for the domain of the corresponding realization (e.g., $y \in \mathcal{Y}$). In our formalism, the expert model is a conditional density $p(y_e|x, z_e)$ that describes the distribution of the $expert$ response $Y_e$ to an input $x$ together with a parametric description of the system $z_e$, denoting expert or physical parameters. We augment the expert model with the \textit{interaction model} which is a conditional distribution $p(y|x, y_e, z_a)$ that describes the distribution of the observation $Y$ given the input $x$, the expert model response $y_e$, and a parametric description of the interaction model $z_a$.
 
-%     %             \path (x1) edge[-latex] (x3);
-%     %             \path (x1) edge[-latex] (x4);
-%     %             \path (x2) edge[-latex] (x3);
-%     %             \path (x2) edge[-latex] (x4);
-%     %             \path (x4) edge[-latex] (x7);
-%     %             \path (x4) edge[-latex] (x6);
-%     %             \path (x5) edge[-latex] (x6);
-%     %             \path (x6) edge[-latex] (x8);
-%     %             %\node (b) at (1,-3) {(\textbf{b})};
-%     %     \end{tikzpicture}
-%     %     \caption{}
-%     % \end{subfigure}
-%     % \begin{subfigure}{.22\textwidth}
-%     % \centering
-%     %     \includegraphics[width=.95\textwidth]{figures/woodA.pdf}
-%     %     \caption{}
-%     % \end{subfigure}
-%     % \begin{subfigure}{.22\textwidth}
-%     % \centering
-%     %     \includegraphics[width=.95\textwidth]{figures/woodA.pdf}
-%     %     \caption{}
-%     % \end{subfigure}
-%     \includegraphics[width=.45\textwidth]{figures/Archibis2.pdf}
-%     \caption{Architecture vizualization - \antoine{I will redo it in full latex and add a neural network.}} \label{fig:wood}
-% \end{figure}
+Our final goal is to create a robust predictive model $p(y|x, (x_o, y_o))$ of the random variable $Y$, given the input $x$ together with independent observations $(x_o, y_o)$ of the same system, where the subscript $o$ denotes an observed quantity. As a concrete example, we consider predicting the evolution of a damped pendulum (described in \secref{sec:problems_description}) given its initial angle and speed ($x = \left[ \theta, \dot\theta\right]$) and a sequence of observations of the same pendulum. The expert model we assume is able to describe a frictionless pendulum whose dynamic is only characterized by one parameter $z_e := \omega_0$, denoting its fundamental frequency. A perfect description of the system should model the friction with a second parameter $z_a := \alpha$, the damping factor. In this problem, $(x_o, y_o)$ and $(x, y)$ are IID realization of the same pendulum which corresponds, in general terms, to samples from $p(x, y|z_a, z_e)$ for some fixed but unknown values of $z_a$ and $z_e$. The expert variables $z_e$ (e.g., $\omega_0$) together with $z_a$ (e.g., $\alpha$) should accurately describe the system that produces $Y$ (e.g., the evolution of the pendulum's angle and speed along time) from $X$ (e.g., the initial pendulum's state). In our setting we assume that we are given a pair $(x_o, y_o)$ (e.g., past observations) from which we can accurately infer the state of the system $(z_a, z_e)$ as described by the interaction and expert models, and then predict the distribution of $Y$ for a given input $x$ (e.g., forecasting future observations) to the same system. Because the interaction between $z_e$ and $y$ is essentially defined by the expert model, it should be possible, and preferable, to learn an accurate predictive model of $Y$ whose accuracy is independent from the training distribution of the expert variables $z_e$. Provided all probability distributions in \figref{fig:gen_bnet} are known, the Bayes optimal hybrid predictor $p_B$ can be written as
+\begin{align}
+    p_B(y|x, (x_o, y_o)) = \mathbb{E}_{p(z_a, z_e|(x_o, y_o))}\left[ p(y|x, z_a, z_e) \right]. \label{eq:hybrid_predictor}
+\end{align}
+We observe that the Bayes optimal predictor explicitly depends on the posterior $p(z_a, z_e|(x_o, y_o))$ which is itself a function of the marginal distribution over $z_e$. This may preclude the existence of a good predictor that is invariant to shift of $p(z_e)$. However, in the following we will consider that the pair $(x_o, y_o)$ contains enough information about the parameters $z_a, z_e$. As a consequence, the posterior distribution shrinks around the correct parameters value and the effect of the prior becomes negligible.
 
-\subsection{Density estimation benchmark} \label{sec:exp-tabular-density}
-\begin{table}
-%\vspace{1em}
 
-    \caption{Average log-likelihood on test data over 3 runs, under-scripted error bars are equal to the standard deviation.
-    Results are reported in nats; higher is better.
-    The best performing architecture per category for each dataset is written in bold.
-    (a) 1-step affine normalizers (b) 1-step monotonic normalizers. \emph{Graphical normalizing flows outperform coupling and autoregressive architectures on most of the datasets.}} \label{tab:tabular_density}
+\subsection{Hybrid generative modelling}
+We consider expert models that are deterministic; that is, for which $p_\theta(y_e|x, z_e)$ is a Dirac distribution. The expert model describes the system as a function $f_e : \mathcal{X} \times \mathcal{Z}_e \rightarrow \mathcal{Y}_e$ that computes the response $y_e$ to an input $x$, parameterized by expert variables $z_e$. The goal of hybrid modelling is to augment the expert model with a learned component from data as depicted in \figref{fig:gen_bnet}. Formally, given a dataset $\mathcal{D} = \{(x^{(i)}, y^{(i)})\}_{i=1}^N$ of $N$ IID samples, we aim to learn the interaction model $p_\theta(y|x, y_e, z_a)$ that fits the data well but is close to the expert model. For example, we could define closeness via a small L2-distance between expert and hybrid outputs or via a small Kullback-Leibler (KL) divergence between the marginal distributions of $Y$ and $Y_e$.
+
+Learning a model that is close to the expert model and fits the training data well is a hard problem. However, the APHYNITY algorithm \citep{APHYNITY} and the Hybrid-VAE \citep[][HVAE]{HVAE} are two recent approaches that offer promising solutions to this problem. We now briefly describe these two methods and how they can be used to approximate the Bayes optimal predictor of \eqref{eq:hybrid_predictor}. Our augmentation strategy is compatible (and effective) with both approaches.
+\paragraph{APHYNITY.}
+\citet{APHYNITY} formulate hybrid learning in a context where the expert model is an ordinary differential equation (ODE). They consider an additive hybrid model that should perfectly fit the data, which is equivalent to assuming the conditional distribution $p_\theta(y|x, y_e, z_a)$ is a Dirac distribution. Formally, they solve the optimization problem
+\begin{align}
+    \min_{z_e, F_a} ||F_a|| \quad \text{s.t.} \quad \forall (x, y) \in \mathcal{D}, \forall t,& \frac{dy_t}{dt} = (F_e + F_a)(y_t) \nonumber \\ &\text{with} \quad y_0 := x, \label{eq:APHYNITY}
+\end{align}
+where $||\cdot||$ is a norm operator on the function space, $F_a: \mathcal{Y}_t \times \mathcal{Z}_a \rightarrow \mathcal{Y}_t$ is a learned function, $F_e: \mathcal{Y}_t \times \mathcal{Z}_e \rightarrow \mathcal{Y}_t$ defines the expert model and $\mathcal{D}$ is a dataset of initial states $x:=y_0$ and sequences $y \in \mathcal{Y} := (\mathcal{Y}_t)^k$, where $k$ is the number of observed timesteps. APHYNITY solves this problem with Lagrangian optimization and Neural ODEs~\citep{NODE} to compute derivatives. In the context of ODEs, the random variable $X$ is the initial state of the system at $t_0$ and $Y$ is the observed sequence of $k$ states between $t_0$ and $t_1$.
+
+This formulation only considers learning a missing dynamic for one realization of the system described by \figref{fig:gen_bnet}, for a single $z_a$ and $z_e$. However, we are interested in learning a hybrid model that works for the full set of systems described by \figref{fig:gen_bnet}. As suggested in \citet{APHYNITY}, we use an encoder network $g_\psi(\cdot, \cdot): \mathcal{X} \times \mathcal{Y} \rightarrow \mathcal{Z}_a \times \mathcal{Z}_e$ that corresponds to a Dirac distribution located at $g_\psi$ as the approximate posterior $q_\psi(z_a, z_e|x, y)$. The interaction model is a product of Dirac distributions whose locations correspond to the solution of the ODE
+\begin{align}
+    \frac{dy_t}{dt} = F_e(y_t, z_e) + F_a(y_t, z_a; \theta), \quad y_0:=x.
+    \label{eq:APH_ae}
+\end{align}
+Hence the corresponding approximate Bayes predictor replaces the parameters $(z_a, z_e)$ in \eqref{eq:APH_ae} with the prediction of $g_\psi$ and predicts a product of Dirac distributions.
+
+\paragraph{Hybrid-VAE (HVAE).}
+In contrast to APHYNITY, the model proposed by \citet{HVAE} is not limited to additive interactions between the expert model and the ML model, nor to ODEs. Instead, their goal is to learn the generative model described by \figref{fig:gen_bnet}. They achieve this with a variational auto-encoder (VAE) where the decoder specifically follows \figref{fig:gen_bnet}. Similarly to the amortized APHYNITY model, the encoder $g_\psi(x, y)$ predicts a posterior distribution over $z_a$ and $z_e$, and the model is trained with the classical Evidence Lower Bound on the likelihood~(ELBO). \citet{HVAE} observe that relying only on an architectural inductive bias and maximum likelihood training is not enough to ground the generative model to the expert equations. They propose to add three regularizers $R_{PPC}, R_{DA, 1},\text{ and } R_{DA, 2}$ that encourage the generative model to rely on the expert model. The final objective is
+\begin{align}
+    \max_{\theta, \psi}\, &\mathbb{E}_{\mathcal{D}}\left[ \text{ELBO} ((x, y); \psi, \theta)\right] + \alpha R_{PPC} + \beta R_{DA, 1} \nonumber \\&+ \gamma R_{DA, 2}. \label{eq:hvae_loss}
+\end{align}
+The first regularizer, $R_{PPC}$, encourages the marginal distribution of samples generated by the complete model to be close to the marginal distribution that would be only generated by the physical model. The two other regularizers specifically require the encoder network for $z_e$ to be made of two sub-networks. The first network filters the observations to keep only what can be generated by the expert model alone, and the second should map the filtered observations to the posterior distribution over $z_e$. $R_{DA, 1}$ penalizes the objective if the observations generated by the expert model are not close to the filtered observations. Finally, $R_{DA, 2}$ relies on data augmentation with the expert model to enforce that the second sub-network correctly identifies the expert variables $z_e$ when the observations are correctly filtered. We refer the reader to \citet{HVAE} for more details on HVAE. For HVAE, the approximate predictor takes the form described by \eqref{eq:hybrid_predictor} where $p(z_a, z_e|(x_o, y_o))$ is approximated by the encoder $q_\psi(z_a, z_e|x, y)$ and $p(y|x, z_e, z_a)$ by the learned hybrid generative model.
+
+\begin{figure*}[h]
     \centering
-    \scriptsize
-    \setlength{\tabcolsep}{0pt}
-    \renewcommand{\arraystretch}{1.5}
+    \tikzset{every picture/.style={line width=0.5pt}} %set default line width to 0.75pt
 
-    \begin{tabular}{l l  c c c c c}
-        \hline\hline
-        &\scalebox{.8}{Dataset} & \scalebox{.6}{\tbf{POWER}} & \scalebox{.6}{\tbf{GAS}} & \scalebox{.6}{\tbf{HEPMASS}} & \scalebox{.6}{\tbf{MINIBOONE}} & \scalebox{.6}{\tbf{BSDS300}} \\
-        \hline
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1,scale=0.8]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
 
-        \multirow{3}{*}{\scalebox{.8}{(a)}}
-        & \scalebox{.8}{Coup. }
-            & \result{-5.595652333333334}{0.002610780002646944}
-            & \result{-3.0495433333333337}{0.007895648435829896}
-            & \result{-25.741226333333334}{0.006650417346971497}
-            & \result{-38.34233366666667}{0.024608616164984692}
-            & \result{57.334731}{0.0024840547497991497}\\
-        & \scalebox{.8}{Auto.}
-            & \result{-3.552735333333333}{0.001566747019215928}
-            & \result{-0.34099799999999997}{0.008537987702029085}
-            & \result{-21.661752333333336}{0.007925831074544806}
-            & \bestresult{-16.6966}{0.05012842471758638}
-            & \bestresult{63.73638033333333}{0.004330463049399384} \\
-        & \scalebox{.8}{Graph. }
-            & \bestresult{-2.7979636666666665}{0.00799790907397394}
-            & \bestresult{1.985552666666667}{0.020352012665963974}
-            & \bestresult{-21.18043833333333}{0.07373030467106993}
-            & \result{-19.672145}{0.05610214543134648}
-            & \result{62.85277466666667}{0.06672677328396033}\\ \hline
-        \multirow{3}{*}{\scalebox{.8}{(b)}}
-        & \scalebox{.8}{Coup. }
-            & \result{0.246356}{0.0012096316243661454}
-            & \result{5.121069666666667}{0.029769947064484863}
-            & \result{-20.545104333333335}{0.04462281262115015}
-            & \result{-32.04131233333334}{0.12106401195327407}
-            & \result{107.17215866666668}{0.4562053354454408} \\
-        & \scalebox{.8}{Auto.}
-            & \result{0.5769643333333333}{0.0017583917525840062}
-            & \result{9.786357666666667}{0.042050408403353966}
-            & \result{-14.515809666666668}{0.15825141180061844}
-            & \bestresult{-11.65676}{0.017674348323677303}
-            & \result{151.28819533333333}{0.3101846263988979}  \\
-        & \scalebox{.8}{Graph. }
-            & \bestresult{0.620236}{0.043806243550434706}
-            & \bestresult{10.146548666666666}{0.1515902526183299}
-            & \bestresult{-14.165973333333334}{0.13134025332784377}
-            & \result{-16.227559}{0.5166131106860017}
-            & \bestresult{155.22247133333335}{0.10754154750090603} \\
-            % \multirow{2}{*}{(c)}
-        % & Ar-Affine
-        %     & \result{0.14}{0.005}
-        %     & \result{9.07}{0.01}
-        %     & \result{-17.7}{0.01}
-        %     & \result{-11.75}{0.22}
-        %     & \result{155.69}{0.14} \\
-        % & Ar-Monotonic
-        %     & \result{0.63}{0.01}
-        %     & \result{10.89}{0.7}
-        %     & \result{-13.99}{.21}
-        %     & \result{-9.67}{.13}
-        %     & \result{157.98}{.01}
-        %     \\
-       \hline \hline
+%All ALl omega
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ][fill={rgb, 255:red, 219; green, 204; blue, 226 }  ,fill opacity=1. ] (247.5,65) .. controls (247.5,51.75) and (258.25,41) .. (271.5,41) -- (407.5,41) .. controls (420.75,41) and (431.5,51.75) .. (431.5,65) -- (431.5,137) .. controls (431.5,150.25) and (420.75,161) .. (407.5,161) -- (271.5,161) .. controls (258.25,161) and (247.5,150.25) .. (247.5,137) -- cycle ;
+
+%All ze
+\draw  [fill={rgb, 255:red, 210; green, 233; blue, 200 }  ,fill opacity=1. ] (2,79.2) .. controls (2,68.6) and (10.6,60) .. (21.2,60) -- (133.8,60) .. controls (144.4,60) and (153,68.6) .. (153,79.2) -- (153,136.8) .. controls (153,147.4) and (144.4,156) .. (133.8,156) -- (21.2,156) .. controls (10.6,156) and (2,147.4) .. (2,136.8) -- cycle ;
+%all omega
+\draw  [fill={rgb, 255:red, 210; green, 233; blue, 200 }  ,fill opacity=1. ] (255,78.7) .. controls (255,68.1) and (263.6,59.5) .. (274.2,59.5) -- (386.8,59.5) .. controls (397.4,59.5) and (406,68.1) .. (406,78.7) -- (406,136.3) .. controls (406,146.9) and (397.4,155.5) .. (386.8,155.5) -- (274.2,155.5) .. controls (263.6,155.5) and (255,146.9) .. (255,136.3) -- cycle ;
+
+%Rounded Rect [id:dp6639592793786497]
+\draw [fill={rgb, 255:red, 241; green, 183; blue, 176 }  ,fill opacity=1. ]  (11,83.7) .. controls (11,79.23) and (14.63,75.6) .. (19.1,75.6) -- (69.4,75.6) .. controls (73.87,75.6) and (77.5,79.23) .. (77.5,83.7) -- (77.5,108) .. controls (77.5,112.47) and (73.87,116.1) .. (69.4,116.1) -- (19.1,116.1) .. controls (14.63,116.1) and (11,112.47) .. (11,108) -- cycle ;
+%Rounded Rect [id:dp6448074412564562]
+\draw [fill={rgb, 255:red, 184; green, 205; blue, 225 }  ,fill opacity=1. ]  (81.5,111.6) .. controls (81.5,107.13) and (85.13,103.5) .. (89.6,103.5) -- (139.9,103.5) .. controls (144.37,103.5) and (148,107.13) .. (148,111.6) -- (148,135.9) .. controls (148,140.37) and (144.37,144) .. (139.9,144) -- (89.6,144) .. controls (85.13,144) and (81.5,140.37) .. (81.5,135.9) -- cycle ;
+
+%Rounded Rect [id:dp7160429142184185]
+\draw  [fill={rgb, 255:red, 241; green, 183; blue, 176 }  ,fill opacity=1. ]  (263,83.7) .. controls (263,79.23) and (266.63,75.6) .. (271.1,75.6) -- (321.4,75.6) .. controls (325.87,75.6) and (329.5,79.23) .. (329.5,83.7) -- (329.5,108) .. controls (329.5,112.47) and (325.87,116.1) .. (321.4,116.1) -- (271.1,116.1) .. controls (266.63,116.1) and (263,112.47) .. (263,108) -- cycle ;
+%Rounded Rect [id:dp8333286965822135]
+\draw [fill={rgb, 255:red, 184; green, 205; blue, 225 }  ,fill opacity=1. ]  (333.5,111.6) .. controls (333.5,107.13) and (337.13,103.5) .. (341.6,103.5) -- (391.9,103.5) .. controls (396.37,103.5) and (400,107.13) .. (400,111.6) -- (400,135.9) .. controls (400,140.37) and (396.37,144) .. (391.9,144) -- (341.6,144) .. controls (337.13,144) and (333.5,140.37) .. (333.5,135.9) -- cycle ;
+
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ][fill={rgb, 255:red, 184; green, 233; blue, 134 }  ,fill opacity=0.3 ][fill={rgb, 255:red, 219; green, 204; blue, 226 }  ,fill opacity=1. ]  (495.5,89.2) .. controls (495.5,81.91) and (501.41,76) .. (508.7,76) -- (577.8,76) .. controls (585.09,76) and (591,81.91) .. (591,89.2) -- (591,128.8) .. controls (591,136.09) and (585.09,142) .. (577.8,142) -- (508.7,142) .. controls (501.41,142) and (495.5,136.09) .. (495.5,128.8) -- cycle ;
+%Rounded Rect [id:dp6378499267772109]
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] [fill={rgb, 255:red, 210; green, 233; blue, 200 }  ,fill opacity=1. ](520.5,105.1) .. controls (520.5,100.63) and (524.13,97) .. (528.6,97) -- (578.9,97) .. controls (583.37,97) and (587,100.63) .. (587,105.1) -- (587,129.4) .. controls (587,133.87) and (583.37,137.5) .. (578.9,137.5) -- (528.6,137.5) .. controls (524.13,137.5) and (520.5,133.87) .. (520.5,129.4) -- cycle ;
+
+
+%Straight Lines [id:da18470078580218108]
+\draw    (149.5,122) -- (333.5,122) ;
+\draw [shift={(148,122)}, rotate = 0] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.28]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da9950537909606885]
+\draw    (153,135.9) -- (253,135.9) ;
+\draw [shift={(254,135.9)}, rotate = 180] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da27925255270157745]
+\draw    (201,45) -- (201,122.5) ;
+%Straight Lines [id:da7038846140290534]
+\draw    (200.5,136.5) -- (200.5,167) ;
+%Straight Lines [id:da3444837910426306]
+\draw    (409.5,129.9) -- (520,129.9) ;
+\draw [shift={(406.5,129.9)}, rotate = 0] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+
+\draw    (434,100) -- (495.5,100) ;
+\draw [shift={(432,100)}, rotate = 0] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+
+
+% Text Node
+\draw (103,114.4) node [anchor=north west][inner sep=0.75pt]    {$\mathcal{Z}_{e}$};
+% Text Node
+\draw (33.5,85) node [anchor=north west][inner sep=0.75pt]    {$\tilde{\mathcal{Z}}_{e}$};
+% Text Node
+\draw (107.5,72.9) node [anchor=north west][inner sep=0.75pt]    {$\overset{+}{\mathcal{Z}}_e$};
+% Text Node
+\draw (365.5,73.4) node [anchor=north west][inner sep=0.75pt]    {$\overset{+}{\Omega}$};
+% Text Node
+\draw (290.5,84.9) node [anchor=north west][inner sep=0.75pt]    {$\tilde{\Omega}$};
+% Text Node
+\draw (360,115) node [anchor=north west][inner sep=0.75pt]    {$\Omega$};
+% Text Node
+\draw (545,107) node [anchor=north west][inner sep=0.75pt]    {$\mathcal{Z}_{a}$};
+% Text Node
+\draw (497,86) node [anchor=north west][inner sep=0.75pt]    {$\overset{\ast}{\mathcal{Z}}_a$};
+% Text Node
+\draw (117,10) node [anchor=north west][inner sep=0.75pt]    {$\underbrace{p( z_{e} |x,y) \approx q_{\psi }( z_{e} |x,y)}$};
+% Text Node
+\draw (37,167.9) node [anchor=north west][inner sep=0.75pt]    {$\overbrace{p( x,y|z_{e}) =\mathbb{E}_{p( z_{a}) p( y_{e} |z_{e} ,\ x)}[ p( x) p( y|z_{a} ,x,y_{e})]}$};
+% Text Node
+\draw (106.5,206.9) node [anchor=north west][inner sep=0.75pt]    {$\approx \mathbb{E}_{p( z_{a}) p( y_{e} |z_{e} ,\ x)}[ p( x) p_{\theta }( y|z_{a} ,x,y_{e})]$};
+
+
+\end{tikzpicture}
+    \vspace{-1em}
+    \caption{Visualization of the distribution shifts considered in this work. The train support $\Omega$ of $(x, y)$ results from $(z_a, z_e) \in \mathcal{Z}_e \times \mathcal{Z}_a$. The test supports (in red) are denoted with a tilde symbols as $\tilde{\mathcal{Z}}_e$ for $z_e$ and $\tilde{\Omega}$ for $(x, y)$. The augmented support $\overset{+}{\Omega}$ (in green) includes both train and test scenarios and corresponds to $(z_a, z_e) \in \overset{+}{\mathcal{Z}}_e \times \mathcal{Z}_a$. The outer violet domain that includes $\overset{+}{\Omega}$ depicts one of our experiment in which the domain of $z_a$ is also shifted. Hybrid modelling algorithms alone may learn a mapping $p_\theta: \overset{+}{\mathcal{Z}}_e \rightarrow \overset{+}{\Omega}$ but augmentation is necessary to learn the inverse mapping $q_\psi: \overset{+}{\Omega} \rightarrow \overset{+}{\mathcal{Z}}_e$.}
+    \label{fig:ood_vizu}
+    \vspace{-1em}
+\end{figure*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 3 Robust hybrid learning %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Robust hybrid learning}
+We now formalize our definition of out of distribution~(OOD) and robustness. In general, a test scenario is OOD if the joint test distribution $\tilde{p}(x, y)$ is different from the training distribution $p(x, y)$, that is $d(\tilde{p}, p) > 0$ for any properly defined divergence or distance $d$. In the following, we reduce our discussion to a  sub-class of distribution shifts for which the marginal train and test distributions over $z_e$ may be different, $d(p(z_e),  \tilde{p}(z_e)) > 0$, but the marginals of $z_a$ and $x$ are constant. As a consequence, the joint distribution of $(x, y)$ pairs is also shifted. Formally, the training and test distributions are respectively defined as
+\begin{align}
+    p(x, y) := \mathbb{E}_{p(z_e) p(z_a) p(y_e|z_e, x)}\left[p(x) p(y|z_a, x, y_e) \right], \nonumber\\
+    \tilde{p}(x, y) := \mathbb{E}_{\tilde{p}(z_e) p(z_a) p(y_e|z_e, x)}\left[p(x) p(y|z_a, x, y_e) \right]. \nonumber
+\end{align}
+In this context, we demonstrate, theoretically and empirically, that classical hybrid models fail. To address this failure, we introduce \textit{augmented hybrid models} and show that, under some assumptions, they achieve optimal performance on both the train and test distributions.
+
+Our goal is to learn a predictive model
+\begin{align}
+    p_{\theta, \psi}(y|x, (x_o, y_o)) = \mathbb{E}_{\substack{q_\psi(z_a, z_e|x_o, y_o) \\ p(y_e|z_e, x)}}\left[ p_\theta(y|y_e, x, z_a)\right] \nonumber
+\end{align}
+that is \textit{exact} on both the train and test domains when they follow the  aforementioned training and testing distribution shifts. We say that a learned predictive model $\hat{p}(a|b)$ is $\mathcal{E}\textit{-exact}$, or \textit{exact} on the sample space $\mathcal{E}$, if $\hat{p}(a|b) = p(a|b) \quad \forall (a, b) \in \mathcal{E}$. Here we qualify a predictive model as \textit{robust} to a test scenario if its \textit{exactness} on the training domain is sufficient to ensure exactness on the test domain.
+
+We now define an augmented distribution $\overset{+}{p}(z_e)$ over the expert variables whose support $\overset{+}{\mathcal{Z}}_e$ includes the joint support $\mathcal{Z}_e \cup \tilde{\mathcal{Z}}_e$ between the train and test distribution of the physical parameters. As depicted in \figref{fig:ood_vizu}, we denote the corresponding support over the observation space $\mathcal{X} \times \mathcal{Y}$ as $\overset{+}{\Omega}, \Omega$, and $\tilde{\Omega}$, respectively. In this context, and with \textbf{\hypref{hyp:first}}, we may demonstrate that even under perfect learning, classical hybrid learning algorithms do not produce an $\tilde{\Omega}\textit{-exact}$ predictor while our augmentation strategy does.
+\begin{assumption}{A1}{} \label{hyp:first}
+Hybrid modelling learns an interaction model $p_\theta(y|y_e, x, z_a)$ that is $\overset{+}{\Omega}\textit{-exact}$.
+\end{assumption}
+Although strong, \textbf{\hypref{hyp:first}} is consistent with the recent literature on hybrid modelling, which assumes that $p(y_e|x, z_e)$ is an accurate description of the system, thereby $p_\theta(y|y_e, x, z_a)$ should not be overly complex. As an example, we consider an additive interaction model in our experiments for which extrapolation to unseen $y_e$ holds if this assumption is correct. That said, we still notice that the exactness of the interaction model $p_\theta$ on $\overset{+}{\Omega}$ is insufficient to prove that the predictive model $p_{\theta, \psi}$ is $\overset{+}{\Omega}\textit{-exact}$. Indeed, the encoder $q_\psi$ is only trained on the training data and cannot rely on a strong inductive bias in contrast to $p_\theta$. Thus, even if the encoder is exact on the training distribution, the corresponding predictive model does not achieve exactness outside $\Omega$.
+
+\subsection{Expert augmentation}
+We propose a data augmentation strategy to improve the robustness of hybrid models to unseen test scenarios. Once trained, the hybrid model is composed of an encoder $q_\psi$ and an interaction model $p_\theta$ that are respectively $\Omega\textit{-}$ and $\overset{+}{\Omega}\textit{-exact}$. We may create a new training distribution with a support over $\overset{+}{\Omega}$ by sampling physical parameters $z_e$ from a distribution that covers $\overset{+}{\mathcal{Z}}_e$. We can then train the encoder $q_\psi$ on $\overset{+}{\Omega}$, under perfect training the corresponding predictive model $p_{\theta, \psi}(y|x, (x_o, y_o))$ is $\overset{+}{\Omega}\textit{-exact}$, hence exact on both train and test domains.
+
+Our learning strategy is grounded in existing hybrid modelling algorithms. Here, we focus on APHYNITY and HVAE, but our approach is applicable to other HyL algorithms. We first train an encoder $q_\psi$ and a decoder $p_\theta$ with a HyL algorithm. Together with experts we then decide on a realistic distribution $\overset{+}{p}(z_e)$ and create a new dataset $\overset{+}{\mathcal{D}}$ by sampling from the hybrid generative model defined by \figref{fig:gen_bnet} and the interaction model $p_\theta$. A notable difference between the augmented training set $\overset{+}{\mathcal{D}}$ and the original training set $\mathcal{D}$ is that the former contains ground truth values for the expert's variables $z_e$. As we assume that the interaction model is $\overset{+}{\Omega}\textit{-exact}$, we freeze it and only fine-tune the encoder $q_\psi$ on $\overset{+}{\mathcal{D}}$. We use a combination of the loss function $\ell$ of the original HyL algorithm (e.g., \eqref{eq:hvae_loss} for HVAE, and the Lagrangian of \eqref{eq:APHYNITY} for APHYNITY) and a supervision on the latent variable objective to learn a decoder that solves
+\begin{align}
+    \psi = \arg\min_{\psi} \mathbb{E}_{\overset{+}{\mathcal{D}}}\left[ \ell(x, y; \theta, \psi) - \log q_\psi(z_e|x, y) \right]. \nonumber
+\end{align}
+In our experiments we chose a Gaussian model for the posterior, which is equivalent to a mean square error~(MSE) loss on the physical parameters. We provide a detailed description of the expert augmentation scheme in \appref{app:ahm_desc}.
+
+As a side note, we would like to emphasize the difference between the data augmentation proposed in this paper and the one from \citet{HVAE}. While HVAE also requires to sample new physical parameters $z_e$, it is only to ensure that a sub-part of the encoder is able to infer correctly $z_e$ given $y_e$. This augmentation does not contribute to robustness distribution shifts on $y$ in contrast to ours.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 4 Experiments %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experiments}
+\begin{figure*}
+    \centering
+    \includegraphics[width=.98\textwidth]{figures/chapter07/results_log_mse.png}
+    \vspace{-1em}
+    \caption{The average log-MSEs over 10 runs for three synthetic problems on the validation and test sets. We compare HVAE (in red) and APHYNITY (in green), in light colours, to their expert augmented versions HVAE+ and APHYNITY+, in darker colours. \textit{On the test sets, AHMs outperform the original models, and by a large margin on the pendulum and diffusion problems. Moreover, augmentation conserves the relatively good performance on the validation set (IID w.r.t. the training set).}}
+    \label{fig:log_mse}
+    \vspace{-1.em}
+\end{figure*}
+
+\subsection{Problem description} \label{sec:problems_description}
+We assess the benefits of expert augmentation on three controlled problems described and simulated by the ODE
+\begin{align}
+    \frac{dy_t}{dt} = F_e(y_t; z_e) + F_a(y_t; z_a), \label{eq:generic_ode}
+\end{align}
+where $F_e: \mathcal{Y}_t \times \mathcal{Z}_e \rightarrow \mathcal{Y}_t$ is the expert model and $F_a: \mathcal{Y}_t \times \mathcal{Z}_a \rightarrow \mathcal{Y}_t$ complements it. In our notation $X$ is the initial state $y_0$ and the response $Y$ is the sequence of states $y_{1:t_1}:=[y_{i\Delta t}]_{i=1}^{t_1 \!/\! \Delta t}$. For all experiments we train the models to maximize $p_{\theta, \psi}(y=y_{1:t_1}|x=y_0)$ on the training data. We validate and test the models on the predictive distribution $p(y=y_{1:t_2}|x=y_0, x_o=y_0, y_o=y_{1:t_1})$, where $t_2 > t_1$ assesses the generalization over time. A brief description of the different problems is provided below.
+
+\textbf{The damped pendulum} is often used as an example in the hybrid modelling literature \citep{APHYNITY, HVAE}. The system's state at time $t$ is $y_t = \begin{bmatrix}\theta_t & \dot \theta_t\end{bmatrix}^T$, where $\theta_t$ is the angle of the pendulum at time t and $\dot \theta_t$ its angular speed. The evolution of the state over time is described by \eqref{eq:generic_ode}, where $z_e:=\omega$, $z_a=\alpha$ and
+\begin{align}
+    F_e := \begin{bmatrix}\dot \theta &  -\omega_0^2 \sin \theta   \end{bmatrix}^T \quad \text{and} \quad F_a := \begin{bmatrix}0 &  -\alpha \dot \theta \end{bmatrix}^T.
+\end{align}
+The corresponding systems are defined by the damping factor $\alpha$ and $\omega_0$, the fundamental frequency of the pendulum.
+
+\textbf{The RLC series circuits} are electrical circuits made of 3 electrical components that may model a large range of transfer functions. These models are often used in biology (e.g., the Hodgkin-Huxley class of models~\citep{hh-model}, in photoplethysmography~\citep{ppg-model}) and in electrical engineering to model the dynamics of various systems. The system's state at time $t$ is $y_t = \begin{bmatrix}U_t & I_t\end{bmatrix}^T$, where $U_t$ is the voltage around the capacitance and $I_t$ the current in the circuit. The evolution of the state over time is described by \eqref{eq:generic_ode}, where $z_e:=\{L, C\}$, $z_a= \{R\}$ and
+
+\begin{align}
+    F_e := \begin{bmatrix}\frac{I_t}{C} \\ \frac{1}{L} (V(t) - U_t) \end{bmatrix} \quad \text{and} \quad F_a := \begin{bmatrix}0 \\- \frac{R}{C}I_t\end{bmatrix}.
+\end{align} The dynamics described by the RLC circuit is more diverse than for the pendulum and the system can be hard to identify. This system is characterised by the resistance $R$, capacitance $C$, and inductance $L$, provided $V(t)$ is known.
+
+\textbf{The 2D reaction diffusion} was used by \citet{APHYNITY} to assess the quality of APHYNITY. It is a 2D FitzHugh-Nagumo on a $32 \times 32$ grid. The system's state at time $t$ is a $2\times 32 \times 32$ tensor $y_t = \begin{bmatrix}u_t & v_t\end{bmatrix}^T$. The evolution of the state over time is described by \eqref{eq:generic_ode}, where $z_e:=\{a, b\}$, $z_a= \{k\}$ and
+\begin{align}
+    F_e := \begin{bmatrix}a \Delta u_t \\ b \Delta v_t \end{bmatrix} \quad \text{and} \quad F_a := \begin{bmatrix}R_u(u_t, v_t;k) \\R_v(u_t, v_t)\end{bmatrix},
+\end{align}
+where $\Delta$ is the Laplace operator, the local reaction terms are $R_u(u, v;k) = u - u^3 - k -v$ and $R_v(u, v) = u - v$.
+This model is interesting to study as it considers a state space for which neural architectures may have a real advantage compared to other ML models.
+
+
+In the following experiments we analyze the effect of our data augmentation strategy on APHYNITY and HVAE. All models explicitly use the assumption that the interaction model follows the structure of \eqref{eq:generic_ode}. For each problem the validation and test sets are respectively IID and OOD with respect to the training distribution. The best models are always selected based on validation performance, that is with samples from $\Omega$. We provide additional details on the different expert models, dataset creation, and neural networks architectures in \appref{app:exp_details}.
+
+\subsection{Results}
+\paragraph{Performance gain from augmentation.}
+\textit{This experiment demonstrates that HVAE and APHYNITY are not robust to OOD test scenarios in opposition to the corresponding AHMs, as shown in \figref{fig:diffusion_shift}} for the 2D diffusion problem and in \appref{app:supp_results} for the two other problems. We emphasize that our intention is not to declare a winner between HVAE and APHYNITY. Indeed, both algorithms have already demonstrated superior performance than black box ML models. Hence, we only report a very simple baseline that is the mean value of the signals. We want to compare performance in OOD settings and empirically validate the benefit of AHMs.
+We compare the predictive performance in \figref{fig:log_mse} (see \Cref{tab:synth_log_mse} for the raw numbers).  Although classical hybrid learning strategies do very well on the IID validation set, they exhibit poor generalization on OOD test sets for all three problems. We also observe some disparity between APHYNITY and HVAE. In addition to different learning strategies, this is probably due to differences in the networks' architectures as they were respectively inspired from the corresponding pendulum experiment in each paper. However, even if one method may outperform the other for some problems, they both benefit from our augmentation strategy (APHYNITY+, HVAE+). Overall, the effect of augmentation goes up to dividing the test error by a factor of $e^{4.6}\approx 100$ in some cases.
+
+\begin{table}[]
+    \small
+    \centering
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{c c|c c | c c}
+        Dataset & & APH. & HVAE & APH.+ & HVAE+ \\ \hline
+%        & Train & &  &  &  &  \\
+       \multirow{2}{*}{Pendulum} & Valid. & $6_{\pm 2}$ & $3_{\pm 1}$ & $6_{\pm 2}$ & $2_{\pm 1}$ \\
+        & Test & $66_{\pm 9}$ & $117_{\pm 10}$ & $10_{\pm 4}$ & $11_{\pm 2}$    \\ \hline
+%        & Train & &  &  &  &  \\
+       \multirow{2}{*}{RLC} & Valid. & $6_{\pm 3}$ & $38_{\pm 2}$ & $7_{\pm 5}$ & $28_{\pm 1}$ \\
+        & Test & $17_{\pm 3}$ & $25_{\pm 2}$ & $5_{\pm 2}$ & $12_{\pm 1}$ \\ \hline
+
+       \multirow{2}{*}{Diffusion} & Valid. & $2_{\pm 0}$ & $2_{\pm 0}$ & $2_{\pm 0}$ & $2_{\pm 0}$ \\
+        & Test & $27_{\pm 2}$ & $32_{\pm 10}$ & $3_{\pm 1}$ & $2_{\pm 0}$\\ \hline
     \end{tabular}
+    \caption{Comparison of mean relative precision (in $\%$, $\pm$ indicates one standard deviation) over 10 runs of predicted physical parameters of different hybrid modelling strategies in validation and OOD test settings. Augmented versions are denoted with a $+$. \textit{While the accuracy of APHYNITY and HVAE is good on the validation set, it collapses on the OOD test set. On the opposite, the augmented versions perform well on both validation and test sets.}}
+    \label{tab:param_acc}
+    \vspace{-1.5em}
 \end{table}
 
+\paragraph{Stability for non-exact models.}
+The empirical results from \figref{fig:log_mse} are very important as they show that even when the decoder is not $\Omega\textit{-exact}$ (and hence not $\overset{+}{\Omega}\textit{-exact}$), augmentation is still useful. In particular, \Cref{tab:param_acc} shows that the encoder does not predict the physical parameters perfectly. This indicates that the encoder is not $\Omega\textit{-exact}$ and neither should be the decoder. This table shows the relative error on the physical parameters computed as $\sum_{i=1}^k\frac{1}{k}\left|\frac{z_e^i - \mu_\theta^i}{z_e^i}\right|$, where $\mu_\theta^i$ is the estimated most likely value of the $i^{th}$ component of the physical parameters. We first notice that APHYNITY and HVAE perform differently and their performance depends on the specific problem. While APHYNITY accurately estimates the physical parameters on the IID validation set for the 3 problems, HVAE's performance are mixed on the RLC problem as it makes prediction that are $38\%$ away from the nominal parameter value on average whereas APHYNITY reduces this error to $6\%$. Interestingly, we observe that the proposed augmentation strategies improve the encoder such that it accurately estimates the physical parameters also on the OOD test set even for HVAE on the RLC problem. This confirms that the augmentation strategy is helpful even when the hybrid model is not $\Omega\textit{-exact}$. As a conclusion, augmented hybrid learning outperforms classical hybrid learning both on the predictive accuracy and at inferring the expert variables.
 
-In these experiments, we compare autoregressive, coupling and graphical conditioners with no $\ell_1$-penalization on benchmark tabular datasets as introduced by \cite{MAF} for density estimation. See \tabref{tab:ds_desc} for a description. We evaluate each conditioner in combination with monotonic and affine normalizers.
-% Inspired by the experimental setup of \cite{MAF}, we compare the methods on diverse datasets (POWER, GAS, HEPMASS, MINIBOONE and BSDS300).
-We only compare NFs with a single transformation step because our focus is on the conditioner capacity. We observed during preliminary experiments that stacking multiple conditioners  improves the performance slightly, however the gain is marginal compared to the loss of interpretability. To provide a fair comparison we have fixed in advance the neural architectures used to parameterize the normalizers and conditioners as well as the training parameters by taking inspiration from those used by \citet{UMNN} and \citet{MAF}. The variable ordering of each dataset is randomly permuted at each run. All hyper-parameters are provided in Appendix \ref{app:archi-tabular} and a public implementation will be released on Github.
-%The compared flows are made of monotonic or affine normalizers combined with either a coupling, an autoregressive or a graphical conditioner.
+\paragraph{Effect of out of expertise shift.}
+\textit{This experiment shows that our augmentation strategy may remain beneficial even when the train and test supports of $z_a$ are not identical.} This scenario corresponds to samples $(x, y)$ generated by $(z_a, z_e) \in (\overset{\ast}{\mathcal{Z}}_a \setminus \mathcal{Z}_a) \times \tilde{\mathcal{Z}}_e$ depicted by the violet domains in \figref{fig:ood_vizu}. In \figref{fig:za_shifted} we observe the log-MSE of augmented and non-augmented hybrid models trained for $(z_a, z_e) \in \mathcal{Z}_a \times \mathcal{Z}_e$ on test data that are generated with $(z_a, z_e) \in \tilde{\mathcal{Z}}_a \times \tilde{\mathcal{Z}}_e$. For the pendulum, the support over $z_a=\alpha$ is $\left[0, 0.3\right]$ in train and $\left[0.3, 0.6\right]$ in test; For the 2D reaction diffusion, $z_a=k$ is $\left[0.003, 0.005\right]$ in train and $\left[0.005, 0.008\right]$ in test. We observe that augmented models outperform the original models by a large margin. These results suggest that augmentation could be very valuable in practice, even when the distribution shift is also caused by non expert variables. However, if the shift on $z_a$ becomes the dominant effect, augmented models also eventually becomes vulnerable to shifts on $z_e$ as demonstrated by supplementary experiments in \appref{app:exp_details}.
 
-First, \tabref{tab:tabular_density} presents the test log-likelihood obtained by each architecture. These results indicate that graphical conditioners offer the best performance in general. Unsurprisingly, coupling layers show the worst performance, due to the arbitrarily assumed independencies. Autoregressive and graphical conditioners show very similar performance for monotonic normalizers, the latter being slightly better on 4 out of the 5 datasets. \tabref{tab:tabular_density_all} contextualizes the performance of graphical normalizing flows with respect to the most popular normalizing flow architectures.
-%which are the state-of-the-art results for density estimation.
-Comparing the results together, we see that while additional steps lead to noticeable improvements for affine normalizers (MAF), benefits are questionable for monotonic transformations. Overall, graphical normalizing flows made of a single transformation step are competitive with the best flow architectures with the added value that they can directly be translated into their equivalent BNs. \emph{From these results we stress out that single step graphical NFs are able to model complex densities on par with SOTA while they offer new ways of introducing domain knowledge.}
-
-Second, \tabref{tab:edges} presents the number of edges in the BN associated with each flow. For \textsc{power} and \textsc{gas}, the number of edges found by the graphical conditioners is close or equal to the maximum number of edges. Interestingly, graphical conditioners outperform  autoregressive conditioners on these two tasks, demonstrating the value of finding an appropriate ordering particularly when using affine normalizers. Moreover, graphical conditioners correspond to BNs whose sparsity is largely greater than for autoregressive conditioners while providing equivalent if not better performance. The depth \citep{depth-dag} of the equivalent BN directly limits the number of steps required to inverse the flow. Thus sparser graphs that are inevitably shallower correspond to NFs for which sampling, i.e. computing their inverse, is faster.
-\begin{table}
-    \caption{Average log-likelihood on test data over 3 runs, under-scripted error bars are equal to the standard deviation. Results are reported in nats, higher is better. The results followed by a star are copied from the literature and the number of steps in the flow is indicated in parenthesis for each architecture. \textit{Graphical normalizing flows reach density estimation performance on par with the most popular flow architectures whereas it is only made of 1 transformation step.}} \label{tab:tabular_density_all}
+\begin{figure}
     \centering
-    \scriptsize
-    \setlength{\tabcolsep}{0pt}
-    \renewcommand{\arraystretch}{1.5}
+    \includegraphics[width=.48\textwidth]{figures/chapter07/results_log_mse_za_OOD-4.png}
+    \vspace{-2em}
+    \caption{The average log-MSEs over 10 runs for the \textit{damped pendulum} and \textit{2D reaction diffusion} problems on a test distribution for which $z_a$, in addition to $z_e$, is also shifted. \textit{AHM achieves better peformance than stand HyL algorithms even when the test distribution support $z_a$ differs from the training.}}
+    \label{fig:za_shifted}
+    \vspace{-1.em}
+\end{figure}
 
-    \begin{tabular}{l  c c c c c}
-        \hline\hline
-        \scalebox{.8}{Dataset} & \scalebox{.6}{\tbf{POWER}} & \scalebox{.6}{\tbf{GAS}} & \scalebox{.6}{\tbf{HEPMASS}} & \scalebox{.6}{\tbf{MINIBOONE}} & \scalebox{.6}{\tbf{BSDS300}} \\
-        \hline
-        % Graph.-Aff. (1)
-        %     & \result{-2.7979636666666665}{0.00799790907397394}
-        %     & \result{1.985552666666667}{0.020352012665963974}
-        %     & \result{-21.18043833333333}{0.07373030467106993}
-        %     & \result{-19.672145}{0.05610214543134648}
-        %     & \result{62.85277466666667}{0.06672677328396033}\\
-%        \scalebox{.7}{Graph.-Aff. (1)} &
-        % \result{-2.7979636666666665}{0.00799790907397394}
-        %     & \result{1.985552666666667}{0.020352012665963974}
-        %     & \result{-21.18043833333333}{0.07373030467106993}
-        %     & \result{-19.672145}{0.05610214543134648}
-        %     & \result{62.85277466666667}{0.06672677328396033}\\
-        \scalebox{.7}{Graph.-UMNN (1)}
-            & \result{0.620236}{0.043806243550434706}
-            & \result{10.146548666666666}{0.1515902526183299}
-            & \result{-14.165973333333334}{0.13134025332784377}
-            & \result{-16.227559}{0.5166131106860017}
-            & \result{155.22247133333335}{0.10754154750090603} \\
-            \hline
-        \scalebox{.7}{MAF (5)}
-            & \result{0.14}{0.005}
-            & \result{9.07}{0.01}
-            & \result{-17.7}{0.01}
-            & \result{-11.75}{0.22}
-            & \result{155.69}{0.14} \\
-        \scalebox{.7}{Glow$^\star$ (10)}
-            & \result{0.42}{0.01}
-            & \result{12.24}{0.03}
-            & \result{-16.99}{0.02}
-            & \result{-10.55}{0.45}
-            & \result{156.95}{0.28} \\
-        \scalebox{.7}{UMNN-MAF$^\star$ (5)}
-            & \result{0.63}{0.01}
-            & \result{10.89}{0.7}
-            & \result{-13.99}{.21}
-            & \result{-9.67}{.13}
-            & \result{157.98}{.01}
-            \\
-        \scalebox{.7}{Q-NSF$^\star$ (10)}
-            & \result{0.66}{0.005}
-            & \result{12.91}{0.01}
-            & \result{-14.67}{.02}
-            & \result{-9.72}{.24}
-            & \result{157.42}{.14}
-            \\
-        \scalebox{.7}{FFJORD$^\star$ (5-5-10-1-2)}
-            & \result{0.46}{0.01}
-            & \result{8.59}{0.12}
-            & \result{-14.92}{0.08}
-            & \result{-10.43}{0.04}
-            & \result{157.40}{0.19}
-            \\ \hline \hline
-    \end{tabular}
-\end{table}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 5 Related work %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related work}
+\subsection{Hybrid modelling}
+Hybrid Learning (HyL), or gray box modelling as called in its early days in the 90's \citep{old_hl_1, old_hl_2, old_hl_3, old_hl_4, old_hl_5}, has been an appropriate method to learn models that are both expressive and interpretable, while also allowing them to be learnt on fewer data. The interest for HyL \citep{hl_1, hl_2, hl_3, hl_4, hl_5, hl_6, metnet2} has greatly renewed since the outbreak of recent neural network architectures that simplify the combination of physical equations within ML models. As an example, Neural ODE~\citep{NODE} and convolutional neural networks~\citep[][CNN]{lecun_cnn} are privileged architectures to work with dynamical systems described by ODEs or PDEs. While most of the HyL's literature focus on the predictive performance of hybrid models, recent work have also showed that HyL may help to infer the physical parameter accurately \citep{APHYNITY, HVAE}. This is aligned with \citet{nuisance_para} (see Section 40.2.2.2) which observe that inference on incomplete models results in a \textit{systematic bias}. Similar to HyL, they extend the model with \textit{nuisance} parameters in order to improve its fidelity, and to reduce the systematic bias.
 
-\begin{table}
-    \caption{Rounded average number of edges (over 3 runs) in the equivalent Bayesian network. \textit{The graphical conditioners lead to sparser BNs compared to autoregressive conditioners.}} \label{tab:edges}
-    \centering
-    \scriptsize
-    \setlength{\tabcolsep}{2pt}
-    \renewcommand{\arraystretch}{1.5}
+In this work, we decided to study \citet{APHYNITY} and \citet{HVAE} for two reasons that distinguish them from the rest of the HyL literature. First, these are notable examples of HyL algorithms that can be applied to a broad class of problems in contrast to papers that focus on specific applications \citep{hl_2,hl_3}. Second, those methods also learn a reliable inference model for the physical parameters, suggesting that the expert model is used properly in the generative model, which is a key assumption for our augmentation. While \citet{HVAE} claim to achieve robustness with HyL, we argue that this statement is incomplete as HVAE fails in OOD settings. In particular, their approach is only able to generalize with respect to unseen time or initial state if the model correctly identifies the latent variables $z_a, z_e$.
 
-    \begin{tabular}{l c c c c c}
-        \hline\hline
-        Dataset & \tbf{P} & \tbf{G} & \tbf{H} & \tbf{M} & \tbf{B} \\
-        \hline
-        Graph.-Aff. & $15$   & $26$  & $152$  & $277$  & $471$  \\
-        Graph.-Mon. & $15$    & $27$  & $159$  & $265$  & $1594$  \\
-        \hline
-        Coupling & $9$  & $16$  & $110$  & $462$ & $992$ \\
-        Autoreg. & $15$  & $28$  & $210$  & $903$ & $1953$\\
-         \hline\hline
+\subsection{Combining hybrid modelling and data augmentation}
+Close to our idea is the one proposed in \citet{gan_hl} where they train a GAN model that improves the realism of a simulated image while conserving its semantic content (e.g. eyes colour) as modeled by the simulation parameters. The generated data with their annotations may then be used for a downstream task, such as inferring the properties of real images that corresponds to simulation parameters. The GAN objective from \citet{gan_hl} requires that the two distributions induced by the semantic content of real and simulated data are identical. On the opposite, we consider training data that corresponds to expert parameters with limited diversity, and overcome this scarcity with expert augmentation. Another line of work similar to ours is Sim2Real, which considers the task of transferring a model trained on simulated data to real world \citep{sim2real-1, sim2real-2, sim2real-3}. Robust HyL, as a way to enhance simulations, could be used for Sim2Real.
 
-    \end{tabular}
-\end{table}
-%\gilles{Add a plot of one of the BNs found by training? Could be interesting to reinforce the interpretability argument.} \antoine{Not sure. I believe that for a number of nodes that is greater than 15 it will not be readable, unfortunately we have almost complete graphs for POWER and GAS.}
+%\subsection{Robust ML}
+\subsection{Robust ML and Invariant Learning}
+Various statistical methods have been introduced to ensure models generalize under distribution shift. Domain-adversarial objectives aimed at learning (conditionally) invariant predictors \citep{ganin2016domain,zhang2017aspect,li2018deep}, GroupDRO \citep{groupDRO_ICLR} optimizing for worst-case loss over multiple domains and IRM~\citep{IRM} as well as sub-group calibration \citep{wald2021calibration} aiming to satisfy calibration or sufficiency constraints to learn features invariant across domains. Extensions, able to infer domain labels from training data have been proposed as well \citep{lahoti2020fairness,creager2021environment}, partially inspired by fairness objectives \citep{hebert2018multicalibration,kim2019multiaccuracy}. In contrast to AHM, all of these methods rely on the variation of interest being present in the training data.
 
-% \begin{table}[h]
-% %\vspace{1em}
-%     \caption{Number of edges} \label{tab:edges}
-%     \centering
-%     \scriptsize
-%     \setlength{\tabcolsep}{1pt}
-%     \renewcommand{\arraystretch}{1.5}
-
-%     \begin{tabular}{l c c c c c}
-%         \hline
-%         Method & Coupling & Autoregressive & Graph.-Affine & Graph.-Monotonic
-%         \hline \\
-%         \tbf{POWER}& $9$  & $15$ & $15$  & $15$ \\
-%         \tbf{GAS}& $16$ & $28$ & $26$  & $27$ \\
-%         \tbf{HEPMASS} & $110$  & $210$ & $152$ & $159$ \\
-%         \tbf{MINIBOONE}& $462$ & $903$ & $277$  & $265$  \\
-%         \tbf{BSDS300} & $992$  & $1953$ & $471$  & $1594$ \\
-%          \hline
-
-%     \end{tabular}
-
-% \end{table}
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 6 Discussion %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
-\paragraph{Cost of learning the graph structure}
-The attentive reader will notice that learning the topology does not come for free. Indeed, the Lagrangian formulation requires solving a sequence of optimization problems which increases the number of epochs before convergence. In our experiments we observed different overheads depending on the problems, however in general the training time is at least doubled. This does not impede the practical interest of using graphical normalizing flows. The computation overhead is more striking for non-affine normalizers (e.g. UMNNs) that are computationally heavy. However, we observed that most of the time the topology recovered by affine graphical NFs is relevant. It can thus be used as a prescribed topology for normalizers that are heavier to run, hence alleviating the computation overhead. Moreover, one can always hypothesize on the graph topology but more importantly the graph learned is usually sparser than an autoregressive one while achieving similar if not better results. The sparsity is interesting for two reasons: it can be exploited for speeding up the forward density evaluation; but more importantly it usually corresponds to shallower BNs that can be inverted faster than autoregressive structures.
-%Our work stands on the recent progress made in BN topology learning and on the emergent field of NF. %In this section, we discuss work in these areas that are strongly related to GNF.
-\paragraph{Bayesian network topology learning}
-Formal BN topology learning has extensively been studied for more than 30 years now and many strong theoretical results on the computational complexity have been obtained. Most of these results however focus on discrete random variables, and how they generalize in the continuous case is yet to be explained. The topic of BN topology learning for discrete variables has been proven to be NP-hard by \citet{chickering-NP-hard}. However, while some greedy algorithms exist, they do not lead in general to a minimal I-map although allowing for an efficient factorization of random discrete vectors distributions in most of the cases. These algorithms are usually separated between the constrained-based family such as the \textit{PC algorithm}~\citep{pc-algorithm} or the \textit{incremental association Markov blanket}~\citep{PGM-book} and the score-based family as used in the present work.
-Finding the best BN topology for continuous variables has not been proven to be NP-hard however the results for discrete variables suggest that without strong assumptions on the function class the problem is hard.
+We now examine the assumptions we made to derive our augmentation strategy and discuss potential limitations.
+\paragraph{Erroneous interaction model.}
+The exactness of the hybrid component $p_\theta(y|x, y_e, z_a)$ is a critical assumption underlying our expert-based augmentation strategy. Unfortunately, this component is learned from training data only, hence we cannot prove its exactness on the test domain, which corresponds to a different domain $\mathcal{Y}_e$. However, we argue that soft assumptions on the class of interaction model may alleviate this problem. As an example, when we consider an additive hybrid model, as in APHYNITY~\citep{APHYNITY}, and embed this hypothesis into the interaction model, generalization to unseen $y_e$ follows. When this assumption is too strong, we could still expect generalization of $p_\theta(y|x, y_e, z_a)$ because HyL drives $y$ samples from $p_\theta$ to be close to $y_e$. It implies that the corresponding function approximator is smooth, which helps generalization to unseen scenarios. This contrasts with the encoder $q_\psi$ for which a a good inductive bias usually is not available.
+\paragraph{Diagnostic.}
+While crucial, we cannot guarantee the exactness of the decoder $p_\theta$ in general because we only evaluate the encoder and the decoder jointly on data points $(x, y, x_o, y_o)$. However, in some cases we can detect model misspecification by observing that the predictive model $p_{\theta, \psi}(y|x, x_o, y_o)$ is imperfect. Making this observation is not always simple as it requires prior knowledge on the expected accuracy of an exact model. However, when the system is deterministically identifiable, we may argue that the accuracy should be only limited by the intrinsic noise between $x$ and $y$ given $z_a$ and $z_e$.
 
-The recent progress made in the continuous setting relies on the heuristic used in score-based methods. In particular, \citet{DAG-1} showed that the acyclicity constraint required in BNs can be expressed with NO TEARS, as a continuous function of the adjacency matrix, allowing the Lagrangian formulation to be used.
-\citet{DAG-2} proposed DAG-GNN, a follow up work of \citet{DAG-1} which relies on variational inference and auto-encoders to generalize the method to non-linear structural equation models. Further investigation of continuous DAG learning in the context of causal models was carried out by \citet{DAG-3}. They use the adjacency matrix of the causal network as a mask over neural networks to design a score which is the log-likelihood of a parameterized normal distribution. The requirement to pre-define a parametric distribution before learning restricts the factors to simple conditional distributions. In contrast, our method combines the constraints given by the BN topology with  NFs which are free-form universal density estimators. Remarkably, their method leads to an efficient one-pass computation of the joint density. This neural masking scheme can also be implemented for NF architectures such as already demonstrated by \citet{MAF} and \citet{BNAF} for autoregressive conditioners.
+\paragraph{Relaxing exactness.}
+Even with a strong inductive bias on the decoder, achieving exactness is hopeless in practical settings. However, our experiments demonstrate that expert-augmentation works in practice. We can explain this by taking a look at \figref{fig:ood_vizu}. If the generative model that maps $x$ and $(z_a, z_e)$ is incorrect, the mapping from $\mathcal{Z}_a$ and $\mathcal{Z}_e$ could be slightly off from $\overset{+}{\Omega}$.  However, this does not preclude the set of augmented samples to be closer to $\overset{+}{\Omega}$ than $\Omega$ and to induce a better predictive model on $\overset{+}{\Omega}$ than the original model trained only on $\Omega$.
 
-\paragraph{Shuffling between transformation steps}
-As already mentioned, consecutive transformation steps are often combined with randomly fixed permutations in order to mitigate the ordering problem. Linear flow steps \citep{TAN} and 1x1 invertible convolutions \citep{GLOW} generalize these fixed permutations. They are parameterized by a matrix $W = PLU$ where $P$ is the fixed permutation matrix, and $L$ and $U$ are respectively a lower and an upper triangular matrix. Although linear flow improves the simple permutation scheme, they do still rely on an arbitrary permutation. To the best of our knowledge, graphical conditioners are the first attempt to get completely rid of any fixed permutation in NFs.
+\paragraph{Limitations}
+We considered expert models that are parameterized by a small number of parameters, which can be covered densely via sampling. Covering densely a higher dimensional parameter space with the augmentation strategy becomes quickly impossible, hence a smarter sampling strategy would be required, such as worst-case sampling. Another difficulty is to choose a plausible range of parameters that contains both the train and the test support, this will often require a human expert in the loop. Finally, we assume that the train distribution of $z_a$ should be representative of the test distribution, we empirically observed that a softer version of this assumption could be enough. However, performance will eventually decline as the support of the test distribution for $z_a$ is far from the training domain.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 7 Conclusion %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+In this work, we describe HyL with a probabilistic model in which one component of the latent process, denoted the expert model, is known. In this context, we establish that state-of-the-art HyL algorithms are vulnerable to distribution shifts even when the expert model is well defined for such configurations. Grounded in this formalisation, we derive that expert augmentations induce robustness to OOD settings. We discuss how our assumptions can transfer to real-world settings and describe how to diagnose potential shortcomings. Finally, empirical evidence asserts that expert augmentations may be beneficial even when one of our assumptions on the class of distribution shift is violated.
 
-%for learned ordering by continuous constrained optimization.
-%The experiments section show that this novelty unlocks the utilization of convolutional neural networks as building blocks of the conditioners at the cost of learning the topology of the Jacobian.
-%GNF allows the structural properties of the flow as well the scalar transformations to be learned together. In this sense GNF can be compared to linear flows that linearly transforms the input vector
-
-
-%\section{Discussion and summary}
-\paragraph{Inductive bias}
-Graphical conditioners eventually lead to binary masks that model the conditioning components of a factored joint distribution. In this way, the conditioners process their input as they would process the full vector.%, which allows for an intuitive design of the neural network that is in charge of compressing the useful information contained in the conditioning factors into embeddings.
-We show experimentally in Appendix \ref{app:MNIST} that this effectively leads to good inductive bias for processing images with NFs.
-In addition, we have shown that normalizing flows built from graphical conditioners combined with monotonic transformations are expressive density estimators.
-In effect, this means that enforcing some a priori known independencies can be performed thanks to graphical normalizing flows without hurting their modeling capacity. We believe such models could be of high practical interest because they cope well with large datasets and complex distributions while preserving some readability through their equivalent BN.
-
-Close to our work, \citet{wood} improve amortized inference by prescribing a BN structure between the latent and observed variables into a FFJORD NF, once again showing the interest of using the potential BN knowledge. Similar to our work, \citet{khemakhem2020causal} see causal autoregressive flows as structural equation modelling. They show bivariate autoregressive affine flows can be used to identify the causal direction under mild conditions. Under similar mild conditions, discovering causal relationships with graphical normalizing flows could well be an exciting research direction.
-
-%\antoine{Here say about Ricardo Monti's paper, a direct extension of our work would be to combine with their paper blabla..}%In this work, they also show how to introduce independencies into FFJORD density models proving their again that flows that respect some prescribed topology are useful. %\antoine{@Gilles: I think it is important to mention their work and be clear about it but not sure where.}
-
-%for a certain degree of readability thanks to their direct translation into Bayesian Networks.
-
-% \paragraph{Causal networks and Structural Equation Models}
-% Research in NFs could directly benefit to causality and SEM thanks to graphical conditioners. Indeed, the graphical conditioners introduced in this work clearly state a BN structure while maintaining the great modeling capacity of normalizing flows. The results obtained by graphical conditioners combined with monotonic transformations on density estimation tasks empirically demonstrate that NFs with a direct BN interpretation are very competitive density estimators. This enables to combine causal networks and normalizing flows with or without a predefined (sub-)structure. Further research should be performed to work with interventional data by finding how do-calculus can be implemented in the training strategy of graphical conditioners, enhancing them with a causal interpretation.
-
-\paragraph{Conclusion}
-% The contribution of this work is bimodal.
-% \gilles{Work on the conclusion. Be sure it aligns with the abstract and the contributions.}
-We have revisited coupling and autoregressive conditioners for normalizing flows as Bayesian networks.
-From this new perspective, we proposed the more general graphical conditioner architecture for normalizing flows. We have illustrated the importance of assuming or learning a relevant Bayesian network topology for density estimation. In addition, we have shown that this new architecture compares favorably with autoregressive and coupling conditioners and on par to the most common flow architectures on standard density estimation tasks even without any hypothesized topology. One interesting and straightforward extension of our work would be to combine it with normalizing flows for discrete variables.
-%In addition, we have illustrated the opportunity offered by this new architecture to introduce domain knowledge into normalizing flows by combining convolutional neural networks with it.
-%They also offer multiple ways to introduce inductive bias into NFs; first through the Bayesian network that rules them; second because they are simply equivalent to learning a masking strategy and thus can help to design efficient way to create conditioning embeddings.
-We also believe that graphical conditioners could be used when the equivalent Bayesian network is required for downstream tasks such as in causal reasoning.
-% be the root of further development at the intersection of normalizing flows and causal networks.
+Our augmentation is applicable to a large class of hybrid models, hence it should benefit from future progress in HyL. Thus, we believe research in HyL and formally defining its targeted objectives is an important direction for further improving the robustness of hybrid models. As an example, the minimal description length principle \citep{mdl_book} could be a great resource to investigate the balance between the model's capacity and robustness. Finally, robust ML models must eventually translate to real-world applications, hence a next step would be to apply AHMs to real-wold data. Paving the way to future research combining AHM with robust ML methods.

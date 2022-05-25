@@ -15,8 +15,8 @@
 % in order to deactivate the time-stamp on the pages
 % ****************************************************************************************************
 \PassOptionsToPackage{eulerchapternumbers,listings,%drafting,%
-				 pdfspacing,eulermath,%floatperchapter,%linedheaders,%
-				 subfig,parts,dottedtoc}{classicthesis}
+				 pdfspacing,%floatperchapter,%linedheaders,%subfig,
+				 parts,dottedtoc}{classicthesis}
 % ********************************************************************
 % Available options for classicthesis.sty
 % (see ClassicThesis.pdf for more information):
@@ -39,8 +39,8 @@
 % ****************************************************************************************************
 % 2. Personal data and user ad-hoc commands
 % ****************************************************************************************************
-\newcommand{\myTitle}{Contributions to Deep Generative Modeling\xspace}
-\newcommand{\mySubtitle}{From Black-box to Hybrid Approaches}
+\newcommand{\myTitle}{Contributions to Generative Modeling\xspace}
+\newcommand{\mySubtitle}{From Deep Models to Hybrid Approaches}
 \newcommand{\myDegree}{Doktor-Ingenieur (Dr.-Ing.)\xspace}
 \newcommand{\myName}{Antoine Wehenkel\xspace}
 \newcommand{\myProf}{Put name here\xspace}
@@ -84,7 +84,7 @@
  \usepackage{natbib}
 
 \PassOptionsToPackage{fleqn}{amsmath}		% math environments and more by the AMS
- \usepackage{amsmath}
+\usepackage{amsmath}
 \usepackage{amstext}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -93,7 +93,7 @@
 % General useful packages
 % ********************************************************************
 \PassOptionsToPackage{T1}{fontenc} % T2A for cyrillics
-	\usepackage{fontenc}
+\usepackage{fontenc}
 \usepackage{lipsum}
 \usepackage{textcomp} % fix warning with missing font shapes
 %\usepackage{scrhack} % fix warnings when using KOMA with listings package
@@ -115,7 +115,7 @@
 \newcommand{\tableheadline}[1]{\multicolumn{1}{c}{\spacedlowsmallcaps{#1}}}
 \newcommand{\myfloatalign}{\centering} % to be used with each float for alignment
 \usepackage{caption}
-\usepackage{subfig}
+%\usepackage{subfig}
 \captionsetup{format=hang,font=small}
 \usepackage{graphicx}
 % ****************************************************************************************************
@@ -287,12 +287,18 @@
 \newcommand{\figref}[1]{Fig.~\ref{#1}}
 \usepackage{bm}
 \renewcommand*{\mathbf}[1]{\ifmmode\bm{#1}\else\textbf{#1}\fi}
+\usepackage{array,multirow}
+\newcommand\appref{Appendix~\ref}
+%\newcommand\hypref{A\ref}
+\newcommand\secref{Section~\ref}
+\usepackage{subcaption}
+\captionsetup{compatibility=false}
+
 
 % Math new operators
-\DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\trace}{trace}
-\DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\diag}{diag}
 \DeclareMathOperator{\dt}{\, \mathrm{d}\mathit{t}}
 \newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
 
@@ -300,10 +306,69 @@
 \newcommand{\brac}[1]{\left({#1}\right)}
 \newcommand{\sbrac}[1]{\left[{#1}\right]}
 \newcommand{\cbrac}[1]{\left\{{#1}\right\}}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 
 % TikZ
 \usepackage{tikz}
 \usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds,shapes}
 \usetikzlibrary{automata,arrows}
+
+% UMNN paper
+\usepackage{xparse}
+\usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
+\ExplSyntaxOn%% allow _ : as a letter
+\newcommand\UMNNParam[6]{ \fp_to_decimal:n {round(#1*(#2*#4 + #3*#4^2 + #4*30*#2+31*#6 + #5*#6^2 + #6), 0)}}
+\newcommand\BNAFParam[1]{ \fp_to_decimal:n {round(5*(80*#1^2 + 2*(40^2)*#1^2), 0)}}
+\newcommand\mean[3]{\fp_to_decimal:n {round((#1 + #2 + #3)/3, 2)}}
+\newcommand\std[3]{\fp_to_decimal:n {round(sqrt((#1^2 + #2^2 + #3^2)/3 - ((#1 + #2 + #3)/3)^2 ), 2)}}
+\ExplSyntaxOff
+\usepackage{arrayjobx}
+\newarray\UMNNData
+\readarray{UMNNData}{ \UMNNParam{5}{6}{2}{100}{4}{150} & \UMNNParam{10}{8}{2}{100}{3}{200}
+                    & \UMNNParam{5}{21}{2}{512}{4}{50} & \UMNNParam{5}{43}{1}{512}{3}{50}
+                    & \UMNNParam{5}{63}{2}{1024}{4}{150}}
+\newarray\TrueUMNNData
+\readarray{TrueUMNNData}{509465 & 814865 & 3621765 & 3455675 & 15627065}
+\newarray\BNAFData
+\readarray{BNAFData}{\BNAFParam{6} & \BNAFParam{8} & \BNAFParam{21} & \BNAFParam{43} & \BNAFParam{63}}
+\newarray\TrueBNAFData
+%\readarray{TrueBNAFData}{307264 & 544084 & 3721414 & 15566434 & 33390634}
+\readarray{TrueBNAFData}{307264 & 544084 & 3721414 & 4085434 & 8757634}
+\newarray\TrueNAFData
+\readarray{TrueNAFData}{414213 & 401741 & 9272743 & 7487321 & 36759591}
+
+\usepackage{siunitx}
+\sisetup{output-exponent-marker = e,round-mode = figures, round-precision = 3,
+  scientific-notation = true}
+\newcommand\meanstd[3]{$\mean{#1}{#2}{#3}_{\pm \std{#1}{#2}{#3}}$}
+
+\usepackage{amsthm}
+
+\newtheorem*{assumption*}{\assumptionnumber}
+\providecommand{\assumptionnumber}{}
+\makeatletter
+\newenvironment{assumption}[2]
+ {%
+  \renewcommand{\assumptionnumber}{Assumption #1-$\mathcal{#2}$}%
+  \begin{assumption*}%
+  \protected@edef\@currentlabel{#1-$\mathcal{#2}$}%
+ }
+ {%
+  \end{assumption*}
+ }
+\makeatother
+
+\newcommand{\hypref}[2]{\ref{#1}}
+
+\newcommand{\bestresult}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \mathbf{\m_{{\pm \s}}}}$}
+\newcommand{\result}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \m_{\scriptstyle \pm \s}}$}
+
+
+%%%%%%%%%%%%%%%% New Commands %%%%%%%%%%%%%%%%%
+\newcommand{\chapref}[1]{Chapter~\ref{ch:#1}}
+\newcommand{\chaprefp}[1]{\lbrack Chapter~\ref{ch:#1} \rbrack}
+
 
 % ****************************************************************************************************

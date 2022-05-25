@@ -4,11 +4,11 @@
 \begin{algorithmic} \caption{Main Loop}
 \State $\text{epoch} \gets 0$
 \While {$!\text{Stopping criterion}$} 
-    \ForAll{batch $\mb{X} \in \mb{X_{train}}$}
+    \ForAll{batch $\mathbf{X} \in \mathbf{X_{train}}$}
         \State $\text{loss} \gets \Call{computeLoss}{\text{flow}, X}$
         \State $\Call{optimize}{\text{flow}, \text{loss}}$
     \EndFor
-   \State $\text{loss}_{valid} \gets \Call{computeLoss}{\text{flow}, \mb{X_{test}}}$
+   \State $\text{loss}_{valid} \gets \Call{computeLoss}{\text{flow}, \mathbf{X_{test}}}$
     \State $\text{epoch} \gets \text{epoch} + 1$
     \State $\Call{updateCoefficients}{\text{flow}, \text{epoch}, \text{loss}_{valid}}$
     \If{$\Call{isDagConstraintNull}{\text{flow}}$}
@@ -25,14 +25,14 @@ The method $\Call{computeLoss}{\text{flow}, X}$ is computed as described by equa
 The absolute value of the determinant of the Jacobian of a normalizing flow step based on graphical conditioners is equal to the product of its diagonal terms. 
 \end{proposition}
 \begin{proof} \textbf{Proposition \ref{app:prop:jac-gnf}}
-A Bayesian Network is a directed acyclic graph. \cite{sedgewick2011algorithms} showed that every directed acyclic graph has a topological ordering, it is to say an ordering of the vertices such that the starting endpoint of every edge occurs earlier in the ordering than the ending endpoint of the edge. Let us suppose that an oracle gives us the permutation matrix $P$ that orders the components of $\mb{g}$ in the topological defined by $A$. Let us introduce the following new transformation $\mb{g}_P(\mb{x}_P) = P\mb{g}(P
-^{-1}(P\mb{x}))$ on the permuted vector $\mb{x}_P = P\mb{x}$. The Jacobian of the transformation $\mb{g}_P$ (with respect to $\mb{x}_P$) is lower triangular with diagonal terms given by the derivative of the normalizers with respect to their input component. The determinant of such Jacobian is equal to the product of the diagonal terms. Finally, we have
+A Bayesian Network is a directed acyclic graph. \cite{sedgewick2011algorithms} showed that every directed acyclic graph has a topological ordering, it is to say an ordering of the vertices such that the starting endpoint of every edge occurs earlier in the ordering than the ending endpoint of the edge. Let us suppose that an oracle gives us the permutation matrix $P$ that orders the components of $\mathbf{g}$ in the topological defined by $A$. Let us introduce the following new transformation $\mathbf{g}_P(\mathbf{x}_P) = P\mathbf{g}(P
+^{-1}(P\mathbf{x}))$ on the permuted vector $\mathbf{x}_P = P\mathbf{x}$. The Jacobian of the transformation $\mathbf{g}_P$ (with respect to $\mathbf{x}_P$) is lower triangular with diagonal terms given by the derivative of the normalizers with respect to their input component. The determinant of such Jacobian is equal to the product of the diagonal terms. Finally, we have
 \begin{align*}
-    |\det(J_{\mb{g}_P(\mb{x}_P)})| &= |\det(P)||\det(J_{\mb{g}(\mb{x})})| \frac{|\det(P)|}{|\det(P)|}\\
-    &= |\det(J_{\mb{g}(\mb{x})})|,
+    |\det(J_{\mathbf{g}_P(\mathbf{x}_P)})| &= |\det(P)||\det(J_{\mathbf{g}(\mathbf{x})})| \frac{|\det(P)|}{|\det(P)|}\\
+    &= |\det(J_{\mathbf{g}(\mathbf{x})})|,
 \end{align*}
 because of (1) the chain rule; (2) The determinant of the product is equal to the product of the determinants; (3) The determinant of a permutation matrix is equal to $1$ or $-1$.
-The absolute value of the determinant of the Jacobian of $\mb{g}$ is equal to the absolute value of the determinant of $\mb{g}_P$, the latter given by the product of its diagonal terms that are the same as the diagonal terms of $\mb{g}$. Thus the absolute value of the determinant of the Jacobian of a normalizing flow step based on graphical conditioners is equal to the product of its diagonal terms.
+The absolute value of the determinant of the Jacobian of $\mathbf{g}$ is equal to the absolute value of the determinant of $\mathbf{g}_P$, the latter given by the product of its diagonal terms that are the same as the diagonal terms of $\mathbf{g}$. Thus the absolute value of the determinant of the Jacobian of a normalizing flow step based on graphical conditioners is equal to the product of its diagonal terms.
 \end{proof}
 \section{Experiments on topology learning}\label{app:top_dataset}
 \subsection{Neural networks architecture}
@@ -117,7 +117,7 @@ A causal protein-signaling networks derived from single-cell data. Experts have 
 \end{figure*}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Tabular density estimation - Training parameters}\label{app:archi-tabular}
-\tabref{tab:train_configs} provides the hyper-parameters used to train the normalizing flows for the tabular density estimation tasks. In our experiments we parameterize the functions $\mb{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mb{x} \odot A_{i,:}$. The embedding net architecture corresponds to the network that computes an embedding of the conditioning variables for the coupling and DAG conditioners, for the autoregressive conditioner it corresponds to the architecture of the masked autoregressive network. The output of this network is equal to $2$ ($2 \times d$ for the autoregressive conditioner) when combined with an affine normalizer and to an hyper-parameter named \textit{embedding size} when combined with a UMNN. The number of dual steps corresponds to the number of epochs between two updates of the DAGness constraint (performed as in \cite{DAG-2}).
+\Cref{tab:train_configs} provides the hyper-parameters used to train the normalizing flows for the tabular density estimation tasks. In our experiments we parameterize the functions $\mathbf{h}^i$ with a unique neural network that takes a one hot encoded version of $i$ in addition to its expected input $\mathbf{x} \odot A_{i,:}$. The embedding net architecture corresponds to the network that computes an embedding of the conditioning variables for the coupling and DAG conditioners, for the autoregressive conditioner it corresponds to the architecture of the masked autoregressive network. The output of this network is equal to $2$ ($2 \times d$ for the autoregressive conditioner) when combined with an affine normalizer and to an hyper-parameter named \textit{embedding size} when combined with a UMNN. The number of dual steps corresponds to the number of epochs between two updates of the DAGness constraint (performed as in \cite{DAG-2}).
 \begin{table}[H]
     \centering
     \tiny
@@ -127,7 +127,7 @@ A causal protein-signaling networks derived from single-cell data. Experts have 
     \begin{tabular}{l c c c c c c c}
         \hline
         \hline
-        Dataset & \tbf{POWER} & \tbf{GAS} & \tbf{HEPMASS} & \tbf{MINIBOONE} & \tbf{BSDS300}\\
+        Dataset & \textbf{POWER} & \textbf{GAS} & \textbf{HEPMASS} & \textbf{MINIBOONE} & \textbf{BSDS300}\\
         \hline
         Batch size & $2500$ & $10000$ & $100$ & $100$ & $100$ \\
         Integ. Net & $3 \times 100$ & $3 \times 200$ & $3 \times 200$ & $3 \times 40$ & $3 \times 150$ \\
@@ -224,13 +224,13 @@ In addition, in all our experiments (tabular and MNIST) the integrand networks u
 % \end{figure}
 
 \section{Density estimation of images} \label{app:MNIST}
-We now demonstrate how graphical conditioners can be used to fold in domain knowledge into NFs by performing density estimation on MNIST images. The design of the graphical conditioner is adapted to images by parameterizing the functions $\mb{h}^i$ with convolutional neural networks (CNNs) whose parameters are shared for all $i \in \{1, ..., d\}$ as illustrated in \figref{fig:dag-condi-archi}. Inputs to the network $\mb{h}^i$ are masked images specified by both the adjacency matrix $A$ and the entire input image $\mb{x}$. %, and can thus be efficiently processed by CNNs. 
+We now demonstrate how graphical conditioners can be used to fold in domain knowledge into NFs by performing density estimation on MNIST images. The design of the graphical conditioner is adapted to images by parameterizing the functions $\mathbf{h}^i$ with convolutional neural networks (CNNs) whose parameters are shared for all $i \in \{1, ..., d\}$ as illustrated in \figref{fig:dag-condi-archi}. Inputs to the network $\mathbf{h}^i$ are masked images specified by both the adjacency matrix $A$ and the entire input image $\mathbf{x}$. %, and can thus be efficiently processed by CNNs. 
 Using a CNN together with the graphical conditioner allows for an inductive bias suitably designed for processing images. 
 We consider single step normalizing flows whose conditioners are either coupling, autoregressive or graphical-CNN as described above, each combined with either affine or monotonic normalizers. %Second, a 3-step normalizing flow where only 1 fourth of the intermediate latent variables are passed to the next step, leading to more efficient flow while implicitly modeling low and high level features. 
 % Each step of this flow is parameterized by a graphical-CNN. Finally, each of these two architectures is either combined with an affine normalizer or a monotonic normalizer. 
 The graphical conditioners that we use include an additional inductive bias that enforces a sparsity constraint on $A$ and which prevents a pixel's parents to be too distant from their descendants in the images. Formally, given a pixel located at $(i, j)$, only the pixels $(i \pm l_1, j \pm l_2),  l_1, l_2\in \{1, ..., L\}$ are allowed to be its parents. In early experiments we also tried not constraining the parents and observed slower but successful training leading to a relevant structure. 
 
-Results reported in \tabref{tab:MNIST} show that graphical conditioners lead to the best performing affine NFs even if they are made of a single step. 
+Results reported in \Cref{tab:MNIST} show that graphical conditioners lead to the best performing affine NFs even if they are made of a single step. 
 This performance gain can probably be attributed to the combination of both learning a masking scheme and processing the result with a convolutional network.
 % to the meaningful domain knowledge that is introduced by the combination of a learned masking scheme with convolutional neural networks. 
 These results also show that when the capacity of the normalizers is limited, finding a meaningful factorization is very effective to improve performance. The number of edges in the equivalent BN is about two orders of magnitude smaller than for coupling and autoregressive conditioners. This sparsity is beneficial for the inversion since the evaluation of the inverse of the flow requires a number of steps equal to the depth \citep{depth-dag} of the equivalent BN. 
@@ -265,7 +265,7 @@ These experiments show that, in addition to being a favorable tool for introduci
 
     \node[inner sep=0pt] (graphical) at (0,0)
     {\includegraphics[width=.55\textwidth]{figures/DAGNF_mask_BW.pdf}};
-    \node[] (x) at (-5.5, -2.8) {$\mb{x}$};
+    \node[] (x) at (-5.5, -2.8) {$\mathbf{x}$};
     \node[] (A) at (0, -2.8) {$A_{i,:}$};
     \node[] (label) at (0, 3) {\small Masking operation from the adjacency matrix.};
     \node[fit={(graphical) (x) (A) (label)}] (graphical-all) {};
@@ -289,7 +289,7 @@ These experiments show that, in addition to being a favorable tool for introduci
         % \node[output neuron, right of=H-2] (h1) {};
         % \node[output neuron, right of=H-3] (h2) {};
         % \node[output neuron, right of=H-4] (h3) {};
-         \node[] at (1.8, -2.8) {$\mb{c}^i(\mb{x})$};
+         \node[] at (1.8, -2.8) {$\mathbf{c}^i(\mathbf{x})$};
     
         % \node[fit={(h1) (h2) (h3)}] (outputs) {};
         % \node[fit={(H-1) (H-2) (H-3) (H-4) (H-5)}] (hiddens) {};
@@ -310,7 +310,7 @@ These experiments show that, in addition to being a favorable tool for introduci
         %     \path (H-\source) edge (h3);
     \end{scope}
 \end{tikzpicture}
-    \caption{Illustration of how a graphical conditioner's output $\mb{c}^i(\mb{x})$ is computed for images. The sample $\mb{x}$, on the left, is an image of a $4$. The stripes denote the pixel $x_i$. The parents of $x_i$ in the learned DAG are shown as white pixels on the mask $A_{i, :}$, the other pixels are in black. The element-wise product between the image $\mb{x}$ and the mask $A_{i, :}$ is processed by a convolutional neural network that produces the embedding vector $\mb{c}^i(\mb{x})$ conditioning the pixel $x_i$.}
+    \caption{Illustration of how a graphical conditioner's output $\mathbf{c}^i(\mathbf{x})$ is computed for images. The sample $\mathbf{x}$, on the left, is an image of a $4$. The stripes denote the pixel $x_i$. The parents of $x_i$ in the learned DAG are shown as white pixels on the mask $A_{i, :}$, the other pixels are in black. The element-wise product between the image $\mathbf{x}$ and the mask $A_{i, :}$ is processed by a convolutional neural network that produces the embedding vector $\mathbf{c}^i(\mathbf{x})$ conditioning the pixel $x_i$.}
     \label{fig:dag-condi-archi}
     %\vspace{-1em}
 

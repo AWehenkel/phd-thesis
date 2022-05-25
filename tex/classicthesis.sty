@@ -74,12 +74,12 @@
     }
 \DeclareOption{subfig}{\setboolean{@subfig}{true}}
 \DeclareOption{nochapters}{\setboolean{@nochapters}{true}}
-\DeclareOption{beramono}{\setboolean{@beramono}{true}}
+\DeclareOption{beramono}{\setboolean{@beramono}{false}}
 \DeclareOption{eulermath}{\setboolean{@eulermath}{true}}
 \DeclareOption{parts}{\setboolean{@parts}{true}}
 \DeclareOption{a5paper}{\setboolean{@a5paper}{true}}
-\DeclareOption{minionpro}{\setboolean{@minionpro}{true}}
-\DeclareOption{minionprospacing}{\setboolean{@minionprospacing}{true}}
+\DeclareOption{minionpro}{\setboolean{@minionpro}{false}}
+\DeclareOption{minionprospacing}{\setboolean{@minionprospacing}{false}}
 \DeclareOption{pdfspacing}{\setboolean{@pdfspacing}{true}}
 \DeclareOption{dottedtoc}{\setboolean{@dottedtoc}{true}}
 \DeclareOption{listings}{\setboolean{@listings}{true}}
@@ -204,8 +204,8 @@
         }%
     }{%
         % default: Palatino
-        \PassOptionsToPackage{osf,sc}{mathpazo}%
-        \RequirePackage{mathpazo} % Palatino with real small caps and old style figures
+        % \PassOptionsToPackage{osf,sc}{mathpazo}%
+        % \RequirePackage{mathpazo} % Palatino with real small caps and old style figures
         \linespread{1.05} % a bit more for Palatino
     }
 

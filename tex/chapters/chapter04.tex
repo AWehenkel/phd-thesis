@@ -6,7 +6,7 @@ In this note, we revisit their coupling and autoregressive transformation layers
 From this new perspective, we provide three results.
 First, we show that stacking multiple transformations in a normalizing flow relaxes independence assumptions and entangles the model distribution.
 Second, we show that a fundamental leap of capacity emerges when the depth of affine flows exceeds 3 transformation layers.
-Third, we prove the non-universality of the affine normalizing flow, regardless of its depth. 
+Third, we prove the non-universality of the affine normalizing flow, regardless of its depth.
 \end{remark}
 \section{Introduction}
 Normalizing flows~\citep[NF, ][]{rezende2015variational} have gained popularity in the recent years because of their unique ability to model complex data distributions while allowing both for sampling and exact density computation.
@@ -68,29 +68,30 @@ A BN is able to model a distribution $p$ if and only if it is an I-map with resp
 where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mathbf{x}$ because it does not state any independence, leading to a factorization that results in the chain rule.
 
 
+
 \begin{figure}
-\centering
-\subfloat[]{\label{fig:mono-step-flows-a}
-   \begin{tikzpicture}[
-          node distance=.5cm and .35cm,
-          mynode/.style={draw,circle,text width=.35cm,align=center},
-          var_x/.style={draw, circle, text width=.35cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \path (x1) edge[-latex] (x2);
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \path (x3) edge[-latex] (x4);
-            %\node (b) at (1,-3) {(\tex\textbf{b})};
-        \end{tikzpicture}
-    }
-%\hspace{1.5em}
-\subfloat[]{\label{fig:mono-step-flows-b}
+  \begin{subfigure}{.33\textwidth}
+    \begin{tikzpicture}[
+           node distance=.5cm and .35cm,
+           mynode/.style={draw,circle,text width=.35cm,align=center},
+           var_x/.style={draw, circle, text width=.35cm, align=center}
+         ]
+             \node[var_x] (x1) {$x_1$};
+             \node[var_x, right=of x1] (x2) {$x_2$};
+             \node[var_x, below=of x1] (x3) {$x_3$};
+             \node[var_x, right=of x3] (x4) {$x_4$};
+             \path (x1) edge[-latex] (x2);
+             \path (x1) edge[-latex] (x3);
+             \path (x1) edge[-latex] (x4);
+             \path (x2) edge[-latex] (x3);
+             \path (x2) edge[-latex] (x4);
+             \path (x3) edge[-latex] (x4);
+             %\node (b) at (1,-3) {(\tex\textbf{b})};
+         \end{tikzpicture}
+   \caption{} \label{fig:mono-step-flows-a}
+ \end{subfigure}
+
+ \begin{subfigure}{.33\textwidth}
    \begin{tikzpicture}[
           node distance=.5cm and .35cm,
           mynode/.style={draw,circle,text width=.35cm,align=center},
@@ -106,31 +107,99 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
             \path (x2) edge[-latex] (x3);
             \path (x2) edge[-latex] (x4);
     \end{tikzpicture}
-   }%\\
-   \subfloat[]{\label{fig:mono-step-flows-c}
-        \begin{tikzpicture}[
-          node distance=.5cm and .35cm,
-          var_z/.style={draw,circle,text width=.35cm,align=center},
-          var_x/.style={draw, circle, double, text width=.35cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \node[var_z, left=of x1] (z1) {$z_1$};
-            \node[var_z, right=of x2] (z2) {$z_2$};
-            \node[var_z, left=of x3] (z3) {$z_3$};
-            \node[var_z, right=of x4] (z4) {$z_4$};
-            %\node (c) at (1,-3) {(\textbf{c})};
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \foreach \x in {1,...,4}
-                \path (z\x) edge (x\x);
-        \end{tikzpicture}}
+  \caption{} \label{fig:mono-step-flows-b}
+\end{subfigure}
+
+\begin{subfigure}{.33\textwidth}
+  \begin{tikzpicture}[
+    node distance=.5cm and .35cm,
+    var_z/.style={draw,circle,text width=.35cm,align=center},
+    var_x/.style={draw, circle, double, text width=.35cm, align=center}
+  ]
+      \node[var_x] (x1) {$x_1$};
+      \node[var_x, right=of x1] (x2) {$x_2$};
+      \node[var_x, below=of x1] (x3) {$x_3$};
+      \node[var_x, right=of x3] (x4) {$x_4$};
+      \node[var_z, left=of x1] (z1) {$z_1$};
+      \node[var_z, right=of x2] (z2) {$z_2$};
+      \node[var_z, left=of x3] (z3) {$z_3$};
+      \node[var_z, right=of x4] (z4) {$z_4$};
+      %\node (c) at (1,-3) {(\textbf{c})};
+      \path (x1) edge[-latex] (x3);
+      \path (x1) edge[-latex] (x4);
+      \path (x2) edge[-latex] (x3);
+      \path (x2) edge[-latex] (x4);
+      \foreach \x in {1,...,4}
+          \path (z\x) edge (x\x);
+  \end{tikzpicture}
+ \caption{} \label{fig:mono-step-flows-c}
+\end{subfigure}
 \caption{Bayesian networks for single-step normalizing flows on a vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. (\textbf{a}) BN for an autoregressive conditioner. (\textbf{b}) BN for a coupling conditioner. (\textbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
-    \end{figure}
+\end{figure}
+% \begin{figure}
+% \centering
+%
+% \subfloat[]{\label{fig:mono-step-flows-a}
+%    \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           mynode/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             \path (x1) edge[-latex] (x2);
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%             \path (x3) edge[-latex] (x4);
+%             %\node (b) at (1,-3) {(\tex\textbf{b})};
+%         \end{tikzpicture}
+%     }
+% %\hspace{1.5em}
+% \subfloat[]{\label{fig:mono-step-flows-b}
+%    \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           mynode/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             %\node (a) at (1,-3) {(\textbf{a})};
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%     \end{tikzpicture}
+%    }%\\
+%    \subfloat[]{\label{fig:mono-step-flows-c}
+%         \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           var_z/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, double, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             \node[var_z, left=of x1] (z1) {$z_1$};
+%             \node[var_z, right=of x2] (z2) {$z_2$};
+%             \node[var_z, left=of x3] (z3) {$z_3$};
+%             \node[var_z, right=of x4] (z4) {$z_4$};
+%             %\node (c) at (1,-3) {(\textbf{c})};
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%             \foreach \x in {1,...,4}
+%                 \path (z\x) edge (x\x);
+%         \end{tikzpicture}}
+% \caption{Bayesian networks for single-step normalizing flows on a vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. (\textbf{a}) BN for an autoregressive conditioner. (\textbf{b}) BN for a coupling conditioner. (\textbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
+%     \end{figure}
 \begin{figure}
     \centering
         \begin{tikzpicture}[
@@ -188,7 +257,7 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
 \subsection{Autoregressive conditioners}
 Autoregressive conditioners can be expressed as
 $$\mathbf{c}^i(\mathbf{x}) = \mathbf{h}^i\left(\begin{bmatrix} x_1 & \hdots & x_{i-1} \end{bmatrix}^T\right),$$ where $\mathbf{h}^i: \mathbb{R}^{i-1} \rightarrow \mathbb{R}^l$ are functions of the first $i-1$ components of $\mathbf{x}$ and whose output size depends on architectural choices.
-These conditioners constrain the Jacobian of $\mathbf{g}$ to be lower triangular, making the computation of its determinant $\mc{O}(d)$.
+These conditioners constrain the Jacobian of $\mathbf{g}$ to be lower triangular, making the computation of its determinant $\mathcal{O}(d)$.
 The multivariate density $p(\mathbf{x}; \mathbf{\theta})$ induced by $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ and $p_{\mathbf{z}}(\mathbf{z})$ can be expressed as a product of $d$ univariate conditional densities,
 \begin{align}
     p(\mathbf{x}; \mathbf{\theta}) = p(x_1; \mathbf{\theta})\prod^{d}_{i=2}p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta}). \label{eq:AF-fact}
@@ -321,7 +390,7 @@ For $d > 2$, autoregressive and coupling conditioners do not correspond to the s
     \tikzset{edge/.style = {->,-latex}}
 
     \node[inner sep=0pt] (graphical) at (0,0)
-    {\includegraphics[width=.96\textwidth]{tex/figures/chapter04/all_flows.png}};
+    {\includegraphics[width=.96\textwidth]{figures/chapter04/all_flows.png}};
     \node[] () at (-10.2, 7) {1 step};
     \node[] () at (-6.4, 7) {2 steps};
     \node[] () at (-2.5, 7) {3 steps};
