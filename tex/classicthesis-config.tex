@@ -371,4 +371,16 @@
 \newcommand{\chaprefp}[1]{\lbrack Chapter~\ref{ch:#1} \rbrack}
 
 
+\usepackage[many]{tcolorbox}
+\definecolor{mypink1}{rgb}{0.858, 0.188, 0.478}
+\newenvironment{side_note}[1]
+{
+	\begin{tcolorbox}[width=1.\textwidth,colback={white},title={#1},outer arc=1mm,coltitle=MidnightBlue, colbacktitle=white]
+	\small
+}
+{
+\end{tcolorbox}
+
+}
+
 % ****************************************************************************************************
