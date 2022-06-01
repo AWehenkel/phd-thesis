@@ -375,12 +375,27 @@
 \definecolor{mypink1}{rgb}{0.858, 0.188, 0.478}
 \newenvironment{side_note}[1]
 {
-	\begin{tcolorbox}[width=1.\textwidth,colback={white},title={#1},outer arc=1mm,coltitle=MidnightBlue, colbacktitle=white]
+	\begin{tcolorbox}[breakable,width=\textwidth,colback={grey},title={#1}
+	    ,enhanced jigsaw, pad at break*=1mm, breakable,
+	    left=4mm, right=4mm, top=5mm, bottom=5mm,
+	    colback=LightMaroon, boxrule=0pt, frame hidden,
+	    borderline west={0.5mm}{0mm}{Maroon}, arc=.5mm, coltitle=white, colbacktitle=Maroon]
 	\small
 }
 {
 \end{tcolorbox}
 
 }
+% Dark orange and Dark Red rgb
+\definecolor{title_color}{rgb}{0.858, 0.188, 0.478}
+\definecolor{chapter_outlinebordercolor}{RGB}{151, 63, 5}
+\definecolor{chapter_outlinebackgroundcolor}{RGB}{248, 241, 234}
+\tcolorboxenvironment{chapter_outline}{
+    enhanced jigsaw, pad at break*=1mm, breakable,
+    left=4mm, right=4mm, top=1mm, bottom=1mm,
+    colback=LightMaroon, boxrule=0pt, frame hidden,
+    borderline west={0.5mm}{0mm}{Maroon}, arc=.5mm, title={\large Outline}, coltitle=white, colbacktitle=Maroon
+}
+
 
 % ****************************************************************************************************

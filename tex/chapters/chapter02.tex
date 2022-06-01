@@ -1,12 +1,101 @@
+{\centering
+\parbox{\textwidth}{%
+  \raggedright{\normal\itshape%
+
+  You can't do inference without making assumption.\par\bigskip
+  }
+  \raggedleft\normal\MakeUppercase{The unknown Bayesian}\par%
+}}
+
 \chapter{Probabilistic modeling}\label{ch:02}
 
-\begin{remark}{Outline}
-This chapter concerns the definition of unsupervised learning with a brief review of classical methods.
-Graphical models (in particular B-net are introduced here.)
-It continues with a review of deep generative modeling, with a discussion between explicit and implicit generative modeling.
-We introduce the concepts of GANs, VAEs, Normalizing Flows and diffusion models. With a note that VAEs and diffusions models
-are discussed in more details in further chapters.
-\end{remark}
+\begin{chapter_outline}
+  The previous chapter established that modelling has played a major role in the progress of science and engineering.
+  In this chapter, we argue that accounting for uncertainty is crucial for many, if not all, modelling tasks.
+  % The goal is to set an agreement between the author and the reader on the existing challenges and opportunities in probabilistic modelling.
+  \\
+  This chapter is on \textit{probabilistic modelling} and shall answer the following questions:
+  \begin{enumerate}
+    \item What is a probabilistic model?
+    \item How do we build a probabilistic model?
+    \item How can we use a probabilistic model?
+    \item What are the technical challenges considered in this thesis?
+  \end{enumerate}
 
-\section{Unsupervised learning}
-\label{sec:2:Unsupervised learning}
+% This chapter concerns the definition of unsupervised learning with a brief review of classical methods.
+% Graphical models (in particular B-net are introduced here.)
+% It continues with a review of deep generative modeling, with a discussion between explicit and implicit generative modeling.
+% We introduce the concepts of GANs, Energy based models, VAEs, Normalizing Flows and diffusion models. With a note that VAEs and diffusions models
+% are discussed in more details in further chapters.
+\end{chapter_outline}
+
+\section{Introduction}
+The invention of computers enabled the automatization of many tasks historically accomplished by humans.
+One key ingredient of this revolution is the ability to let computer reason - to make an informed judgment based on logical arguments and observations.
+The set of hypotheses on which this logic builds is refeered as a \textit{model}. Both humans and machines relies on reasoning to perform tasks. As an example, let us consider that we want to chose a bottle of wine at the restaurant. To do so, we first need some hypotheses, e.g. those that anwer the following questions: - What kind of wine do people like at the table? Red or white? Strong or delicate? - What is the budget? - What are we going to eat tonight? - What is the winelist? etc. Provided this model, we can make an informed choice: remove the wines that are too expensive or would unpleased someone at the table, and, \textit{wine not} pick one of the remaining that goes well with tonight's dinner?! More seriously, a scientist needs a model of the earth and its atmosphere to provide an explanation to the climate change. Youtube considers your videos historic and a model that relates watched videos to recommendations to suggest videos. In these contexts, and in many others, the model plays a central part. We want good models, ones that lead to the right judgment. The one that makes us happy with the wine we chose, the one that matches the experiments, the one that makes you click on one of the suggested video.
+
+The definition of a good model depends on the end application. However it is clear that certain classes of models are usually strictly superior to others.
+In particular, a model that embeds notions of uncertainty is strictly more powerful than its deterministic version. Deterministic models do not faithfuly represent phenomenons that exhibit some forms of randomness which is inherent to our life. Although, we cannot say whether the laws that rule our reality are deterministic or stochastic, we know that modeling requires to make simplifying assumptions. These assumptions can handle hidden factors that we cannot directly observe, noisy measurements or approximations made to simplify the model.
+
+The language of \textit{probability} is the one to make statements about uncertain events. It allows to contrast between what is possible versus what is plausible. The distinction is important. It allows us to use this language to eventually make deterministic decisions by neglecting the most unlikely events and focusing on what has higher chance to be true. An old bottle has higher chance to be corked than a recent one, on the opposite it might also taste better. Using probability to express this will be useful to finally pick the bottle that is probably the best for tonight.
+
+\subsection{Definition of a probabilistic models}
+A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practicaly, it defines a probability distribution between the set of variables (e.g., $x, y, z$) considered useful to describe the phenomenon. The probability can be the joint between all variables (e.g., $p(x, y, z)$) if we want to model how we jointly observe the corresponding realization. It can also be a conditional distribution  (e.g., $p(x | y, z)$) if we can consider some of the variables known when using this model. With no loss of generality, we now restrain our discussion to the former case which describes the full joint distribution. For discrete variables the mathematical objects $p(x, y, z)$ is a probability and it is a density for continuous variables. The following of our discussion is mostly valid for both types of variables and we thus only mention the variables type when appropriate.
+
+The main goal of building a probabilistic model it to perform \texti{inference}. That is to answer questions in the context of the models. These questions can come with different flavour that can have an impact of the form of model we use. 
+Introduce formally what is a probabilistic model. Say what kind of question we can ask if we have the model and their correspondance. formally introduce what we mean by inference.
+Now contrast between discriminative versus descriptive models.
+
+Say that what differentiate models is the intrinsic distribution modeled but also in practice the exact way the distribution is expressed is important (reference to implicit versus explicit).
+
+In this manuscript, we will argue at multiple occasions that we shall not make a rigid distinction between graphical models and deep generative models.
+Indeed, most deep generative models have a direct correspondance within the graphical family which enables abstract reasoning independent from the neural networks architectures.
+However, for the sake of clarity we first introduce probabilistic graphical models. We then borrow the newly introduced notations and concept to describe several deep generative modelling algorithms.
+\begin{enumerate}
+  \item \textbf{Graphical models}
+  \item \textbf{Deep generative models}
+\end{enumerate}
+
+
+\subsection{Learning is inference}
+Learning as inference.
+
+Say that the joint distribution defined by the probabilistic is sometimes learned conditionaly to an input x, without caring about modeling the distribution over x. This is what is called supervised learning. Usually contrasted with unsupervised learning that looks at an uncondiotnal joint distribution. This distrinction is orthogonal to the one of probabilistic modeling.
+
+Say about the correspondance between what seems ``deterministic'' supervised machine learning and that it always correponds to strong assumptions on the form of the distribution.
+
+
+
+\begin{side_note}{Bayesian vs frequentist interpretation}
+  Two views oppose each others on the interpretation of probabilities. In the above discussion we brought probabilities as a formal expression of our uncertainty about the truthness of facts. This is the \textit{Bayesian} interpretation of probabilities. In this context, we start with a \textit{prior} belief about the truthness of a set of possible facts and use the Bayes' rule to update the belief when evidence comes, hence the reference to Sir Bayes. In this context, the prior is part of the model and impacts its quality. The main drawback of the Bayesian interpretation is thus that it may be hard to define the prior well. The second interpretation views a probability as a frequency of events and is refeered as \textit{frequentist}. With this intepretation, a probability does not quantify uncertainty, instead it expresses intrinsic randomness. Frequentistm has obviously no concept of prior belief which has pros and cons. In general, there is no inteprepretation better than the other. However, the Bayesian inteprepretation is arguably the most common in machine learning and is the one we will mostly implicitly use in our discussions. At the same time, we will also heavily use the term likelihood which is usually associated to the frequentist view.
+\end{side_note}
+\section{Probabilistic graphical modelling}
+
+\subsection{The curses of dimensionality}
+
+\subsection{Directed graphical models - Bayesian networks}
+
+\subsection{Undirected graphical models}
+
+\subsection{Inference}
+
+\subsection{Learning}
+
+\subsection{Discussion}
+
+\section{Deep generative modelling}
+\subsection{The inductive bias of neural networks}
+\subsection{Energy based models}
+\subsection{Autoregressive models}
+\subsection{Normalizing flows}
+\subsection{Diffusion models}
+\subsection{Variational auto-encoders}
+\subsection{Discussion}
+
+\section{The multiple definitions of hybrid modelling}
+
+\section{Chalenges and opportunities}
+
+\section{Summary}
+
+\textcolor{red}{Add a schematic view of how different models are related to each others and where we made the connections/contributions}
