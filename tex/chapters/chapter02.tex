@@ -39,26 +39,30 @@ In particular, a model that embeds notions of uncertainty is strictly more power
 
 The language of \textit{probability} is the one to make statements about uncertain events. It allows to contrast between what is possible versus what is plausible. The distinction is important. It allows us to use this language to eventually make deterministic decisions by neglecting the most unlikely events and focusing on what has higher chance to be true. An old bottle has higher chance to be corked than a recent one, on the opposite it might also taste better. Using probability to express this will be useful to finally pick the bottle that is probably the best for tonight.
 
-\subsection{Definition of a probabilistic models}
-A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practicaly, it defines a probability distribution between the set of variables (e.g., $x, y, z$) considered useful to describe the phenomenon. The probability can be the joint between all variables (e.g., $p(x, y, z)$) if we want to model how we jointly observe the corresponding realization. It can also be a conditional distribution  (e.g., $p(x | y, z)$) if we can consider some of the variables known when using this model. With no loss of generality, we now restrain our discussion to the former case which describes the full joint distribution. For discrete variables the mathematical objects $p(x, y, z)$ is a probability and it is a density for continuous variables. The following of our discussion is mostly valid for both types of variables and we thus only mention the variables type when appropriate.
+\subsection{Probabilistic model}
+A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practicaly, it defines a probability distribution between the set of variables considered useful to describe the phenomenon (e.g., $x, y, z$). The probability can be the joint between all variables (e.g., $p(x, y, z)$) when we need to model the joint observations. It can also be a conditional distribution  (e.g., $p(x | y, z)$) if we can consider some of the variables known when using this model. However, with no loss of generality, we restrain our discussion to the former case which describes the full joint distribution. For discrete variables the mathematical objects $p(x, y, z)$ is a probability and it is a density for continuous variables. The following of our discussion is mostly valid for both types of variables and we thus only mention the variables type when appropriate.
 
-The main goal of building a probabilistic model it to perform \texti{inference}. That is to answer questions in the context of the models. These questions can come with different flavour that can have an impact of the form of model we use. 
-Introduce formally what is a probabilistic model. Say what kind of question we can ask if we have the model and their correspondance. formally introduce what we mean by inference.
-Now contrast between discriminative versus descriptive models.
+The main goal of building a probabilistic model it to perform \texti{inference}. That is to answer questions in the context of the models. These questions come in different flavours. What is the most likely value of $y$ if we are to observe $x$? What is the complete conditional distribution of $y$ in this case? Do we want to evaluate the value $p(y|x)$ or just sample from it? To these purposes, the probabilistic models may have to handle different type of queries: \textit{marginalization, conditioning, sampling, and probability evaluation}.
 
-Say that what differentiate models is the intrinsic distribution modeled but also in practice the exact way the distribution is expressed is important (reference to implicit versus explicit).
+Of course, some representations can be efficient for some queries and less for others. As an example, we can represent the discrete distribution between $x, y, z$ with a $3$D table where each entry store the corresponding joint probability. The evaluation of the joint probability is very efficient with this representation. However to evaluate a conditional distribution we will need to go over all entries that corresponds to the conditioning factor to re-normalize the probabilities. Sampling becomes very inneficient as the number of entries in the table grow, and this number behaves exponentially with the number of variables considered. There exist other representations that have distinct advantages and drawbacks.
 
-In this manuscript, we will argue at multiple occasions that we shall not make a rigid distinction between graphical models and deep generative models.
-Indeed, most deep generative models have a direct correspondance within the graphical family which enables abstract reasoning independent from the neural networks architectures.
-However, for the sake of clarity we first introduce probabilistic graphical models. We then borrow the newly introduced notations and concept to describe several deep generative modelling algorithms.
-\begin{enumerate}
-  \item \textbf{Graphical models}
-  \item \textbf{Deep generative models}
-\end{enumerate}
+The next two sections provide an overview of two classes of probabilistic models that are of interest for this thesis. Namely \textbf{Graphical models} and \textbf{Deep generative models}. As the name says, the former class aims for a graphical representation of the distribution. The latter focuses on models whose internal representations use deep neural networks and that are usually well suited for sampling. We will discuss how these different representations differ with respect to the different queries aformentionned.
 
+In this manuscript, we will argue at multiple occasions that we shall not make a rigid distinction between graphical models and deep generative models. Indeed, most deep generative models have a direct correspondance within the graphical family which enables abstract reasoning independent from the neural networks architectures. However, for the sake of clarity we will first introduce probabilistic graphical models. And then borrow the newly introduced notations and concepts to describe several deep generative modelling algorithms.
 
-\subsection{Learning is inference}
-Learning as inference.
+% Now contrast between discriminative versus descriptive models.
+%
+% Say that what differentiate models is the intrinsic distribution modeled but also in practice the exact way the distribution is expressed is important (reference to implicit versus explicit).
+
+\subsection{Learning as inference}
+Until now, we have implicitly made the assumptions that the model is given. However, we can argue that in many settings this is not realistic.
+Paragraph on why we need learning.
+
+Learning requires to define a class of model and then to search for the best model.
+
+This can be performed via MLE.
+
+But this can also be seen as an inference tasks over the hyperparameters of the class of models.
 
 Say that the joint distribution defined by the probabilistic is sometimes learned conditionaly to an input x, without caring about modeling the distribution over x. This is what is called supervised learning. Usually contrasted with unsupervised learning that looks at an uncondiotnal joint distribution. This distrinction is orthogonal to the one of probabilistic modeling.
 
