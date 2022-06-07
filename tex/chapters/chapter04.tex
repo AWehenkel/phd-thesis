@@ -18,16 +18,16 @@ This family of deep neural networks combines a base distribution with a series o
 
 Probabilistic graphical models (PGMs) are well-established mathematical tools that combine graph and probability theory to ease the manipulation of joint distributions. They are commonly used to visualize and reason about the set of independencies in probabilistic models.
 %In addition to be effective tools for proofs and reasoning, these mathematical frameworks directly translates into machine learning models. %that can be learned from data with dedicated algorithms and lead to effective representation of joint distributions.
-Among PGMs, Bayesian networks~\citep[BN, ][]{pearl_bayesian_2011} offer a nice balance between readability and modeling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{geiger_d-separation_1990}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
+Among PGMs, Bayesian networks~\citep[BN, ][]{pearl_bayesian_2011} offer a nice balance between readability and modelling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{geiger_d-separation_1990}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
 %\gilles{Since space is limited, I would shorten the two first paragraphs.}
 
 In this note, we revisit NFs as Bayesian networks.
-We first briefly review the mathematical grounds of these two worlds. Then, for the first time in the literature, we show that the modeling assumptions behind coupling and autoregressive transformations can be perfectly expressed by distinct classes of BNs.
+We first briefly review the mathematical grounds of these two worlds. Then, for the first time in the literature, we show that the modelling assumptions behind coupling and autoregressive transformations can be perfectly expressed by distinct classes of BNs.
 From this insight, we show that stacking multiple transformation layers relaxes independencies and entangles the model distribution.
 Then, we show that a fundamental change of regime emerges when the NF architecture includes 3 transformation steps or more.
 Finally, we prove the non-universality of affine normalizing flows.
 
-% This grants us the tools to prove the non-universality of affine normalizing flows. In addition, we show that an important regime switch appears in multiple steps NFs when the number of steps exceeds 4. Finally, we discuss how this framework can be used to extend further the modeling capacity of NFs.
+% This grants us the tools to prove the non-universality of affine normalizing flows. In addition, we show that an important regime switch appears in multiple steps NFs when the number of steps exceeds 4. Finally, we discuss how this framework can be used to extend further the modelling capacity of NFs.
 
 \section{Background}
 \subsection{Normalizing flows}
@@ -349,7 +349,7 @@ We focus our discussion on a multivariate normal with an identity covariance mat
 We first observe from \figref{fig:mono-step-flows} that in a NF with a single transformation step at least one component of $\mathbf{x}$ is a function of only one latent variable.
 If the normalizer is affine and the base distribution is normal, then this necessarily implies that the marginal distribution of this component is normal as well, which will very likely not lead to a good fit.
 We easily see that adding steps relaxes this constraint.
-A more interesting question to ask is what exactly the modeling capacity gain for each additional step of affine normalizer is. Shall we add steps to increase capacity or shall we increase the capacity of each step instead?
+A more interesting question to ask is what exactly the modelling capacity gain for each additional step of affine normalizer is. Shall we add steps to increase capacity or shall we increase the capacity of each step instead?
 We first discuss a simple 2-dimensional case, which has the advantage of unifying the discussion for autoregressive and coupling conditioners, and then extend it to a more general setting.
 
 
@@ -372,7 +372,7 @@ In addition, we observe that the expression of $u^2_1$ is strictly more expressi
 Finally, $x_1$ and $x_2$ are non-linear functions of both latent variables $z_1$ and $z_2$.
 Assuming that the functions $s^i_j$ and $m^i_j$ are universal approximators, we argue that the stochastic process that generates $x_1$ and the one that generates $x_2$ are as expressive as each other.
 Indeed, by making the functions arbitrarily complex the transformation for $x_1$ could be made arbitrarily close to the transformations for $x_2$ and vice versa.
-This is true because both transformations can be seen as an affine transformation of a normal random variables whose scaling and offset factors are non-linear arbitrarily expressive transformations of all the latent variables. Because of this equilibrium between the two expressions, additional steps do not improve the modeling capacity of the flow.
+This is true because both transformations can be seen as an affine transformation of a normal random variables whose scaling and offset factors are non-linear arbitrarily expressive transformations of all the latent variables. Because of this equilibrium between the two expressions, additional steps do not improve the modelling capacity of the flow.
 The same observations can be made empirically as illustrated in \figref{fig:2d-three-steps-flows} for 2-dimensional toy problems. A clear leap of capacity occurs from 2-step to 3-step NFs, while having 4 steps or more does not result in any noticeable improvement when $s^i_j$ and $m^i_j$ already have enough capacity.
 
 For $d > 2$, autoregressive and coupling conditioners do not correspond to the same set of equations or BN. However, if the order of the vector is reversed between two transformation steps, the discussion generalizes to any value of $d$ for both conditioners. Indeed, in both cases each component of the intermediate latent vectors can be seen as having a set of conditioning variables and a set of independent variables. At each successive step the indices of the non-conditioning variables are exchanged with the conditioning ones and thus any output vector's component can be expressed either as a component of the vector form of $x_1$ or of $x_2$.
@@ -453,4 +453,4 @@ We hope these results will give practitioners more intuition in the design of no
 We also believe that this work may lead to further research.
 First, unifying Bayesian networks and normalizing flows could be pushed one step further with conditioners that are specifically designed to model Bayesian networks.
 Second, the study could be extended for other type of normalizing flows such as non-autoregressive monotonic flows.
-Finally, we believe this study may spark research at the intersection of structural equation modeling, causal networks and normalizing flows.
+Finally, we believe this study may spark research at the intersection of structural equation modelling, causal networks and normalizing flows.

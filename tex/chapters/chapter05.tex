@@ -17,7 +17,7 @@ Monotonic neural networks have been known as powerful tools to build monotone mo
 leads to a cap on the expressiveness of the resulting transformations.
 For neural autoregressive flows, this does not impede universal approximation but typically requires either complex conditioners or a composition of multiple flows.
 
-Nevertheless, autoregressive flows defined as stacks of reversible transformations have proven to be quite efficient for density estimation of empirical distributions~\citep{papamakarios_sequential_2019, papamakarios_masked_2017, huang_neural_2018}, as well as to improve posterior modeling in Variational Auto-Encoders (VAE)~\citep{germain_made_2015, kingma_improved_2016, huang_neural_2018}.
+Nevertheless, autoregressive flows defined as stacks of reversible transformations have proven to be quite efficient for density estimation of empirical distributions~\citep{papamakarios_sequential_2019, papamakarios_masked_2017, huang_neural_2018}, as well as to improve posterior modelling in Variational Auto-Encoders (VAE)~\citep{germain_made_2015, kingma_improved_2016, huang_neural_2018}.
 Practical successes of these models include speech synthesis \citep{van_den_oord_wavenet_2016, van_den_oord_parallel_2018}, likelihood-free inference \citep{papamakarios_sequential_2019}, probabilistic programming \citep{van_de_meent_introduction_2018} and image generation \citep{kingma_glow_2018}.
 While stacking multiple reversible transformations improves the capacity of the full transformation to represent complex probability distributions, it remains unclear which class of reversible transformations should be used.
 
@@ -96,7 +96,7 @@ where $J_{\mathbf{u}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{u
 The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$.
 
 \paragraph{Variational auto-encoders}
-NFs are also used in VAE to improve posterior modeling.
+NFs are also used in VAE to improve posterior modelling.
 In this case, a normalizing flow transforms a distribution $p_Z$ into a complex distribution $q$ which can better model the variational posterior.
 The change of variables formula yields
 \begin{equation}

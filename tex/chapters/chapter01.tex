@@ -52,7 +52,7 @@ Classically, scientists or engineers use their domain expertise to build increme
 Despite these numerous achievements, machine learning has recently challenged the classical modelling approach. Where humans fall short of finding patterns in a large amount of data and build arbitrarily complex models by themselves, machines can automatically perform these tasks day and night. The shift from hand-crafted to automated modelling happens in a world where the most ambitious scientific experiments generate petabytes ($10^{15}$) of data per second \citep{noauthor_cern_nodate}. On the one hand, while the computing capacity continuously increases, the human brain is not better wired to apprehend vast amounts of data than it was when Galileo Galilei set the basis of modern science 400 years ago. On the other hand, deep learning has recently proven its ability to build accurate generative models that outperform the ones designed out of human expertise. This is, for example, true in the context of voice synthesis \citep{van_den_oord_wavenet_2016}, text-translation \citep{brown2020language, devlin2018bert}, chatbots, or even text-to-image synthesis \citep{Dall-e-2, imagen}, to cite a few. Under these circumstances, the paradigm shift seems natural, even in a scientific context. \textcolor{Add fancy images of Dalle and flamingo}
 
 A paragraph on the progress in deep generative models over the last years and the history behind it, from deep belief networks to diffusion models. Most of the progress
-made for images and text. A bit for sound as well. These are signals for which we can easily gather tons of data. And this showcase that deep models can learn a useful representation from this large dataset. But this is far from being able to say that automated modeling can challenge classical modeling in all settings. In particular, there are two classes of complication that come jointly with all current approaches: 1) All current generative models require are very difficult to train and require expertise of these models, the tricks required can vary with the data modalities and so there are still huge area for improvement to simplify the broad utilization of these algorithms. 2) These algorithms only rely on architectural inductive bias, which might be sufficient for images, text and sounds that are well suited for convolutions and attentions but they are not made to use other kind of prior knowledge we may have of the process of interest, this is a piece that miss to overpass the classical approach on many important modeling tasks.
+made for images and text. A bit for sound as well. These are signals for which we can easily gather tons of data. And this showcase that deep models can learn a useful representation from this large dataset. But this is far from being able to say that automated modelling can challenge classical modelling in all settings. In particular, there are two classes of complication that come jointly with all current approaches: 1) All current generative models require are very difficult to train and require expertise of these models, the tricks required can vary with the data modalities and so there are still huge area for improvement to simplify the broad utilization of these algorithms. 2) These algorithms only rely on architectural inductive bias, which might be sufficient for images, text and sounds that are well suited for convolutions and attentions but they are not made to use other kind of prior knowledge we may have of the process of interest, this is a piece that miss to overpass the classical approach on many important modelling tasks.
 
 % Sounds, text, images, all these successes correspond to modalities for which data are broadly available. This hints that deep generative models can process and create valuable representations of large datasets. It is tough to quantify if these models understand the structure of the data or if they are intelligent copycats. For example, it is not always easy to ensure that these models do not collapse to a subset of the modes present in the data. Depending on the aim of the model, mode collapse can be problematic, e.g. if we want to handle inherent stochasticity observed in the data. In addition, recent works argue that these large models do overfit the training data \citep{overfit_dalle, gpt3}.
 % This makes sense as nothing helps a neural network knowing something it has not seen during training. This may preclude the application of deep generative models in contexts where data are scarcer or if we aim for a model with a profound understanding of the phenomenon it is trained to represent. \textcolor{red}{Upgrade this paragraph!!}
@@ -70,7 +70,7 @@ Motivated by this paradigm shift and the remaining challenges in deep generative
   \textit{How can we improve the construction of faithful generative models with deep learning algorithms?}
 \end{center}
 In pursuing this objective, we explore several directions that study and improve different aspects of deep generative models. In particular, we distinguish between data-driven models that only rely on the inductive bias of the learning algorithm and the availability of representative data and hybrid models that embed solid prior knowledge (e.g. independence assumptions or partial understanding of the underlying physics) into deep generative models. We argue that contributions to both aspects are complementary and will improve the range of application of deep generative models. On the one hand, data-driven algorithms are well suited to modelling tasks for which we do not have strong domain knowledge but access to a lot of representative data. On the other hand, hybrid modelling allows the combination of domain knowledge with data and is thus better equipped against small or poorly representative datasets.
-% A word somewhere that scientific models are usually probabilistic generative models because good models require modeling uncertainty coming from unmodeled phenomenon or phenomenon
+% A word somewhere that scientific models are usually probabilistic generative models because good models require modelling uncertainty coming from unmodeled phenomenon or phenomenon
 % that are only modeled up to a certain level of stochasticity. Introduced the concept of explicit generative vs implicit generative models
 
 % Paragraph arguing that we still need to work on deep generative models as they are not perfect yet.
@@ -88,20 +88,20 @@ Before diving into the core contributions of this thesis, a review of probabilis
 
 % Paragraph Arguing generative models are not data efficient because they do not built on common knowledge as would do a human
 
-% Historically modeling was achieved by manually describing sub-part of the studied processed with simple physical equations.
+% Historically modelling was achieved by manually describing sub-part of the studied processed with simple physical equations.
 % Machine learning led to a paradigm shift in this context.
 
-% The aim of this thesis is to study and improve generative modeling in this context (paradigm shift from hand crafted to automated modeling).
+% The aim of this thesis is to study and improve generative modelling in this context (paradigm shift from hand crafted to automated modelling).
 % Two aspects of improments are proposed
-% 1) Improving and studying the expressivity of automated probabilistic modeling approaches.
-% 2) Combining domain knowledge with data driven approaches to achieve faithful and generalizable modeling.
-% Both aspects are as important as on the one hand the availability of data increases for many problems which opens the path to breakthrough in the modeling of complex phenomenon.
+% 1) Improving and studying the expressivity of automated probabilistic modelling approaches.
+% 2) Combining domain knowledge with data driven approaches to achieve faithful and generalizable modelling.
+% Both aspects are as important as on the one hand the availability of data increases for many problems which opens the path to breakthrough in the modelling of complex phenomenon.
 % On the second hand, data are usually biased in some sense and generalization outside of this can only happen by enforcing invariance or equivariance with respect to spme aspects of the problems or real world.
 
 \newpage
 \section{Publications}
-Setting aside this introduction, an original primer on probabilistic modeling in \chapref{02} and the conclusion,
-the scientific content of this manuscript is exclusively borrowed to original contributions made to generative modeling over the last 4 years.
+Setting aside this introduction, an original primer on probabilistic modelling in \chapref{02} and the conclusion,
+the scientific content of this manuscript is exclusively borrowed to original contributions made to generative modelling over the last 4 years.
 Each selected contribution sets its own chapter complemented with a prologue and an epilogue.
 The manuscript builds upon the following list of publications:
 
