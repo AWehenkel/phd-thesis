@@ -184,7 +184,6 @@
 \definecolor{webgreen}{rgb}{0,.5,0}
 \definecolor{webbrown}{rgb}{.6,0,0}
 \definecolor{Maroon}{HTML}{0C5D6B}
-\definecolor{LightMaroon}{0C5D6B57}
 %\definecolor{RoyalBlue}{cmyk}{1, 0.50, 0, 0}
 %\definecolor{Black}{cmyk}{0, 0, 0, 0}
 
@@ -402,8 +401,8 @@
     \titleformat{\subsubsection}
         {\relax}{\textsc{\MakeTextLowercase{\thesubsubsection}}}{1em}{\normalsize\itshape}
     % paragraphs
-    \titleformat{\paragraph}[runin]
-        {\normalfont\normalsize}{\theparagraph}{0pt}{\spacedlowsmallcaps}
+    % \titleformat{\paragraph}[runin]
+    %     {\normalfont\normalsize}{\theparagraph}{0pt}{\spacedlowsmallcaps}
     % descriptionlabels
         \renewcommand{\descriptionlabel}[1]{\hspace*{\labelsep}\spacedlowsmallcaps{#1}}   % spacedlowsmallcaps textit textsc
     % spacing
@@ -412,7 +411,7 @@
         {\titlespacing*{\chapter}{0pt}{1\baselineskip}{1.2\baselineskip}}
     \titlespacing*{\section}{0pt}{1.25\baselineskip}{1\baselineskip}
     \titlespacing*{\subsection}{0pt}{1.25\baselineskip}{1\baselineskip}
-    \titlespacing*{\paragraph}{0pt}{1\baselineskip}{1\baselineskip}
+    % \titlespacing*{\paragraph}{0pt}{1\baselineskip}{1\baselineskip}
 
 % ********************************************************************
 % layout of the TOC, LOF and LOT (LOL-workaround see next section)

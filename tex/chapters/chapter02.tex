@@ -42,41 +42,68 @@ We thus need a language to express this stochasticity. The language of \textit{p
 \subsection{Probabilistic model}
 A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practicaly, it defines a probability distribution between the set of variables considered useful to describe the phenomenon (e.g., $x, y, z$). The probability can be the joint between all variables (e.g., $p(x, y, z)$) when it models the joint observations. It can also be a conditional distribution  (e.g., $p(x | y, z)$) if we can consider some of the variables known when using this model. For simplicity but with no loss of generality, we mostly limit our discussion to the former case except when mentioned otherwise. For discrete variables the mathematical objects $p(x, y, z)$ is a probability, and it is a density for continuous variables. In the following of this chapter, we will often use the symbol $p$ with no additional mention of the variables type (discrete vs continuous) to generalize the discussion to both types.
 
-One goal of building a probabilistic model, arguably the main one, is to perform \texti{inference}. That is to answer questions in the context of the models. These questions come in different flavours. What is the most likely value of $y$ if we are to observe $x$? What is the conditional distribution of $y$ in this case? Do we want to evaluate the value $p(y|x)$ or just sample from it? To these purposes, the probabilistic models may have to handle different type of queries: \textit{marginalization, conditioning, sampling, and probability evaluation}.
+One goal of building a probabilistic model, arguably the main one, is to perform \textit{inference}. That is to answer questions in the context of the models. These questions come in different flavours. What is the most likely value of $y$ if we are to observe $x$? What is the conditional distribution of $y$ in this case? Do we want to evaluate the value $p(y|x)$ or just sample from it? To these purposes, the probabilistic models may have to handle different type of queries: \textit{marginalization, conditioning, sampling, and probability evaluation}.
 
 Certain representations are appropriate for a subset of queries and not for others. As an example, we can represent the discrete distribution between $x, y, z$ with a $3$D table where each entry store the corresponding joint probability. The evaluation of the joint probability is very efficient with this representation. However, evaluating a conditional distribution requires to go over each entry that corresponds to the conditioning value and to re-normalize the probabilities by their sum. Sampling becomes very inneficient as the number of entries in the table grow. And this number grows exponentially with the number of dimensions. Fortunately, there exist other representations that have different advantages and drawbacks. We will review those important to this thesis later in the chapter.
 
-The next two sections provide an overview of two main classes of probabilistic models, namely \textbf{Graphical models} and \textbf{Deep generative models}. As the name says, the former class aims for a graphical representation of the distribution. It allows to easily handle and understand modelling assumptions such as independence hypotheses. The latter focuses on models whose internal representations use deep neural networks. These models are usually well suited for sampling. We will discuss the particularities of each class of models and will provide a thorough description of the main models. We will also details some algorithms to perform the different queries aforementioned on these models.
+The next sections provide an overview of two main classes of probabilistic models, namely \textbf{Graphical models} and \textbf{Deep generative models}. As the name says, the former class aims for a graphical representation of the distribution. It allows to easily handle and understand modelling assumptions such as independence hypotheses. The latter focuses on models whose internal representations use deep neural networks. These models are usually well suited for sampling. We will discuss the particularities of each class of models and will provide a thorough description of the main models. We will also details some algorithms to perform the different queries aforementioned on these models.
 
 In this manuscript, we will argue at multiple occasions that we shall not make a rigid distinction between graphical models and deep generative models as they are just different representations of the same mathematical object. Some deep generative models have a direct correspondance within the graphical family which enables abstract reasoning independent from the neural networks architectures. However, for the sake of clarity we will first introduce probabilistic graphical models. And then borrow the newly introduced notations and concepts to describe several deep generative modelling algorithms.
-
-% Now contrast between discriminative versus descriptive models.
-%
-% Say that what differentiate models is the intrinsic distribution modeled but also in practice the exact way the distribution is expressed is important (reference to implicit versus explicit).
-
-\subsection{Learning as inference}
-Before jumping into the description of concrete class of models we can keep our discussion general a bit longer.
-Until now, we have implicitly made the assumptions that the model is given. However, this is not realistic in many interesting settings. How can we create an accurate model of my winetastes? Certainly I cannot simply come by myself with a list ranking all wines in the world. It is probably too expensive and will not help me finishing this dissertation. However, I could anwser a long list of questions and then figure out a summary of my tastes with respect to the principal characteristics of wine. The task of summarizing my answers is what is called learning - from observations (my answers) we build a compressed representation made to perform reasoning tasks in the future, what we have called a model. Learning is thus a synonym for creating a model.
-
-Fortunately, we do not start from nowhere to perform this special task called \textit{learning}. We define a class of possibly good models, if we are  real Bayesians we even define the probability for each model to be the best. We will come back to this later but for now let us assume we do not have such a priori. The class of possible models can be finite or continuous if parameterized by real values. in which case we would basically select the model - say MLE. Say this the standard statistical way to select a model and say this is theoeretically very good in the presence of large amounts of data.
-
-Explain with the wine example and say a simpler and maybe more efficient methods (if enough wine) is just to attribute grade to wines and then build a model able to predict them. mention collaborative filtering.
-
-All models are misspecified. explain that we aim to mimick the distribution observed that is supposed to come from a true unknown  distribution. Mention the importance of making assumptions -> Occam's razzor.
-
-Jump to the elegance of the bayesian setting because it handles Occam's razzor explicitly in some sense. And learning is now an inference task in a big parametric model this can also be seen as an inference tasks over the hyperparameters of the class of models.
-
-
-
-Say that the joint distribution defined by the probabilistic is sometimes learned conditionaly to an input x, without caring about modelling the distribution over x. This is what is called supervised learning. Usually contrasted with unsupervised learning that looks at an uncondiotnal joint distribution. This distrinction is orthogonal to the one of probabilistic modelling.
-
-Say about the correspondance between what seems ``deterministic'' supervised machine learning and that it always correponds to strong assumptions on the form of the distribution.
 
 
 \begin{side_note}{Bayesian vs frequentist interpretation}
   Two views oppose each others on the interpretation of probabilities. In the above discussion we brought probabilities as a formal expression of our uncertainty about the truthness of facts. This is the \textit{Bayesian} interpretation of probabilities. In this context, we start with a \textit{prior} belief about the truthness of a set of possible facts and use the Bayes' rule to update the belief when evidence comes, hence the reference to Sir Bayes. In this context, the prior is part of the model and impacts its quality. The main drawback of the Bayesian interpretation is thus that it may be hard to define the prior well. The second interpretation views a probability as a frequency of events and is refeered as \textit{frequentist}. With this intepretation, a probability does not quantify uncertainty, instead it expresses intrinsic randomness. Frequentistm has obviously no concept of prior belief which has pros and cons. In general, there is no inteprepretation better than the other. However, the Bayesian inteprepretation is arguably the most common in machine learning and is the one we will mostly implicitly use in our discussions. At the same time, we will also heavily use the term likelihood which is usually associated to the frequentist view.
 \end{side_note}
-\section{Probabilistic graphical modelling}
+% Now contrast between discriminative versus descriptive models.
+%
+% Say that what differentiate models is the intrinsic distribution modeled but also in practice the exact way the distribution is expressed is important (reference to implicit versus explicit).
+
+\subsection{Learning}
+Before jumping into the description of different classes of models we can keep our discussion general longer.
+Until now, we have implicitly assumed the model was given to us. However, this is not realistic in many interesting settings. For example, how can I create an accurate model of my winetaste? Certainly I cannot simply come by myself with a list ranking all wines in the world. It might be too expensive to make and would not help me finishing this dissertation. However, I could anwser a long list of questions and then figure out a summary of my tastes with respect to the principal characteristics of wine. The task of summarizing my answers is what is called learning - from observations (my answers) we build a compressed representation. Afterwards we can use this representation to perform informed guess, this representation is a model, a simplified representation, of my winetaste. Learning is thus the task of instantiating a model from data.
+
+In practice, we do not perform \textit{learning} without additional assumptions. Instead, we define a set of models among which we believe at least one would be a good representation of the phenomenon of interest. If we are Bayesians we even add a probability that summarizes whether or not we believe the model is good. We will come back to this later. For now let us assume we do not have such a priori.
+
+The class of possible models can be finite, e.g. the class contains two models - one for people who like red wine and white wine; the other for people who only like red wine. Compressing my taste into one of these models would go with a big loss of information but might already be useful in certain settings. The class of models can be infinite, e.g. if parameterized by real values. For example, we can summarize winetaste by attributing an aphynity score to each of the main features of wine.
+\paragraph{Maximum likelihood estimation.}
+The learning strategy can be seen as a set of rules that leads to the instanciation of a model from data. When there is only a finite number of models there exists a simple strategy. We test the predictive performance of each model and select the one that is the most consistent with our data. If the models describe the phenomenon with discrete events then we maximize the probability. If it considers a continuous set of events we maximize the density. In the case where one of the model is \textit{correct} - it is the one that generates the data - this selection algorithm will eventually select the right model as the number of independently and identically distributed (iid) data points tends to $\infty$. This selection technique thus is said \textit{consistent}.
+
+We can use a similar approach when the models are parameterized by a real vector $\mathbf{\theta}$. In this case, our goal is to estimate a good value for $\mathbf{\theta}$. One approach, denoted maximum likelihood estimation (MLE), is to select the model's parameter $\mathbf{\theta}$ that maximizes the  joint distribution (density or probability) of the data $\mathcal{D}$ provided its value. This quantity is called the likelihood function of the parameter $\mathbf{\theta}$, denoted $\mathcal{L}(\mathbf{\theta}) \triangleq p(\mathcal{D}|\mathbf{\theta})$. Hence the MLE estimator is formally defined as
+\begin{align}
+   \bm{\theta}_{\text{MLE}} = \argmax_{\theta} p(\mathcal{D}|\bm{\theta}). \label{eq:chap02:MLE}
+\end{align}
+In the presence of iid data this estimator is consistent - provided a class of models that contains the `true` generative process, it eventually recovers the `true` model as the number of points tends to $\infty$. Formally, the consistency property is a convergence in probability of the estimator to the exact value and requires additional assumptions that ensures the model is idenfiable and the likelihood function is well behaved (compactness and continuity with respect to $\mathbf{\theta}$, and dominance).
+
+The consistency of the MLE learning method makes it appealing. However, we must consider the main assumption very carefuly! While ensuring that the model class contains the true generative process is ok in artificial settings. For real data, this assumption is almost a meta-physical question. The law of large numbers saves us if we only look at things in average and are provided with a lot of data but is not applicable to all modeling tasks. Sometimes, we know this assumption does not hold but we would still like to learn a good model, the MLE principle does not say much in this context. Even when we can be sure that the model class contains the right model (e.g. we consider a parametric universal density approximator), we know nothing about the convergence speed. And this is without mentioning the optimization procedure when there is no closed form solution to \Cref{eq:chap02:MLE}.
+
+
+\paragraph{Learning as inference.}
+The strict delimitation between possible and impossible models is another limitation of the MLE approach. The model is either part of the class of models and it is as likely as others to be the right one, or it is certainly irrelevant and it is ignored. We can avoid the strict separation between possible and ignored models by reformulating learning. Instead of interpreting learning as model selection, we see learning as a special inference task. We are thus back in a setting where the model is provided, however it is fine as we can consider the model as a very generic description of the phenomenon. As an example, the model can be a parametric function, exactly as when we define a class of models in the MLE approach. The distinction between learning as inference and MLE lies in the interpretation we make of the parameters. In the former we consider the parameter $\mb \theta$ as part of the model rather than defining the class of models. While learning via MLE is usually associated to a frequentist interpretation of probability, learning as inference is seen as Bayesian.
+
+Let us consider the case where we want to learn a model that represents the conditional distribution $\argmax_y p(y|\bm x)$ that I like a wine with features $\bm x \in \mathbb{R}^d$, where $y \in \mathbb{R}$ says if I like ($\rightarrox \infty$) or hate ($\rightarrox -\infty$) a wine. We could consider a neural network that is parameterized by $\bm \theta$ and represents a parametric density function conditioned on a input $x$: $f(\cdot, \bm x;\bm \theta): \mathbb{R} \times \mathbb{R}^{d} \times \mathbb{R}^{|\bm \theta|} \rightarrow \mathbb{R}^+$.
+Learning aims at summarizing the information in the data in order to perform a task of interest, here to predict $p(y|\bm x, \mathcal{D})$.
+If we state that $f$ represents the conditional distribution $p(y|\bm x, \bm \theta)$, this gives
+\begin{align}
+  p(y|\bm x, data) &= \int p(y|\bm x, \bm \theta) p(\bm \theta | \mathcal{D}) \text{d}\theta\\
+  &=\int f(y, \bm x;\bm \theta) p(\bm \theta | \mathcal{D}) \text{d}\theta.
+\end{align}
+We notice the data are only used through the posterior distribution of the parameters $\bm \theta$ provided the data. The posterior summarizes our belief about which models describe the best the phenomenon of interest in the lights of the data observed and our initial belief. The goal of learning is thus to compute $p(\bm \theta | \mathcal{D})$, which is an inference task. \textcolor{red}{how shall I mention functional form, I am not sure about the right vocabulary. We replace $p(\bm \theta)$ by $p(f)$} - mention kernel methods that naturally work in a function space.  very general hypothesis space might be the class of smooth functions $\mathbb{C}_\infty$ from $\mathbb{R}^d$ to $\mathbb{R}$.
+
+In practice it is often cumbersome to keep track of the complete posterior distribution. We can avoid this by selecting the maximum a posteriori (MAP) sub-model. In the case of a parametric model this means freezing the parameter $\bm \theta$ to their most plausible value $\bm \theta_{MAP} = \argmax_{\bm \theta} p(\bm \theta | \mathcal{D})$. Seeing learning as inference strictly generalizes the MLE principle to settings where the prior knowledge is more subtle than possible or impossible. When we consider a non-informative prior the method is strictly equivalent to the MLE. And when we do have a good prior, this strategy will naturally reduce the importance of bad model instanciation and mostly rely on the instanciations that were plausible and desribes well the data. Moreover, this approach is also consistent and eventually select the `right` instanciation.
+
+Learning as inference is sometimes criticised by practitioners who do not like the concept of attributing plausibility to different instanciation of the model. However, this critcism is empty from my point of view. The superioty of this approach relies on the obligation to explicit the modeling assumptions and the plausibility associated to each learnable component of the model. It forces us to aknowledge that learning a model is a subjective task. As an example, the Occam's razzor says that among potential explanations we should always favor the simplest. The bayesian approach naturally handles the occam's razzor by attributing higher plausibility to simpler model instanciations. This is not true for the MLE approach that requires to add an ad-hoc rule or regularization objective to the optimization problem.
+
+% Say that the joint distribution defined by the probabilistic is sometimes learned conditionaly to an input x, without caring about modelling the distribution over x. This is what is called supervised learning. Usually contrasted with unsupervised learning that looks at an uncondiotnal joint distribution. This distrinction is orthogonal to the one of probabilistic modelling.
+%
+% Say about the correspondance between what seems ``deterministic'' supervised machine learning and that it always correponds to strong assumptions on the form of the distribution.
+\paragraph{Machine learning = probabilistic modeling}
+We have avoided to use the term machine learning until now on purpose. We must aknowledge this t
+Things to mention:
+- Why we need train/valid/test (also for probabilistic); Provide the complexity plot.
+- Why using MSE or L1 error is equivalent to maximizing likelihood and adding a penalty to the parameters is equivalent to MAP.
+- How do we chose the learning algorithms/class of models? This a function of what we want to achieve with the model.
+
+\section{Probabilistic graphical models}
 
 \subsection{The curses of dimensionality}
 
@@ -90,7 +117,7 @@ Say about the correspondance between what seems ``deterministic'' supervised mac
 
 \subsection{Discussion}
 
-\section{Deep generative modelling}
+\section{Deep generative models}
 \subsection{The inductive bias of neural networks}
 \subsection{Energy based models}
 \subsection{Autoregressive models}
