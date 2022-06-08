@@ -97,11 +97,20 @@ Learning as inference is sometimes criticised by practitioners who do not like t
 %
 % Say about the correspondance between what seems ``deterministic'' supervised machine learning and that it always correponds to strong assumptions on the form of the distribution.
 \paragraph{Machine learning = probabilistic modeling}
-We have avoided to use the term machine learning until now on purpose. We must aknowledge this t
-Things to mention:
-- Why we need train/valid/test (also for probabilistic); Provide the complexity plot.
-- Why using MSE or L1 error is equivalent to maximizing likelihood and adding a penalty to the parameters is equivalent to MAP.
-- How do we chose the learning algorithms/class of models? This a function of what we want to achieve with the model.
+The attentive reader will notice that machine learning was only mentioned once in our discussion about Bayesian vs frequentist.
+This may sound surprising when the purpose of this thesis is to build bridges between machine learning algorithms and classical modelling approach. However, we have avoided the term machine learning until now on purpose. The distinction between classical modelling as performed by domain experts, e.g. in science or engineering, and machine learning is often irrelevant. As a matter of facts we have described probabilistic models in terms that are valid for both contexts. Whether the class of models is smaller, made of well understood pieces, or a huge neural network does not matter when describing the key steps to build and use a model. Even a model designed with domain knowledge has usually degrees of freedom which are useful to fit different contexts. At the same time, it is not because we do deep learning with a lot of data that we must forget that learning relies on assumptions. It is actually very important that understand that generalization happens thanks to inductive bias which has a bayesian interpretation.
+
+Looking at machine learning with a bayesian perspective allows to draw many connections between classical modelling and machine learning. One aspects of classical modelling is to consider small classes of models that usually contain simple models. This is well aligned with the Occam's Razor and often leads to good models when the studied process is well understood. Machine learning is often applied in contexts where classical modeling would fail because we do not have the tools to create a simplified representation of the phenomenon of interest by ourselves. This does not mean machine learning aims to learn a complex model of the phenomenon, quite the opposite. As depicted in \Cref{fig:ch02:learning_curves}, a ML model achieves its best predictive performance by balancing between model complexity and fitting the data. This behaviour is arguably observed with any ML algorithm. However the definition of a model's complexity is not very clear. A common method to control the complexity of a ML model is the data into a training, a validation and a test set. The validation set is used to find the hyperparameters of the learning algorithm that leads to a trained model that generalizes well, a model that has a good balance between faithfulness and complexity. Once good hyperparameters are found we re-train on both train and validation set and use the test set to assess the generalization of the models and access an unbiased estimation of the model's complexity.
+
+Machine learning models are sometimes described in deterministic terms. For example a classical machine learning task is to predict a real value $y$ provided a set of features $\bm x$. At first glance, we might have trouble to interpret this as a probabilistic models hence this would limit the scope of our previous discussion to a subset of ML algorithms. This is actually not the case. It is always possible to interpret a deterministic model as probabilistic model that makes strict assumptions on the shape of the distribution and do not use data to update this shape. For example fitting a regression model with mean squared error is equivalent to consider that $p(y|\bm x)$ is a gaussian with a fixed variance. Doing so with L1 corresponds to a Laplace distribution. There always exist this duality between deterministic and probabilistic interpretation. Then the learning algorithms either perform learning via an MLE principle or with a MAP when additional regularization is used to explicitly control the model's complexity.
+
+
+
+%
+% Things to mention:
+% - Why we need train/valid/test (also for probabilistic); Provide the complexity plot.
+% - Why using MSE or L1 error is equivalent to maximizing likelihood and adding a penalty to the parameters is equivalent to MAP.
+% - How do we chose the learning algorithms/class of models? This a function of what we want to achieve with the model.
 
 \section{Probabilistic graphical models}
 
