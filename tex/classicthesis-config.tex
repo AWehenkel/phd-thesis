@@ -181,6 +181,7 @@
 		         \backrefcitedmultistring{#2}%
 		      \fi}%
 }{\relax}
+\usepackage{ragged2e}
 
 % ********************************************************************
 % Hyperreferences
@@ -380,7 +381,7 @@
 \definecolor{chapter_outlinebackgroundcolor}{RGB}{248, 241, 234}
 \definecolor{LightMaroon_dark}{HTML}{0C5D6B}
 \colorlet{LightMaroon}{White!57!LightMaroon_dark}
-\colorlet{LightBlue}{White!85!Maroon}
+\colorlet{LightBlue}{White!95!Maroon}
 
 \newenvironment{side_note}[1]
 {
@@ -388,7 +389,7 @@
 	    ,enhanced jigsaw, pad at break*=1mm, breakable,
 	    left=4mm, right=4mm, top=5mm, bottom=5mm,
 	    colback=LightBlue, boxrule=0pt, frame hidden,
-	    borderline west={0.5mm}{0mm}{Maroon}, arc=.5mm, coltitle=white, colbacktitle=Maroon]
+	    borderline south={0.5mm}{0mm}{Maroon}, arc=.5mm, coltitle=white, colbacktitle=Maroon]
 	\small
 }
 {

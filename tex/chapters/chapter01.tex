@@ -1,34 +1,36 @@
 
 {\centering
 \parbox{\textwidth}{%
-  \raggedright{\normal\itshape%
+  \raggedright
+  {\itshape
+  % \normal
 
   Now I'm going to discuss how we would look for a new law. In general, we look for a new law by the following process. First, we guess it (audience laughter), no, don't laugh, that's the truth. Then we compute the consequences of the guess, to see what, if this is right, if this law we guess is right, to see what it would imply and then we compare the computation results to nature or we say compare to experiment or experience, compare it directly with observations to see if it works.
 
   If it disagrees with experiment, it's wrong. In that simple statement is the key to science. It doesn't make any difference how beautiful your guess is, it doesn't matter how smart you are who made the guess, or what his name is ... If it disagrees with experiment, it's wrong. That's all there is to it.\par\bigskip
   }
-  \raggedleft\normal\MakeUppercase{Richard Feynman}\par%
+  \raggedleft\MakeUppercase{Richard Feynman}\par%
 }}
 
 \vspace{5em}
 
 {\centering
 \parbox{\textwidth}{%
-  \raggedright{\normal\itshape%
+  \raggedright{\itshape%
 
   The physical laws, in their observable consequences, have a finite limit of precision.\par\bigskip
   }
-  \raggedleft\normal\MakeUppercase{Kurt G{\"o}del}\par%
+  \raggedleft\MakeUppercase{Kurt G{\"o}del}\par%
 }}
 
 \vspace{5em}
 {\centering
 \parbox{\textwidth}{%
-  \raggedright{\normal\itshape%
+  \raggedright{\itshape%
 
   All generalizations, with the possible exception of this one, are false.\par\bigskip
   }
-  \raggedleft\normal\MakeUppercase{Kurt G{\"o}del}\par%
+  \raggedleft\MakeUppercase{Kurt G{\"o}del}\par%
 }}
 
 \vfill
@@ -43,13 +45,20 @@ Ever since the beginning of their existence, humans have always been curious to 
   \centering
   \includegraphics[width=.8\textwidth]{figures/chapter01/trapist_disco.png}
   \caption{
-  Illustration of the scientific inquiry as a simplified 5-steps process. The pictograms sketch a cartoon of the TRAPPIST-1 planetary system discovery made by astronomers from LiG{\`e}ge University in 2016 \citep{gillon2017seven}.  Scientists first formulate a \textit{research question} and a set of reasonable \textit{hypotheses}, together they define a class of hypothetical models of the world. In order to answer their question, scientists gather data from \textit{experiments} and analyze them in the context of their modelling assumptions. Checking the consistency of different hypothetical models allows them \textit{to provide an answer} to their initial question up to a certain degree of certainty.}
+  Illustration of the scientific inquiry as a simplified 5-steps process. The pictograms sketch a cartoon of the TRAPPIST-1 planetary system discovery made by astronomers from Li{\`e}ge University in 2016 \citep{gillon2017seven}.  Scientists first formulate a \textit{research question} and a set of reasonable \textit{hypotheses}, together they define a class of hypothetical models of the world. In order to answer their question, scientists gather data from \textit{experiments} and analyze them in the context of their modelling assumptions. Checking the consistency of different hypothetical models allows them \textit{to provide an answer} to their initial question up to a certain degree of certainty.}
   \label{fig:ch01:scientific_method}
 \end{figure}
 
 Classically, scientists or engineers use their domain expertise to build incrementally complex models and improve their faithfulness to reality. The scientific method is then applied to validate or reject the new class of models. This strategy has not only led to today's state of science but also to the uttermost engineering accomplishments of modern times. In engineering, these successes impact our daily life, such as by enabling nuclear electricity - as predicted by special relativity - or allowing one to read this manuscript on a smart tablet - thanks to Maxwell equations' implications on the design of modern computers. More abstract but arguably as impactful on our vision of the universe, the classical model refinement strategy led to all modern scientific breakthroughs. As an example, these models allow astronomers to observe the furthest human-known objects, thanks to general relativity and gravitational lensing and enable the indirect observations of black holes thanks to gravitational waves theory.
 
-Despite these numerous achievements, machine learning has recently challenged the classical modelling approach. Where humans fall short of finding patterns in a large amount of data and build arbitrarily complex models by themselves, machines can automatically perform these tasks day and night. The shift from hand-crafted to automated modelling happens in a world where the most ambitious scientific experiments generate petabytes ($10^{15}$) of data per second \citep{noauthor_cern_nodate}. On the one hand, while the computing capacity continuously increases, the human brain is not better wired to apprehend vast amounts of data than it was when Galileo Galilei set the basis of modern science 400 years ago. On the other hand, deep learning has recently proven its ability to build accurate generative models that outperform the ones designed out of human expertise. This is, for example, true in the context of voice synthesis \citep{van_den_oord_wavenet_2016}, text-translation \citep{brown2020language, devlin2018bert}, chatbots, or even text-to-image synthesis \citep{Dall-e-2, imagen}, to cite a few. Under these circumstances, the paradigm shift seems natural, even in a scientific context. \textcolor{red}{Add fancy images of Dalle and flamingo}
+Despite these numerous achievements, machine learning has recently challenged the classical modelling approach. Where humans fall short of finding patterns in a large amount of data and build arbitrarily complex models by themselves, machines can automatically perform these tasks day and night. The shift from hand-crafted to automated modelling happens in a world where the most ambitious scientific experiments generate petabytes ($10^{15}$) of data per second \citep{noauthor_cern_nodate}. On the one hand, while the computing capacity continuously increases, the human brain is not better wired to apprehend vast amounts of data than it was when Galileo Galilei set the basis of modern science 400 years ago. On the other hand, deep learning has recently proven its ability to build accurate generative models that outperform the ones designed out of human expertise. This is, for example, true in the context of voice synthesis \citep{van_den_oord_wavenet_2016}, text-translation \citep{brown2020language, devlin2018bert}, chatbots \citep{alayrac2022flamingo}, or even text-to-image synthesis \citep{ramesh2022hierarchical, saharia2022photorealistic}, to cite a few. These models generate very diverse examples that challenge human made paintings as can be seen in \Cref{fig:dalle-mini} which show synthesis achieved with a small version of Dall-e 2. Under these circumstances, the paradigm shift seems natural, even in a scientific context.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\textwidth]{figures/chapter01/dog_phd_thesis.jpeg}
+  \caption{\textit{A dog writing a PhD thesis}, generated by $\text{DALL}\cdot\text{E}$ mini~\citep{Dayma_DALL_E_Mini_2021}.}
+  \label{fig:dalle-mini}
+\end{figure}
 
 A paragraph on the progress in deep generative models over the last years and the history behind it, from deep belief networks to diffusion models. Most of the progress
 made for images and text. A bit for sound as well. These are signals for which we can easily gather tons of data. And this showcase that deep models can learn a useful representation from this large dataset. But this is far from being able to say that automated modelling can challenge classical modelling in all settings. In particular, there are two classes of complication that come jointly with all current approaches: 1) All current generative models require are very difficult to train and require expertise of these models, the tricks required can vary with the data modalities and so there are still huge area for improvement to simplify the broad utilization of these algorithms. 2) These algorithms only rely on architectural inductive bias, which might be sufficient for images, text and sounds that are well suited for convolutions and attentions but they are not made to use other kind of prior knowledge we may have of the process of interest, this is a piece that miss to overpass the classical approach on many important modelling tasks.
@@ -84,7 +93,7 @@ In pursuing this objective, we explore several directions that study and improve
 
 \section{Outline and structure}
 
-Before diving into the core contributions of this thesis, a review of probabilistic modelling in \Cref{ch:02} naturally follows this introduction. It provides all notions necessary for the appreciation of this thesis for a reader equipped with a technical background. Then, \Cref{part:1} focuses on improving the expressivity and learning algorithms of implicit and explicit deep generative models. To this end, we explore two independent directions respectively on implicit and explicit generative models. First, \Cref{ch:03} studies the complementarity of two implicit generative models, namely the variational auto-encoders and the diffusion models, and show that diffusion models are a suitable replacement for the simple Gaussian distributions classically used to model a prior over the latent variables of variational auto-encoders. We then start our exploration of explicit generative models in \Cref{ch:04} by showing that affine normalizing flows, a class of explicit models, cannot represent arbitrary generative models. The first part ends in \Cref{ch:05} that addresses the expressivity issues of affine normalizing flows by introducing a new neural architecture to model monotonic functions. \Cref{part:2} explores hybrid modelling, a class of models that embrace the opportunity to combine pre-existing domain knowledge within deep generative models. In particular, \Cref{ch:06} studies the modelling and implications of independence assumptions in normalizing flows, while \Cref{ch:07} studies the generalisation capabilities of deep generative models equipped with a partial model of the studied process. As a conclusion and summary, \Cref{ch:08} reflects upon the contributions of this thesis and current challenges faced by deep generative models.
+Before diving into the core contributions of this thesis, a review of probabilistic modelling in \Cref{ch:02} naturally follows this introduction. It provides all notions necessary for the appreciation of this thesis by a reader equipped with a technical background. Then, \Cref{part:1} focuses on improving deep generative models' expressivity and learning algorithms. To this end, we explore two independent directions respectively on implicit and explicit generative models. First, \Cref{ch:03} studies the complementarity of two implicit generative models, namely the variational auto-encoders and the diffusion models, and shows that diffusion models are a suitable replacement for the simple Gaussian prior classically used in variational auto-encoders. We then start our exploration of explicit generative models in \Cref{ch:04} by showing that affine normalizing flows, a class of explicit models, cannot represent arbitrary generative models. The first part ends in \Cref{ch:05}, which addresses the expressivity issues of affine normalizing flows with the introduction of unconstrained monotonic neural networks. \Cref{part:2} explores hybrid modelling, a family of algorithms that embrace the opportunity to combine pre-existing domain knowledge and deep generative models. In particular, \Cref{ch:06} suggests explicitly handling independence assumptions in normalizing flows, and \Cref{ch:07} studies the generalisation capabilities of deep generative models equipped with a partial model of the studied process. As a conclusion and summary, \Cref{ch:08} reflects upon the contributions of this thesis and current challenges faced by deep generative models.
 
 % Paragraph Arguing generative models are not data efficient because they do not built on common knowledge as would do a human
 
