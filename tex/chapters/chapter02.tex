@@ -67,7 +67,7 @@ In practice, we do not perform \textit{learning} without additional assumptions.
 
 The class of possible models can be finite, e.g. the class contains two models - one for people who like red wine and white wine; the other for people who only like red wine. Compressing my taste into one of these models would go with a significant loss of information but might already be helpful in some settings. The class of models can be infinite, e.g. if parameterised by real values. For example, we can summarise wine taste by attributing an affinity score to each of the main features of wine.
 \paragraph{Maximum likelihood estimation.}
-The learning strategy can be seen as a set of rules that lead to a model's instantiation from data. When there is only a finite number of models, a simple strategy exists. We test the predictive performance of each model and select the one that is the most consistent with our data. If the models describe the phenomenon with discrete events, we maximise the probability. If it considers a continuous set of events, we maximise the density. In the case where one of the models is \textit{correct} - it is the one that generates the data - this selection algorithm will eventually select the right model as the number of independently and identically distributed (iid) data points tends to $\infty$. This selection technique thus is said \textit{consistent}.
+A learning strategy is a set of rules that produce a model from data. When we only consider a finite number of models, a simple strategy exists. We test the predictive performance of each model and select the one that is the most consistent with our data. If the models describe the phenomenon with discrete events, we maximise the probability. If it considers a continuous set of events, we maximise the density. In the case where one of the models is \textit{correct} - it is the one that generates the data - this selection algorithm will eventually select the right model as the number of independently and identically distributed (iid) data points tends to $\infty$. This selection technique thus is said \textit{consistent}.
 
 We can use a similar approach when the models are parameterized by a real vector $\mathbf{\theta}$. In this case, our goal is to estimate a good value for $\mathbf{\theta}$. One approach, denoted maximum likelihood estimation (MLE), is to select the model's parameter $\mathbf{\theta}$ that maximizes the  joint distribution (density or probability) of the data $\mathcal{D}$ provided its value. This quantity is called the likelihood function of the parameter $\mathbf{\theta}$, denoted $\mathcal{L}(\mathbf{\theta}) \triangleq p(\mathcal{D}|\mathbf{\theta})$. Hence the MLE estimator is formally defined as
 \begin{align}
@@ -117,25 +117,25 @@ Another important aspect of modelling is to select the appropriate class of mode
 
 \section{Probabilistic graphical models}
 
-As the saying goes, a picture is worth a thousand words. It is why we start our journey in Probabilistic-Model land by exploring the area of probabilistic graphical models (PGMs). Our trip will make a long detour by Bayesian and Markov networks, hoping to not leave the interested reader on the side of the road. As their name hints, PGMs have in common their reliance on graphical representation. We will observe that directed and undirected graphs have many relevant properties to represent modeling assumptions such as known (in)dependence. These representations lead to specialized inference and learning algorithms which will be discussed after.
+As the saying goes, a picture is worth a thousand words. It is why we start our journey in the probabilistic-model lands by revisiting probabilistic graphical models (PGMs). Our trip will pass by Bayesian network, and will make a small detour by Markov networks, hoping to not leave the interested reader on the side of the road. As their name hints, PGMs have in common their reliance on graphical representation. We will observe that directed and undirected graphs have many relevant properties to represent modeling assumptions such as known (in)dependence. These representations lead to specialized inference and learning algorithms which will be discussed after.
 
 The introduction of an undirected representation of the distribution of interacting particles in 1902 by Gibbs might be one of the first PGM. We can also attribute one of the first directed PGM to Sewal Wright who studied genetics back in the 1920's. The statistics community only started to ackowledge the graphical framework in 1960's. And it is even later, in in the late 80's, that PGMs started to creep in the field of artificial intelligence (AI) with the seminal works of Judea Pearl and his colleague that provided algorithms to take advantage of Bayesian networks, a class of directed PGMs. Since then, the graphical representation has been recognized as a powerful tool by many communities. It has achieved great successes such as in \textcolor{red}{cite cool applications}. Recently, causality, which is deeply rooted on Bayesian networks has arguably become one of the hot topic in ML and might be part of the greatest next successes in AI. \textcolor{red}{add citations}.
 
 Many great resources on PGMs exist and our goal is not to compete with them. We provide sufficient materials to get the reader interested and understand the main advantages and limitations of standard algorithms. This provides a common ground between the reader and the author to motivate the connections with deep generative models and improvements to classical PGMs we have broughts in the scope of this thesis. We invite the reader interested by additional details to check \citet{}, the main reference used to guide this introduction to PGMs.
 
 \subsection{The curses of dimensionality}
-\textit{Learning is hard.} We consider a bunch of unfair coins $\mathbf{x} = \left[x_1, \dots, x_d \right]$. Given a dataset of simulatenuous throws $\mathcal{D} = \{\mathbf{x}_i\}_{i=1}^N$ , we want to learn a probabilistic model $p(\mathbf{x})$. A natural approach is to represent the joint probability as a $d$-dimensional array with an entry for each possible realization. In this context, learning corresponds to filling the $2^d$ values in the table. We can reduce this number by factorizing the distribution as
+\paragraph{Learning is hard.} We consider a bunch of unfair coins $\mathbf{x} = \left[x_1, \dots, x_d \right]$. Given a dataset of simulatenuous throws $\mathcal{D} = \{\mathbf{x}_i\}_{i=1}^N$ , we want to learn a probabilistic model $p(\mathbf{x})$. A natural approach is to represent the joint probability as a $d$-dimensional array with an entry for each possible realization. In this context, learning corresponds to filling the $2^d$ values in the table. We can reduce this number by factorizing the distribution as
 $$p(\mathbf{x}) = p(x_1)\Pi_{i=2}^d p(x_i|x_{<i}),$$ and by acknowledging that the (conditional) probabilities of a tail and a head sum up to $1$. Unfortunately we do not gain much as the number of entries in the table still grows exponentially ($\sum_{i=1}^d 2^{i-1} = 2^{d-1} - 1$) and learning still quickly gets very dificult with the number of dimensions. This phenomenon is broadly refereed as a \textit{curse of dimensionality} and also hits continuous variables. However this is just a recall to the reality as we always need assumptions to create models - good news is we can fight the curse of dimensionality with modelling assumptions. For example, it is reasonable to assume the coins independent, the joint distribution is then factorized into $d$ terms: $ p(\bm{x}) = \Pi_{i=1}^d p(x_i)$. For continuous variables smoothness and constraints on the possible types of interactions between variables may allow us to achieve modelling results that challenge the curse of dimensionality. We will see soon strategies to express different modelling assumptions.
 % - If we do not restrain the hypothesis space or bias the learning in some sense the curse of dimensionality kills us. -> Learning is hard.
 
-\textit{Sampling is hard.} We want to sample realisations provided the joint distribution $p(\bm x)$. To this end, we may use approximate sampling schemes (e.g., MCMC, or importance sampling) that rely on a proposal distribution (e.g., a normal distribution) and an acceptance/rejection strategy. As the number of dimension increases the gap between the proposal distribution and the one of interest will naturally grows, and the acceptance rate will collapse. This means we need to understand some modelling assumptions in order to develop efficient sampling strategy. We will see later how rewarding is the joined development of the model class and the sampling strategy.
+\paragraph{Sampling is hard.} We want to sample realisations provided the joint distribution $p(\bm x)$. To this end, we may use approximate sampling schemes (e.g., MCMC, or importance sampling) that rely on a proposal distribution (e.g., a normal distribution) and an acceptance/rejection strategy. As the number of dimension increases the gap between the proposal distribution and the one of interest will naturally grows, and the acceptance rate will collapse. This means we need to understand some modelling assumptions in order to develop efficient sampling strategy. We will see later how rewarding is the joined development of the model class and the sampling strategy.
 
-\textit{Interpreting is hard.} The complexity of the phenomenon naturally grows with the number of variables we consider. Clearly, humans are not able to apprehend correctly more than a few dimensions. If our goal is to understand how different modelling assumptions impact the model it may be important to use specific framework for this. We will see that graphical models offer a nice balance between expressivity and interpretability and
+\paragraph{Interpreting is hard.} The complexity of a model naturally grows with the number of variables we consider. Clearly, humans are not able to apprehend correctly more than a few dimensions. If our goal is to understand how different modelling assumptions impact the model it may be important to use specific framework for this. We will see that graphical models offer a nice balance between expressivity and interpretability and
 
 \subsection{Directed graphical models - Bayesian networks}
 If we do not make assumptions, probabilistic modelling becomes hopeless as the dimensionality grows for the reasons mentioned before. We now review one of the most popular strategy to fight the intractability of PGMs in high dimensions, Bayesian networks (BN). BNs are a class of models that enables independence to enter the list of modelling assumptions. As we have seen, representing $d$ simulatenuous coins tosses requires the specification of at least $2^{d-1} - 1$ numbers. This number drops to $d$ if we consider all the variables independent. Indeed, it is reasonable to assume that the realisation of one coin toss does not help predicting the outcome for another coin. Hence, the best model should be part of the subclass of models considered. BNs define subclass of models with (conditional) independencies and allow to represent distributions more compactly. The term Bayesian can be attributed to the Bayes' rule which factorize a joint distribution into compact terms.
 
-\paragraph{Bayesian networks}
+\subsubsection{Bayesian networks}
 \begin{figure}
     \centering
     \begin{subfigure}{.45\textwidth}
@@ -144,10 +144,10 @@ If we do not make assumptions, probabilistic modelling becomes hopeless as the d
           node distance=.7cm and 1.cm,
           var_x/.style={draw, circle, text width=.4cm, align=center}
         ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
+            \node[var_x] (x1) {$X_1$};
+            \node[var_x, right=of x1] (x2) {$X_2$};
+            \node[var_x, below=of x1] (x3) {$X_3$};
+            \node[var_x, right=of x3] (x4) {$X_4$};
             \path (x1) edge[-latex] (x2);
             \path (x1) edge[-latex] (x3);
             \path (x1) edge[-latex] (x4);
@@ -164,10 +164,10 @@ If we do not make assumptions, probabilistic modelling becomes hopeless as the d
           node distance=.7cm and 1.cm,
           var_x/.style={draw, circle, text width=.4cm, align=center}
         ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
+            \node[var_x] (x1) {$X_1$};
+            \node[var_x, right=of x1] (x2) {$X_2$};
+            \node[var_x, below=of x1] (x3) {$X_3$};
+            \node[var_x, right=of x3] (x4) {$X_4$};
             %\node (a) at (1,-3) {(\textbf{a})};
             \path (x1) edge[-latex] (x3);
             \path (x1) edge[-latex] (x4);
@@ -179,30 +179,83 @@ If we do not make assumptions, probabilistic modelling becomes hopeless as the d
     \caption{Two Bayesian networks of a $4$D variable. (\textbf{a}) No independence. (\textbf{b}) A couple of independence, hence a reduced number of edges and of parameters.} \label{fig:BN-fig}
 \end{figure}
 
-A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $\mathbf{x} = \left[x_1, \hdots, x_d\right]^T \in \mathbb{R}^d$ be a random vector distributed under $p_{\mathbf{x}}$. A BN for $\mathbf{x}$ is a directed acyclic graph with $d$ vertices representing the components $x_i$ of $\mathbf{x}$. In this network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $\mathbf{x}$ iff its density can be factorized as
+A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a random vector taking values $X \in \mathcal{X}_1 \times \dots \times \mathcal{X}_d$ distributed under $p_{X}$. A BN for $X$ is a directed acyclic graph one vertex for each random variable $X_i$ of $X$. In this network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $X$ iff its probability distribution (continuous or discrete) factorizes as
 \begin{align}
-    p_{\mathbf{x}}(\mathbf{x}) = \prod^d_{i=1}p(x_i|\mathcal{P}_i),\label{eq:BN-fact}
+    p_{X}(X) = \prod^d_{i=1}p(X_i|\mathcal{P}_i),\label{eq:BN-fact}
 \end{align}
-where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:BN-fig} is a valid BN for any distribution over $\mathbf{x}$ because it does not state any independence and leads to a factorization that corresponds to the chain rule. However, in practice we seek for a sparse and valid BN which models most of the independence between the components of $\mathbf{x}$, leading to an efficient factorization of the modeled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
+where  $\mathcal{P}_i = \{X_j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. A BN together with the related conditional probability distributions is a PGM. For simplicity we will use the term BN to refer to this couple, and we explici the terms topology or structure when talking about the BN's structure.
 
-Understanding the independence assumptions underlying a DAG is key to appreciating BNs. For this purpose, d-separation describes rules to check if conditional independence holds in all distributions that factorise over a DAG. This algorithm is described in \Cref{alg:d-separation} and allows checking whether the topology is well suited to model a phenomenon of interest. In addition, it also enables characterising all (conditional) independencies that follow from a set of distinct independence assumptions. D-separation is \textit{sound}, it only detects existing independence. However, it is not \textit{complete} as it misses independence assumptions hidden in the parameterisation of conditional distributions. For example, the BN in \Cref{fig:BN-fig-a} can model any joint distribution over $\bm x$; applying d-separation to this graph would reject all independence, even though the distribution modelled could contain independence.
-\paragraph{Parameterization}
-The value of BNs is to reduce the description of a joint distribution to topology and a batch of $1$D conditional distributions. The topology is often prescribed by domain knowledge, while learning the conditional distributions from data is common. As mentioned earlier, learning aims at selecting (or weighting) within a class of models. A natural way to define a model class is to use parameters to describe the free parts of the model. For BNs, the free parts are usually only the conditional distributions as parameterising distributions is more straightforward and leads to simpler optimisation problems than graph structures. For discrete variables, we use categorical distributions, and each conditioning factor corresponds to distinct parameter values. Continuous variables offer many alternative parameterisations, e.g. the exponential family where parameters are a linear function of the conditioning factors. Gaussians with linear interactions are arguably on of the most popular parameterisations. These models, called Gaussian Bayesian networks, were historically the only ones with an efficient training algorithm as they correspond to multivariate Gaussian distributions \citep{wermuth1980linear} for which closed-form MLE exists. In \Cref{ch:06}, we will introduce normalizing flows as a more expressive parameterization and use stochastic gradient descent to approach the MLE. 
-\paragraph{Inference}
-- Inference as optmization
-- Inference as sampling
-\paragraph{Learning}
+\figref{fig:BN-fig} is a valid BN for any distribution over $X$ because it does not state any independence and leads to a factorization that corresponds to the chain rule. However, in practice we seek for a sparse and valid BN which models most of the independence between the components of $X$, leading to an efficient factorization of the modeled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
+
+Understanding the independence assumptions underlying a DAG is key to appreciating BNs. For this purpose, d-separation describes rules to check if conditional independence holds in all distributions that factorise over a DAG. This algorithm is described in \Cref{alg:d-separation} and allows checking whether the topology is well suited to model a phenomenon of interest. In addition, it also enables characterising all (conditional) independencies that follow from a set of distinct independence assumptions. D-separation is \textit{sound}, it only detects existing independence. However, it is not \textit{complete} as it misses independence assumptions hidden in the parameterisation of conditional distributions. For example, the BN in \Cref{fig:BN-fig-a} can model any joint distribution for $X$; applying d-separation to this graph would reject all independence, even though the distribution modelled could contain independence.
+\subsubsection{Parameterization}
+The value of BNs is to reduce the description of a joint distribution to topology and a batch of $1$D conditional distributions. The topology is often prescribed by domain knowledge, while learning the conditional distributions from data is common. As mentioned earlier, learning aims at selecting (or weighting) within a class of models. A natural way to define a model class is to use parameters to describe the free parts of the model. For BNs, the free parts are usually only the conditional distributions as parameterising distributions is more straightforward and leads to simpler optimisation problems than graph structures. For discrete variables, we use categorical distributions, and each conditioning factor corresponds to distinct parameter values. Continuous variables offer many alternative parameterisations, e.g. the exponential family where parameters are a linear function of the conditioning factors. Gaussians with linear interactions are arguably on of the most popular parameterisations. These models, called Gaussian Bayesian networks, were historically the only ones with an efficient training algorithm as they correspond to multivariate Gaussian distributions \citep{wermuth1980linear} for which closed-form MLE exists. In \Cref{ch:06}, we will introduce normalizing flows as a more expressive parameterization and use stochastic gradient descent to approach the MLE.
+\subsubsection{Inference}
+Inference is arguably the most elementary task we may perform provided a model. Here we focus on the generic the conditional probability query $p(Y|E=e)$, where $Y$ denotes a subset of the model's variable and $e$ is the value of another subset $E$ of the variables, the remaining variables $M = \{X_i: X_i \nin Y \cup E \}$ are marginalized out. For example, we might be interested in evaluating $p(X_1|X_3=x_3, X_4=x_4)$ in \Cref{fig:BN-fig}.
+
+As mentioned earlier, inference gets more difficult when the number of variables increases. However, BN adds structure to this problem by making explicit some of the independencies. While inference in BN stays NP-hard in the worst case, there exists algorithms able to exploit the structure for most inference tasks efficiently. For example, Pearl's message passing algorithms is an efficient exact inference algorithm that works only on polytrees, a subclass of BNs that only have uniparental nodes. Variable elimination (VE) is another popular algorithm that works on all discrete BNs, reduces the complexity of inference to the width (maximum distance between two nodes) of the graph. \citet{sanner2012symbolic} adapts VE to continuous variables with a symbolic version of VE. However, VE performs marginalizations and products of distributions which are not straightforward operations in the continuous setting.
+
+\paragraph{Inference as sampling.}
+The case of continuous variables motivates us to formulate inference differently. We look for formulations that do not explicitly mention marginalization or product of densities. A natural solution is to replace exact inference by conditional sampling from $p(Y|E=e)$. Let us notice that we can sample from the joint distribution, hence from any marginal distribution, by traversing the graph from parents to child. This method is known as \textit{ancestor sampling}. At each node we sample conditionally on the parents' value and eventually obtain a value for all nodes that is a valid sample from the joint distribution.
+
+Ancestor sampling assumes that we have a procedure to generate samples for each factor $p(X_i|\mathcal{P}_i)$ which is usually straightforward. For example, provided the corresponding cumulative distribution function $F(\cdot;\mathcal{P}_i): \mathcal{X}_i \rightarrow \left[0, 1\right]$ and a uniform random variable $U$ in $\left[0, 1\right]$, $x_i=F^{-1}(u;\mathcal{P}_i)$ follows $P(X_i|\mathcal{P}_i)$. This method is known as \textit{inversion sampling}. \textit{Rejection sampling} (RS) is an alternative strategy when we can only evaluate the joint distribution. The idea is to sample $z \in \mathcal{X}_i$ from a proposal distribution $P_z$, then accept the sample if $u<\frac{p_{x_i}(z)}{K P_z(z)}$ where $K$ is chosen such that $ K P_y(x_i) \geq P_{x_i}(x_i) \quad \forall x_i \in \mathcal{X}_i$.
+
+RS works also when the joint distribution is only known up to a normalizing factor but becomes inneficient as the number of dimension grows. Another limitation appears if we want to condition on a subset of the sampled variables as it would reject all samples almost certainly in the continuous setting. It is also very inneficient for discrete BNs. A solution is to freeze the conditioning factors $E$ to their value $e$ and to notice that sampling from $p(Y|E=e)$ is equivalent to sampling from $P(Y, M|E=e) = \frac{P(Y, M, E=e)}{P(E=e)}$ and ignoring $M$. Such that \Cref{eq:BN-fact} provides the unormalized value of $P(Y, M|E=e)$. Then we can sample values $(y_1, m_1), \dots, (y_k, m_k)$ via ancestor sampling, and keep track of the corresponding weight $P(Y, M, E=e)$. We can use these weighted samples to efficiently approximate an expected value over the posterior distribution as
+$$ \mathbb{E}_{P(Y|E=e)}\left[f(y)\right] \approx \frac{\sum_{i=1}^k f(y_i) P(Y=y_i, M=m_i, E=e)}{\sum_{i=1}^k P(Y=y_i, M=m_i, E=e) }.$$ For discrete variables this provides an approximate alternative to VE with $$P(Y=y|E=e) \approx \frac{\sum_{i=1}^k f(y_i) P(Y=\bm{1}\{y_i = y\}, M=m_i, E=e)}{\sum_{i=1}^k P(Y=y_i, M=m_i, E=e)}. $$ This method is known as \textit{likelihood weighting} and is a special case of \textit{importance sampling} when the proposal distribution is ancestor sampling. We can convince ourselves that likelihood weighting prefers when the conditioning factors are located at the root of the BN.
+
+Although importance sampling uses samples more efficiently it does not provide samples from the posterior distribution. Markov Chain Monte Carlo (MCMC) is a family of algorithms that describes assymptotically correct sampling procedure that only requires access to an unormalized density function. These algorithms run a Markov chain whose stationary distribution follows the given density. The difference between two MCMC algorithms lie in the transition probability $P(y^k|y^{k-1})$. There exists many instances such as Metropolic-Hastings MCMC, Hamiltonian MCMC, slice sampling, etc. Gibbs sampling is an instance that aims to exploit the BN structure in the transition probability. Let us suppose that $M = \phi$, then at each transition step we only update one component $x_i$ of $y^k$, the transition probability updates $X_i$ from the posterior $P(X_i|x_{-i}^{k-1})$ where $x_{-i}^{k-1}$ contains the values of the evidence $E$ and the previous state $y^{k-1}$ except the $i^{\text{th}}$ component. This suppose we can sampling efficiently from the $1$D posterior which indeed sometimes possible.
+
+\textcolor{Mention that we do not pretend to be complete as there exist many many algorithms and we only focus on generic algorihm that showcase some of the classical issuing when sampling from these models. I have to help the reader to understand better why he it is important that he reads this sections. For the one about sampling it shows that inference is really hard but adding strucure helps producing specialized algorithms. For the inference as optimization it must mainly motivates to create parametric models that are efficiently trainable. Also mention that although we try to keep the discussion generic, our interest is really for continuous variables in this thesis. Find a place to mention the Expectation–maximization algorithm.}
+
+\paragraph{Inference as optimization.}
+We now introduce variational inference (VI) as an alternative to sampling strategies. Variational inference formulates inference as an optimization problem in which we look for a distribution $Q(Y)$ that is as close as possible to the posterior of interest $P(Y|E=e)$. To this purpose, we consider a parametric family of distributions $Q_\theta(Y)$, such as a BN with a prescribed structure but parametric distributions. Our goal is to optimize for the best set of parameters $\theta^\star$:
+\begin{align}
+  \theta^\star = \argmin_\theta D\left[Q_\theta(Y)||P(Y|E=e) \right], \label{eq:obj_VI}
+\end{align}
+where is an appropriate divergence between distributions. For the rest of this discussion, let us fix $D$ to the Kullback-Leibler divergence which is an appropriate choice as it is only minimized when $Q = P$. As of now, we also restrain our discussion to the case of continuous variables.
+
+Solving $\label{eq:obj_VI}$ is possible if we have a parametric family of distributions for which density evaluation and sampling are a differentiable functions of the parameters. Normalizing flows define such a family and will be descripted in the next section. Let us denote by $Q_\theta$ the probability density function and the procedure to generate samples as $$ y := f_\theta(z) \quad\text{where}z\sim \mathcal{N}(0, I),$$
+where $\mathcal{N}(0, I)$ denotes a normal distribution.
+In this ideal case, the optimization problem becomes:
+\begin{align}
+  \theta^\star &= \argmin_\theta KL\left[Q_\theta(Y)||P(Y|E=e) \right]\\
+  &= \argmin_\theta KL\left[Q_\theta(Y)||P(Y, E=e) \right] + \mathbb{E}_{y}\left[P(E=e)\right]\\
+  &= \argmin_\theta \mathbb{E}_{z}\left[ \log \frac{Q_\theta(f_\theta(z))}{P(f_\theta(z), E=e)} \right].
+\end{align}
+We can optimize the equation with stochastic gradient descent (SGD) by approximating the objective function with Monte Carlo samples at each gradient step.
+
+However, evaluating $P(f_\theta(z), E=e)$ in the last equation is not always possible (e.g. the variables in $M$ have at least one child). In this context, we may create an approximation $Q_{\theta^\star}(Y, M|E=e)$ of $P(Y, M|E=e)$ instead. We can then generate samples from the joint and thus from the marginal $P(Y|E=e)$. If we need to evaluate the approximate $Q_{\theta^\star}(Y|E=e) := \int Q_{\theta^\star}(Y, M|E=e) \text{d}M$, we can find a surrogate model $\tilde Q_\psi$ by solving the following optimization problem:
+\begin{align}
+  \psi^\star &= \argmin_\psi KL\left[Q_{\theta^\star}(Y, M|E=e)||Q_\psi(Y) \right].
+\end{align}
+We can also optimize this equation with SGD and Monte Carlo samples as it only requires to sample from and evaluate $Q_{\theta^\star}(Y, M|E=e)(Y, M|E=e)$, and to evaluate $Q_\psi(Y)$. The solution to this equation is indeeed $Q_{\theta^\star}(Y|E=e)$ as
+\begin{align}
+  &\min_Q KL\left[P(Y, M)||Q(Y) \right]\\
+  &=\min_Q \mathbb{E}_{P(Y) P(M|Y)}\left[\log P(Y) + \log P(M|Y) - \log Q(Y)\right]\\
+  &=\min_Q \mathbb{E}_{P(Y) P(M|Y)}\left[\log P(Y) - \log Q(Y)\right]\\
+  &= \min_Q \mathbb{E}_{P(Y)}\left[\log P(Y) - \log Q(Y)\right]\\
+  &= \min_Q KL\left[P(Y)||Q \right]
+\end{align}
+
+- Concrete param with Density
+
+- Concrete param with LOTUS
+
+- Usually more efficient than sampling strategies for multiples reasons (Make hypothesis!), can be seen as a new modeling task. Generalize EM.
+
+\textcolor{red}{Discuss the case of exact inference in continuous is maybe hopeless.}
+\subsubsection{Learning}
 - Structure learning
 - Parameter learning
 - MLE
 - MAP
-\paragraph{Duality between directed graphs and distributions}
+\subsubsection{Duality between directed graphs and distributions}
 I-map
 
 Perfect-map
 
 Limitations
-\paragraph{Causality}
+\subsubsection{Causality}
 - Causal interpretation
 - Usage
 - Sampling as a causal phenomenon
