@@ -10,7 +10,7 @@ thesis.pdf: bibliography.bib thesis.tex classicthesis-config.tex chapters/*.tex 
 	pdflatex -shell-escape thesis
 	pdflatex -shell-escape thesis
 	git commit -am "new pdf generation"
-	git push origin master
+	git push
 
 partial:
 	bibtex thesis
