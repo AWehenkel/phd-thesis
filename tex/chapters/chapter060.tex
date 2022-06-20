@@ -1,166 +1,16 @@
-\documentclass[twoside]{article}
+\chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
 
-\usepackage[accepted]{aistats2021}
+\begin{remark}{Outline}
+???
+\end{remark}
 
-% to compile a preprint version, e.g., for submission to arXiv, add add the
-% [preprint] option:
-    %  \usepackage[preprint]{neurips_2020}
-
-% to compile a camera-ready version, add the [final] option, e.g.:
-%     \usepackage[final]{neurips_2020}
-
-% to avoid loading the natbib package, add option nonatbib:
-    %  \usepackage[nonatbib]{neurips_2020}
-
-\usepackage[utf8]{inputenc} % allow utf-8 input
-\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-\special{papersize = 8.5in, 11in}
-\setlength{\pdfpageheight}{11in}
-\setlength{\pdfpagewidth}{8.5in}
-\usepackage[colorlinks]{hyperref}       % hyperlinks
-\hypersetup{
-    colorlinks = true,
-    linkcolor = blue,
-    anchorcolor = blue,
-    citecolor = blue,
-    filecolor = blue,
-    urlcolor = blue
-}
-
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{amsmath}
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{xcolor}
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
-\newcommand{\sfunction}[1]{\textsf{\textsc{#1}}}
-\algrenewcommand\algorithmicforall{\textbf{foreach}}
-\usepackage{textcomp}
-\usepackage{subcaption,graphicx}
-\usepackage[font=footnotesize,labelfont=bf]{caption}
-
-\usepackage{array,multirow}
-
-\usepackage{accents}
-
-%\usepackage{ntheorem}
-\usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
-
-% Math text commands
-%\newcommand{\mathcal}{\mathcal}
-%\newcommand{\mathbf}{\boldsymbol}
-%\newcommand{\mathbb}{\mathbb}
-
-% Math new operators
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\trace}{trace}
-\DeclareMathOperator*{\diag}{diag}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator*{\tr}{tr}
-\DeclareMathOperator{\dt}{\, \mathrm{d}\mathit{t}}
-\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
-\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
-
-\usepackage{xstring}
-
-% Math braces
-\newcommand{\brac}[1]{\left({#1}\right)}
-\newcommand{\sbrac}[1]{\left[{#1}\right]}
-\newcommand{\cbrac}[1]{\left\{{#1}\right\}}
-
-\newcommand{\bestresult}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \mathbf{\m_{{\pm \s}}}}$}
-\newcommand{\result}[2]{\FPeval{\m}{round(#1, 2)}\FPeval{\s}{round(#2, 2)} \StrGobbleLeft{\s}{1}[\s]${\scriptstyle \m_{\scriptstyle \pm \s}}$}
-
-\usepackage{mathtools}
-\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
-
-% Theorems:
-\usepackage{amsthm}
-\newtheorem{proposition}{Proposition}[section]
-
-
-% Comments commands:
-\newcommand{\gilles}[1]{\textcolor{red}{[GL: #1]}}
-\newcommand{\antoine}[1]{\textcolor{orange}{[AW: #1]}}
-%\newcommand{\textbf}[1]{\textbf{#1}}
-\newcommand{\figref}[1]{Fig.~\ref{#1}}
-\newcommand{\Cref}[1]{Table~\ref{#1}}
-
-%\usepackage{tikz}
-% \usepackage{includetikz}
-% \usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds}
-\usepackage{relsize}
-\usepackage{tikz}
-\usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds,shapes}
-\usetikzlibrary{decorations.pathreplacing,angles,quotes}
-
-\usetikzlibrary{automata,arrows}
-
-
-%%% Algorithm commands %%%%
-\newcommand{\pushline}{\Indp}% Indent
-\newcommand{\popline}{\Indm\dosemic}% Undent
-\newcommand{\nonl}{\renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
-
-
-% The \author macro works with any number of authors. There are two commands
-% used to separate the names and addresses of multiple authors: \And and \AND.
-%
-% Using \And between authors leaves it to LaTeX to determine where to break the
-% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
-% authors names on the first line, and the last on the second line, try using
-% \AND instead of \And before the third author name.
-
-% %\author{
-%   Antoine Wehenkel \\
-%   University of Liège \\
-%   % Address \\
-%   \texttt{antoine.wehenkel@uliege.be} \\
-%   \And
-%   Gilles Louppe \\
-%   University of Liège \\
-%   % Address \\
-%   \texttt{g.louppe@uliege.be} \\
-%   % \And
-%   % Coauthor \\
-%   % Affiliation \\
-%   % Address \\
-%   % \texttt{email} \\
-%   % \And
-%   % Coauthor \\
-%   % Affiliation \\
-%   % Address \\
-%   % \texttt{email} \\
-% }
-\usepackage[]{natbib}
-\bibliographystyle{plainnat}
-
-\begin{document}
-
-\twocolumn[
-\aistatstitle{Graphical Normalizing Flows}
-
-\aistatsauthor{ Antoine Wehenkel \And Gilles Louppe }
-
-\aistatsaddress{ ULiège \And ULiège} ]
-
-\begin{abstract}
-Normalizing flows model complex probability distributions by combining a base distribution with a series of bijective neural networks. State-of-the-art architectures rely on coupling and autoregressive transformations to lift up invertible functions from scalars to vectors.
-In this work, we revisit these transformations as probabilistic graphical models, showing they reduce to Bayesian networks with a pre-defined topology and a learnable density at each node.
-From this new perspective, we propose the graphical normalizing flow, a new invertible transformation with either a prescribed or a learnable graphical structure.
-This model provides a promising way to inject domain knowledge into normalizing flows while preserving both the interpretability of Bayesian networks and the representation capacity of normalizing flows. We show that graphical conditioners discover relevant graph structure when we cannot hypothesize it. In addition, we analyze the effect of $\ell_1$-penalization on the recovered structure and on the quality of the resulting density estimation. Finally, we show that graphical conditioners lead to competitive white box density estimators.
-Our implementation is available at \url{https://github.com/AWehenkel/DAG-NF}.
-\end{abstract}
 
 \section{Introduction}
 Normalizing flows~\citep[NFs, ][]{NF, tabak2010density, tabak2013family, rippel2013high} have proven to be an effective way to model complex data distributions with neural networks. These models map data points to latent variables through an invertible function while keeping track of the change of density caused by the transformation. In contrast to variational auto-encoders (VAEs) and generative adversarial networks (GANs), NFs provide access to the exact likelihood of the model's parameters, hence offering a sound and direct way to optimize the network parameters. Normalizing flows have proven to be of practical interest as demonstrated by \citet{parallel_wavenet, kim2018flowavenet} and \citet{ prenger2019waveglow} for speech synthesis, by \citet{NF, kingma2016improved} and \citet{berg2018sylvester} for variational inference or by \citet{SNL} and \citet{greenberg2019automatic} for simulation-based inference. Yet, their usage as a base component of the machine learning toolbox is still limited in comparison to GANs or VAEs. Recent efforts have been made by \citet{flows-review} and \citet{flow_review_2} to define the fundamental principles of flow design and by \citet{neural-spline-flows} to provide coding tools for modular implementations. We argue that normalizing flows would gain in popularity by offering stronger inductive bias as well as more interpretability. %Moreover, some fundamental properties of NFs are still to be understood and we believe that to do so could lead to long-term improvements in the field.% and by being more intuitive to build. %\cite{flows-tori} makes a similar observation to motivate their flow on non-euclidean space.
 %\antoine{And improvement if better understood}
 
-Sometimes forgotten in favor of more data oriented methods, probabilistic graphical models (PGMs) have been popular for modeling complex data distributions while being relatively simple to build and read \citep{PGM-book, johnson2016composing}. Among PGMs, Bayesian networks~\citep[BNs, ][]{Pearl-BN} offer an appealing balance between modeling capacity and simplicity. Most notably, these models have been at the basis of expert systems before the big data era (e.g. \citep{BN-app-1, BN-app-2, BN-app-3}) and were commonly used to merge qualitative expert knowledge and quantitative information together. On the one hand, experts stated independence assumptions that should be encoded by the structure of the network. On the other hand, data were used to estimate the parameters of the conditional probabilities/densities encoding the quantitative aspects of the data distribution. %B-net are closely related to the field of causality by being a super-set of causal graphical models.
-These models have progressively received less attention from the machine learning community in favor of other methods that scale better with the dimensionality of the data. %Moreover, practical applications for continuous data stands on a strong hypothesis on the class of distributions combined with linear dependence relationships that limits the modeling capacities.
+Sometimes forgotten in favor of more data oriented methods, probabilistic graphical models (PGMs) have been popular for modelling complex data distributions while being relatively simple to build and read \citep{PGM-book, johnson2016composing}. Among PGMs, Bayesian networks~\citep[BNs, ][]{Pearl-BN} offer an appealing balance between modelling capacity and simplicity. Most notably, these models have been at the basis of expert systems before the big data era (e.g. \citep{BN-app-1, BN-app-2, BN-app-3}) and were commonly used to merge qualitative expert knowledge and quantitative information together. On the one hand, experts stated independence assumptions that should be encoded by the structure of the network. On the other hand, data were used to estimate the parameters of the conditional probabilities/densities encoding the quantitative aspects of the data distribution. %B-net are closely related to the field of causality by being a super-set of causal graphical models.
+These models have progressively received less attention from the machine learning community in favor of other methods that scale better with the dimensionality of the data. %Moreover, practical applications for continuous data stands on a strong hypothesis on the class of distributions combined with linear dependence relationships that limits the modelling capacities.
 % most of the results for continuous data have been found with Gaussian assumption and linear relationships combined with Gaussian distributions \citep{geiger1994learning} or by discretization \citep{friedman1998bayesian}, they do not offer any standard way to model continuous data.
 %\antoine{Causal Models?}
 
@@ -355,11 +205,11 @@ In practice, these bipartite structural independencies can be relaxed by stackin
 % \subsection{Multiple steps flows}\label{sub-seq:multiple-steps-flow}
 % Both autoregressive and coupling conditioners require to fix arbitrarily the ordering and the topology. Unfortunately, in general, the best ordering and topology are not straightforward to guess. It is why normalizing flows are rarely made of only one step. Instead, multiple steps are stacked on top of each others. This increases the capacity of the flow both in terms of structural dependencies and of the representation capacity of the flow. Usually between two transformations the ordering of the vector components is permuted. Introduced by \cite{TAN}, linear flow steps are sometimes used as a generalization of permutation to allow the output vector to be linearly transformed. However, these flow steps also require to fix arbitrarily the permutation.
 
-% %We have shown that some one-step normalizing flows' conditioners corresponds to modeling a distribution with a BN with pre-defined topology.
+% %We have shown that some one-step normalizing flows' conditioners corresponds to modelling a distribution with a BN with pre-defined topology.
 % The comparison between NF and BN can be extended to multiple steps NF by adding latent variables into the picture. The multiple-steps flows is a BN with additional intermediate latent variables whose connection are defined by the corresponding additional NF step. As an example \figref{fig:two-steps-flows} presents a two-step NF made of coupling conditioners. %This new vision of normalizing flows brings new reasoning tools to explain the impact of adding new steps.
 % Now, it can be observed that additional layers in NFs relax some usual independence assumptions between latent variables. By this mean, the distribution modeled by the flow gets more entangled at each additional layer. In particular, the \figref{fig:two-steps-flows-a} shows that for coupling layers, the additional step relaxes the strong conditional independence hypothesis between $x_1$ and $x_2$ of the mono-step NF of \figref{fig:mono-step-flows-c}. It can be observed that on \figref{fig:two-steps-flows-a}, $x_1$ and $x_2$ have common ancestors ($z_3$ and $z_4$) whereas they are clearly assumed independent in \figref{fig:mono-step-flows-b}. %In appendix \ref{app:indep-coupling}, we show that a minimum of three steps of coupling layers are required to prevent the model to assume some independence between the vector components.
 
-% The mitigation of independence is not the only reason to stack multiple steps. Indeed, empirical results show that adding steps into the flows often improve the model. This is the case even for mono-step autoregressive flows, whereas these models do not state any independence. This is especially true when the normalizers are simple transformations such as affine functions, as shown in \ref{sec:exp-tabular-density}. Possibly, the gain of multiple steps flows comes from the greater degree of freedom that is granted to the model by the additional steps. As an example, it can be observed from the two-steps NF of \figref{fig:two-steps-flows-b} that $x_1$ and $x_4$ have the four latent variables $z_i$ as common ancestors whereas they had only $z_1$ in the mono-step flow shown on \figref{fig:mono-step-flows-a}. This relaxes the way the flow can model the relationship between $x_1$ and $x_4$ in comparison to the mono-step case. Moreover, complex macroscopic interactions between variables can often be explained by simpler microscopic interactions, adding layers can be seen as modeling such simpler microscopic interactions. %\gilles{overall, make this sub-section slightly shorter?}
+% The mitigation of independence is not the only reason to stack multiple steps. Indeed, empirical results show that adding steps into the flows often improve the model. This is the case even for mono-step autoregressive flows, whereas these models do not state any independence. This is especially true when the normalizers are simple transformations such as affine functions, as shown in \ref{sec:exp-tabular-density}. Possibly, the gain of multiple steps flows comes from the greater degree of freedom that is granted to the model by the additional steps. As an example, it can be observed from the two-steps NF of \figref{fig:two-steps-flows-b} that $x_1$ and $x_4$ have the four latent variables $z_i$ as common ancestors whereas they had only $z_1$ in the mono-step flow shown on \figref{fig:mono-step-flows-a}. This relaxes the way the flow can model the relationship between $x_1$ and $x_4$ in comparison to the mono-step case. Moreover, complex macroscopic interactions between variables can often be explained by simpler microscopic interactions, adding layers can be seen as modelling such simpler microscopic interactions. %\gilles{overall, make this sub-section slightly shorter?}
 
 % \begin{figure}
 %     %\centering
@@ -497,7 +347,7 @@ where $\mathbf{x} \odot A_{i,:}$ is the element-wise product between the vector 
 % \end{align}
 % where the $g^i$ are invertible scalar functions that maps $x_i$ to a latent variable conditioned on its parents in the corresponding Bayesian Network.
 NFs built with this new conditioner architecture can be inverted by sequentially inverting each component in the topological ordering.
-In our implementation the neural networks modeling the $h^i$ functions are shared to save memory and they take an additional input that one-hot encodes the value $i$. An alternative approach would be to use a masking scheme similar to what is done by \citet{MADE} in MADE as suggested by \cite{DAG-3}.
+In our implementation the neural networks modelling the $h^i$ functions are shared to save memory and they take an additional input that one-hot encodes the value $i$. An alternative approach would be to use a masking scheme similar to what is done by \citet{MADE} in MADE as suggested by \cite{DAG-3}.
  %Finally, a sufficient condition for a function to be bijective is to have an invertible Jacobian everywhere on its domain. This is satisfied if graphical conditioners are combined with properly defined normalizers.
 
 
@@ -633,12 +483,12 @@ Surprisingly, the performance on the protein dataset are not improved when using
 \paragraph{Learning the topology}
 \begin{figure}
     \begin{subfigure}{.27\textwidth}
-    \includegraphics[width=.99\textwidth]{figures/8-MIX.pdf}
+    \includegraphics[width=.99\textwidth]{figures/chapter06/8-MIX.pdf}
     \caption{}\label{fig:8_MIX_L1_test}
     \end{subfigure}
     \begin{subfigure}{.2\textwidth}~
     \centering
-        \includegraphics[width=1.\textwidth]{figures/A_mat_8pairs.pdf}
+        \includegraphics[width=1.\textwidth]{figures/chapter06/A_mat_8pairs.pdf}
     \caption{}\label{fig:8_MIX_L1_DAG}
     \end{subfigure}
     \caption{\textbf{(a)}: Test log-likelihood as a function of $\ell_1$-penalization on \textbf{8 pairs} dataset. The upper bound is the average result when given a prescribed topology, the lower bound is the result with an autoregressive conditioner. \emph{Learning the right topology leads to better results than autoregressive conditioners.} \textbf{(b)}: The blacked cells corresponds to one correct topology of the 8 pairs dataset and the grey cells to the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with $\lambda_{\ell_1} = 4$. \emph{The optimization discovers a relevant BN (equivalent to the ground truth)}.}
@@ -646,7 +496,7 @@ Surprisingly, the performance on the protein dataset are not improved when using
 \end{figure}
 \begin{figure}
     \centering
-    \includegraphics[width=.2\textwidth]{figures/proteins_shuffle_learned.pdf}
+    \includegraphics[width=.2\textwidth]{figures/chapter06/proteins_shuffle_learned.pdf}
     \caption{The adjacency matrix of the protein interaction network. The blacked cells are the directed connections proposed by domain experts and the grey is the transposed adjacency matrix. The stars denote the edges discovered by the graphical conditioner when trained with  $\lambda_{\ell_1} = 12$. \emph{In a realistic setting, the optimization leads to a graph that shares a lot with the one designed by experts.}}    \label{fig:protein_net}
 
 \end{figure}
@@ -919,7 +769,7 @@ As already mentioned, consecutive transformation steps are often combined with r
 Graphical conditioners eventually lead to binary masks that model the conditioning components of a factored joint distribution. In this way, the conditioners process their input as they would process the full vector.%, which allows for an intuitive design of the neural network that is in charge of compressing the useful information contained in the conditioning factors into embeddings.
 We show experimentally in Appendix \ref{app:MNIST} that this effectively leads to good inductive bias for processing images with NFs.
 In addition, we have shown that normalizing flows built from graphical conditioners combined with monotonic transformations are expressive density estimators.
-In effect, this means that enforcing some a priori known independencies can be performed thanks to graphical normalizing flows without hurting their modeling capacity. We believe such models could be of high practical interest because they cope well with large datasets and complex distributions while preserving some readability through their equivalent BN.
+In effect, this means that enforcing some a priori known independencies can be performed thanks to graphical normalizing flows without hurting their modelling capacity. We believe such models could be of high practical interest because they cope well with large datasets and complex distributions while preserving some readability through their equivalent BN.
 
 Close to our work, \citet{wood} improve amortized inference by prescribing a BN structure between the latent and observed variables into a FFJORD NF, once again showing the interest of using the potential BN knowledge. Similar to our work, \citet{khemakhem2020causal} see causal autoregressive flows as structural equation modelling. They show bivariate autoregressive affine flows can be used to identify the causal direction under mild conditions. Under similar mild conditions, discovering causal relationships with graphical normalizing flows could well be an exciting research direction.
 
@@ -928,7 +778,7 @@ Close to our work, \citet{wood} improve amortized inference by prescribing a BN 
 %for a certain degree of readability thanks to their direct translation into Bayesian Networks.
 
 % \paragraph{Causal networks and Structural Equation Models}
-% Research in NFs could directly benefit to causality and SEM thanks to graphical conditioners. Indeed, the graphical conditioners introduced in this work clearly state a BN structure while maintaining the great modeling capacity of normalizing flows. The results obtained by graphical conditioners combined with monotonic transformations on density estimation tasks empirically demonstrate that NFs with a direct BN interpretation are very competitive density estimators. This enables to combine causal networks and normalizing flows with or without a predefined (sub-)structure. Further research should be performed to work with interventional data by finding how do-calculus can be implemented in the training strategy of graphical conditioners, enhancing them with a causal interpretation.
+% Research in NFs could directly benefit to causality and SEM thanks to graphical conditioners. Indeed, the graphical conditioners introduced in this work clearly state a BN structure while maintaining the great modelling capacity of normalizing flows. The results obtained by graphical conditioners combined with monotonic transformations on density estimation tasks empirically demonstrate that NFs with a direct BN interpretation are very competitive density estimators. This enables to combine causal networks and normalizing flows with or without a predefined (sub-)structure. Further research should be performed to work with interventional data by finding how do-calculus can be implemented in the training strategy of graphical conditioners, enhancing them with a causal interpretation.
 
 \paragraph{Conclusion}
 % The contribution of this work is bimodal.
@@ -939,28 +789,6 @@ From this new perspective, we proposed the more general graphical conditioner ar
 %They also offer multiple ways to introduce inductive bias into NFs; first through the Bayesian network that rules them; second because they are simply equivalent to learning a masking strategy and thus can help to design efficient way to create conditioning embeddings.
 We also believe that graphical conditioners could be used when the equivalent Bayesian network is required for downstream tasks such as in causal reasoning.
 % be the root of further development at the intersection of normalizing flows and causal networks.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \clearpage
 
-% \section{Broader impact}
-
-% In the context of density estimation and generative models, graphical normalizing flows have the potential to improve the way scientists may enforce domain assumptions through explicit and prescribed independencies. We believe they will also be helpful in uncovering and reasoning about independencies, or the lack thereof, found in data.
-% More broadly, generative models carry a risk of being abused for the generation of fake data. This danger also applies to normalizing flows, including graphical normalizing flows.
-
-
-
-% In general density estimation techniques do suffer from bias that can be present in the dataset. The newly introduced technique is not immune with respect to this problem. However graphical conditioners lead to normalizing flows whose modeling assumptions can be better understood because they can be directly translated into Bayesian Networks. As an example, if we use a graphical normalizing flow to model diverse information about people such as their monthly pay, their sex as well as many other characteristics, the independence or not between the sex of an individual and its pay can be easily checked. In addition, this undesirable bias could be corrected by explicitly enforcing independence between these two quantities through the structure of the equivalent BN. In this sense, graphical conditioners could be beneficial to mitigate the impact of biases present in the datasets. On the opposite, graphical conditioners could be a source of unfairness because they grant more space to the practitioner to insert modeling assumption, thus the model could be a reflection of the practitioner's own bias.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection*{Acknowledgments}
-We thank Vân Anh Huynh-Thu, Johann Brehmer, and Louis Wehenkel for proofreading this manuscript or an earlier version of it. We are also thankful to the reviewers for helpful comments. Antoine Wehenkel is a research fellow of the F.R.S.-FNRS (Belgium) and acknowledges its financial support. Gilles Louppe is recipient of the ULiège - NRB Chair on Big data and is
-thankful for the support of NRB.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\newpage
-\bibliography{biblio}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\clearpage
-\appendix
-\onecolumn
-\input{appendix.tex}
-\end{document}
+\section{Epilogue}
+\subsection{On the relationship between smoothness and independence}

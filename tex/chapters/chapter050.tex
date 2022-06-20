@@ -1,128 +1,6 @@
-\documentclass{article}
+\chapter{Monotonic Normalizing Flows}\label{ch:05}
 
-% if you need to pass options to natbib, use, e.g.:
-%     \PassOptionsToPackage{numbers, compress}{natbib}
-% before loading neurips_2019
-
-% ready for submission
-% \usepackage{neurips_2019}
-
-% to compile a preprint version, e.g., for submission to arXiv, add add the
-% [preprint] option:
-%     \usepackage{neurips_2019}
-
-% to compile a camera-ready version, add the [final] option, e.g.:
-     \usepackage[final]{neurips_2019}
-
-% to avoid loading the natbib package, add option nonatbib:
-%     \usepackage[nonatbib]{neurips_2019}
-\usepackage[utf8]{inputenc} % allow utf-8 input
-\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
-
-\usepackage[colorlinks]{hyperref}       % hyperlinks
-\hypersetup{
-    colorlinks = true,
-    linkcolor = blue,
-    anchorcolor = blue,
-    citecolor = blue,
-    filecolor = blue,
-    urlcolor = blue
-}
-
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{amsmath}
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{xcolor}
-\usepackage{algorithm}
-\usepackage[]{algpseudocode}
-\usepackage{textcomp}
-\usepackage{graphicx}
-\usepackage{array,multirow}
-\usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
-
-% Math text commands
-%\newcommand{\mathcal}{\mathcal}
-%\newcommand{\mathbf}{\boldsymbol}
-%\newcommand{\mathbb}{\mathbb}
-
-% Math new operators
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\trace}{trace}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator*{\tr}{tr}
-\DeclareMathOperator{\dt}{\, \mathrm{d}\mathit{t}}
-\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
-
-% Math braces
-\newcommand{\brac}[1]{\left({#1}\right)}
-\newcommand{\sbrac}[1]{\left[{#1}\right]}
-\newcommand{\cbrac}[1]{\left\{{#1}\right\}}
-
-% Comments commands:
-\newcommand{\gilles}[1]{\textcolor{red}{[GL: #1]}}
-\newcommand{\antoine}[1]{\textcolor{orange}{[AW: #1]}}
-%\newcommand{\textbf}[1]{\textbf{#1}}
-
-%\usepackage{tikz}
-% \usepackage{includetikz}
-% \usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds}
-\usepackage{relsize}
-\usepackage{tikz}
-\usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds,shapes}
-
-
-%%% Algorithm commands %%%%
-\newcommand{\pushline}{\Indp}% Indent
-\newcommand{\popline}{\Indm\dosemic}% Undent
-\newcommand{\nonl}{\renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
-
-
-%%% Compute Params %%%%
-%\newcommand{UMNNParam}[6]{\FPeval{\tmp}{round(#1*(#2*#3 + #4*#3^2 + #3*30*#2+31*#2*#6 + #5*#6^2 + #6), 0)}%
-%\tmp
-%}
-\usepackage{xparse}
-\ExplSyntaxOn%% allow _ : as a letter
-\newcommand\UMNNParam[6]{ \fp_to_decimal:n {round(#1*(#2*#4 + #3*#4^2 + #4*30*#2+31*#6 + #5*#6^2 + #6), 0)}}
-\newcommand\BNAFParam[1]{ \fp_to_decimal:n {round(5*(80*#1^2 + 2*(40^2)*#1^2), 0)}}
-\newcommand\mean[3]{\fp_to_decimal:n {round((#1 + #2 + #3)/3, 2)}}
-\newcommand\std[3]{\fp_to_decimal:n {round(sqrt((#1^2 + #2^2 + #3^2)/3 - ((#1 + #2 + #3)/3)^2 ), 2)}}
-\ExplSyntaxOff
-\usepackage{arrayjobx}
-\newarray\UMNNData
-\readarray{UMNNData}{ \UMNNParam{5}{6}{2}{100}{4}{150} & \UMNNParam{10}{8}{2}{100}{3}{200}
-                    & \UMNNParam{5}{21}{2}{512}{4}{50} & \UMNNParam{5}{43}{1}{512}{3}{50}
-                    & \UMNNParam{5}{63}{2}{1024}{4}{150}}
-\newarray\TrueUMNNData
-\readarray{TrueUMNNData}{509465 & 814865 & 3621765 & 3455675 & 15627065}
-\newarray\BNAFData
-\readarray{BNAFData}{\BNAFParam{6} & \BNAFParam{8} & \BNAFParam{21} & \BNAFParam{43} & \BNAFParam{63}}
-\newarray\TrueBNAFData
-%\readarray{TrueBNAFData}{307264 & 544084 & 3721414 & 15566434 & 33390634}
-\readarray{TrueBNAFData}{307264 & 544084 & 3721414 & 4085434 & 8757634}
-\newarray\TrueNAFData
-\readarray{TrueNAFData}{414213 & 401741 & 9272743 & 7487321 & 36759591}
-
-\usepackage{siunitx}
-\sisetup{output-exponent-marker = e,round-mode = figures, round-precision = 3,
-  scientific-notation = true}
-\newcommand\meanstd[3]{$\mean{#1}{#2}{#3}_{\pm \std{#1}{#2}{#3}}$}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\title{Unconstrained Monotonic Neural Networks}
-
-\author{
-    Antoine Wehenkel \\ University of Liège %\\
-    \And Gilles Louppe \\ University of Liège %\\
-}
-
-\begin{document}
-
-\maketitle
-
-\begin{abstract}
+\begin{remark}{Outline}
 
 Monotonic neural networks have recently been proposed as a way to define invertible transformations.
 These transformations can be combined into powerful autoregressive flows that have been shown to be universal approximators of continuous probability distributions.
@@ -130,19 +8,17 @@ Architectures that ensure monotonicity typically enforce constraints on weights 
 In this work, we propose the Unconstrained Monotonic Neural Network (UMNN) architecture based on the insight that a function is monotonic as long as its derivative is strictly positive. In particular, this latter condition can be enforced with a free-form neural network whose only constraint is the positiveness of its output.
 We evaluate our new invertible building block within a new autoregressive flow (UMNN-MAF) and demonstrate its effectiveness on density estimation experiments.
 We also illustrate the ability of UMNNs to improve variational inference.
-\end{abstract}
+\end{remark}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
 
-Monotonic neural networks have been known as powerful tools to build monotone models of a response variable with respect to individual explanatory variables~\citep{NNMonotonicBackprop, NNmonotonicNips, daniels2010monotone, lattice1, lattice2}. Recently, strictly monotonic neural networks have also been proposed as a way to define invertible transformations. These transformations can be combined into effective autoregressive flows that can be shown to be universal approximators of continuous probability distributions. Examples include Neural Autoregressive Flows~\citep[NAF, ][]{NAF} and Block Neural Autoregressive Flows~\citep[B-NAF, ][]{BNAF}. Architectures that ensure monotonicity typically enforce constraints on weight and activation functions, which enables invertibility but %restrains unnecessarily the space of available neural architectures.
+Monotonic neural networks have been known as powerful tools to build monotone models of a response variable with respect to individual explanatory variables~\citep{archer_application_1993, sill_monotonic_1998, daniels2010monotone, gupta_monotonic_2016, you_deep_2017}. Recently, strictly monotonic neural networks have also been proposed as a way to define invertible transformations. These transformations can be combined into effective autoregressive flows that can be shown to be universal approximators of continuous probability distributions. Examples include Neural Autoregressive Flows~\citep[NAF, ][]{huang_neural_2018} and Block Neural Autoregressive Flows~\citep[B-NAF, ][]{de_cao_block_2020}. Architectures that ensure monotonicity typically enforce constraints on weight and activation functions, which enables invertibility but %restrains unnecessarily the space of available neural architectures.
 leads to a cap on the expressiveness of the resulting transformations.
 For neural autoregressive flows, this does not impede universal approximation but typically requires either complex conditioners or a composition of multiple flows.
 
-Nevertheless, autoregressive flows defined as stacks of reversible transformations have proven to be quite efficient for density estimation of empirical distributions~\citep{SNL, MAF, NAF}, as well as to improve posterior modeling in Variational Auto-Encoders (VAE)~\citep{MADE, IAF, NAF}.
-Practical successes of these models include speech synthesis \citep{wavenet, parallel_wavenet}, likelihood-free inference \citep{SNL}, probabilistic programming \citep{pp} and image generation \citep{GLOW}.
+Nevertheless, autoregressive flows defined as stacks of reversible transformations have proven to be quite efficient for density estimation of empirical distributions~\citep{papamakarios_sequential_2019, papamakarios_masked_2017, huang_neural_2018}, as well as to improve posterior modelling in Variational Auto-Encoders (VAE)~\citep{germain_made_2015, kingma_improved_2016, huang_neural_2018}.
+Practical successes of these models include speech synthesis \citep{van_den_oord_wavenet_2016, van_den_oord_parallel_2018}, likelihood-free inference \citep{papamakarios_sequential_2019}, probabilistic programming \citep{van_de_meent_introduction_2018} and image generation \citep{kingma_glow_2018}.
 While stacking multiple reversible transformations improves the capacity of the full transformation to represent complex probability distributions, it remains unclear which class of reversible transformations should be used.
 
 In this work, we propose a class of reversible transformations based on a new Unconstrained Monotonic Neural Network (UMNN) architecture. We base our contribution on the insight that a function is monotonic as long as its derivative is strictly positive. This latter condition can be enforced with a free-form neural network whose only constraint is for its output to remain strictly positive.
@@ -220,7 +96,7 @@ where $J_{\mathbf{u}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{u
 The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$.
 
 \paragraph{Variational auto-encoders}
-NFs are also used in VAE to improve posterior modeling.
+NFs are also used in VAE to improve posterior modelling.
 In this case, a normalizing flow transforms a distribution $p_Z$ into a complex distribution $q$ which can better model the variational posterior.
 The change of variables formula yields
 \begin{equation}
@@ -258,7 +134,7 @@ We now combine UMNNs with an embedding of the conditioning variables to build in
 where $\mathbf{h}^i(\cdot; \mathbf{\phi}^i): \mathbb{R}^{i-1} \rightarrow \mathbb{R}^{q}$ is a $q$-dimensional neural embedding of the conditioning variables $\mathbf{x}_{1:i-1}$ and $\beta(\cdot)^i: \mathbb{R}^{i-1} \rightarrow \mathbb{R}$. Both degenerate into constants for $g^1(\mathbf{x}_{1})$. The parameters $\mathbf{\theta}$ of the whole transformation $\mathbf{g}(\cdot; \mathbf{\theta})$ is the union of all parameters $\mathbf{\phi}^i$ and $\mathbf{\psi}^i$.
 For simplicity we remove the parameters of the networks by rewriting $f^i(\cdot; \mathbf{\psi}^i)$ as $f^i(\cdot)$ and $\mathbf{h}^i(\cdot; \mathbf{\phi}^i)$ as $\mathbf{h}^i(\cdot)$.
 
-In our implementation, we use a Masked Autoregressive Network~\citep{MADE, IAF, MAF} to simultaneously parameterize the $d$ embeddings. In what follows we refer to the resulting UMNN autoregressive transformation as UMNN-MAF.
+In our implementation, we use a Masked Autoregressive Network~\citep{germain_made_2015, kingma_improved_2016, papamakarios_masked_2017} to simultaneously parameterize the $d$ embeddings. In what follows we refer to the resulting UMNN autoregressive transformation as UMNN-MAF.
 Figure~\ref{fig:architecture} summarizes the complete architecture.
 
 \begin{figure}
@@ -375,7 +251,7 @@ Figure~\ref{fig:architecture} summarizes the complete architecture.
 
 % \begin{figure}
 %     \centering
-%     \includegraphics[width=.95\textwidth]{figures/UMNN_Archi.pdf}
+%     \includegraphics[width=.95\textwidth]{chapter05/figures/UMNN_Archi.pdf}
 %     %\includetikz[width=\textwidth]{figure.tikz}
 %     \caption{UMMN-MAF. \gilles{Draw new figure.}\gilles{Write caption.} \url{https://www.overleaf.com/2834511968nzwsmmjwpjky}}
 %     \label{fig:architecture}
@@ -389,7 +265,7 @@ The change of variables formula applied to the UMMN autoregressive transformatio
     %&=\log p_Z(\mathbf{g}(\mathbf{x}; \mathbf{\theta}))  + \log\left|\prod^d_{i=1} f^i(x_i, \mathbf{h}^i(\mathbf{x}_{1 : i-1}))\right| \nonumber \\
     &=\log p_Z(\mathbf{g}(\mathbf{x}; \mathbf{\theta}))   + \sum^d_{i=1} \log f^i(x_i, \mathbf{h}^i(\mathbf{x}_{1 : i-1})).
 \end{align}
-Therefore, the transformation leads to a simple expression of (the determinant of) its Jacobian, which can be  computed efficiently with a single forward pass. This is different from FFJORD~\citep{ffjord} which relies on numerical methods to compute both the Jacobian and the transformation between the data and the latent space. Therefore our proposed method makes the computation of the Jacobian exact and efficient at the same time.
+Therefore, the transformation leads to a simple expression of (the determinant of) its Jacobian, which can be  computed efficiently with a single forward pass. This is different from FFJORD~\citep{grathwohl_ffjord_2018} which relies on numerical methods to compute both the Jacobian and the transformation between the data and the latent space. Therefore our proposed method makes the computation of the Jacobian exact and efficient at the same time.
 
 \paragraph{Sampling}
 Generating samples require evaluating the inverse transformation $\mathbf{g}^{-1}(\mathbf{z}; \mathbf{\theta})$.
@@ -398,7 +274,7 @@ The components of the inverse vector $\mathbf{x}^{\text{inv}} = \mathbf{g}^{-1}(
     x_1^{\text{inv}} &= \left(g^1\right)^{-1}\brac{z_1; \mathbf{h}^1}&\text{if} \quad i = 1\\
     x_{i}^{\text{inv}} &= \left(g^{i}\right)^{-1}\brac{z_{i}; \mathbf{h}^{i }\brac{\mathbf{x}_{1:i-1}^{\text{inv}}}}&\text{if} \quad i > 1
 \end{align}
-where $(g^i)^{-1}$ is the inverse of $g^i$. Another approach to invert an autoregressive model would be to approximate its inverse with another autoregressive network~\citep{parallel_wavenet}. In this case, the evaluation of the approximated inverse model is as fast as the forward model.
+where $(g^i)^{-1}$ is the inverse of $g^i$. Another approach to invert an autoregressive model would be to approximate its inverse with another autoregressive network~\citep{van_den_oord_parallel_2018}. In this case, the evaluation of the approximated inverse model is as fast as the forward model.
 
 \paragraph{Universality}
 Since the proof is straightforward, we only sketch that UMNN-MAF is a universal density approximator of continuous random variables. We rely on the inverse sampling theorem to prove that UMNNs are universal approximators of continuously derivable ($\mathbb{C}^1$) monotonic functions. Indeed, if UMNNs can represent any $\mathbb{C}^1$ monotonic function, then they can also represent the (inverse) cumulative distribution function of any continuous random variable. Any continuously derivable function $f: \mathcal{D}\rightarrow \mathcal{I}$ can be expressed as the following integral: $ f(x) = \int^x_a \frac{df}{dx} dx + f(a), \quad \forall x, a \in \mathcal{D}.$ The derivative $\frac{df}{dx}$ is a continuous positive function and the universal approximation theorem of NNs ensures it can be successfully approximated with a NN of sufficient capacity (such as those used in UMNNs).
@@ -406,17 +282,17 @@ Since the proof is straightforward, we only sketch that UMNN-MAF is a universal 
 
 \section{Related work}
 
-The most similar work to UMNN-MAF are certainly Neural Autoregressive Flow~\citep[NAF, ][]{NAF} and Block Neural Autoregressive Flow~\citep[B-NAF, ][]{BNAF}, which both rely on strictly monotonic transformations for building bijective mappings.
+The most similar work to UMNN-MAF are certainly Neural Autoregressive Flow~\citep[NAF, ][]{huang_neural_2018} and Block Neural Autoregressive Flow~\citep[B-NAF, ][]{de_cao_block_2020}, which both rely on strictly monotonic transformations for building bijective mappings.
 In NAF, transformations are defined as neural networks which activation functions are all constrained to be strictly monotonic and which weights are the output of a strictly positive and autoregressive HyperNetwork~\citep{hypernetworks}.
-\cite{NAF} shows that NAFs are universal density approximators.
+\cite{huang_neural_2018} shows that NAFs are universal density approximators.
 In B-NAF, the authors improve on the scalability of the NAF architecture by making use of masking operations instead of HyperNetworks. They also present a proof of the universality of B-NAF, which extends to UMNN-MAF.
 Our work differs from both NAF and B-NAF in the sense that the UMNN monotonic transformation is based on free-form neural networks for which no constraint,  beyond positiveness of the output, is enforced on the hypothesis class.
 This leads to multiple advantages: it enables the use of any state-of-the-art neural architecture, simplifies weight initialization, and leads to a more lightweight evaluation of the Jacobian.
 
 More generally, UMNN-MAF relates to works on normalizing flows built upon autoregressive networks and affine transformations.
-\cite{MADE} first introduced masking as an efficient way to build autoregressive networks, and proposed autoregressive networks for density estimation of high dimensional binary data.
-Masked Autoregressive Flows~\citep{MAF} and Inverse Autoregressive Flows~\citep{IAF} have generalized this approach to real data, respectively for density estimation and for latent posterior representation in variational auto-encoders.
-More recently, \cite{TAN}~proposed to stack various autoregressive architectures to create powerful reversible transformations. Meanwhile, \cite{sos}~proposed a new Sum-of-Squares flow that is defined as the integral of a second order polynomial parametrized by an autoregressive NN.
+\cite{germain_made_2015} first introduced masking as an efficient way to build autoregressive networks, and proposed autoregressive networks for density estimation of high dimensional binary data.
+Masked Autoregressive Flows~\citep{papamakarios_masked_2017} and Inverse Autoregressive Flows~\citep{kingma_improved_2016} have generalized this approach to real data, respectively for density estimation and for latent posterior representation in variational auto-encoders.
+More recently, \cite{oliva_transformation_2018}~proposed to stack various autoregressive architectures to create powerful reversible transformations. Meanwhile, \cite{jaini_sum--squares_2019}~proposed a new Sum-of-Squares flow that is defined as the integral of a second order polynomial parametrized by an autoregressive NN.
 
 With NICE, \cite{NICE} introduced coupling layers, which correspond to bijective transformations splitting the input vector into two parts. They are defined as
 \begin{align}
@@ -424,17 +300,17 @@ With NICE, \cite{NICE} introduced coupling layers, which correspond to bijective
     \mathbf{z}_{k+1:d} = e^{\mathbf{\sigma}(\mathbf{x}_{1:k})} \odot	 \mathbf{x}_{k+1:d} + \mathbf{\mu}(\mathbf{x}_{1:k}),
 \end{align}
 where $\mathbf{\sigma}$ and $\mathbf{\mu}$ are two unconstrained functions $\mathbb{R}^{d-k} \rightarrow \mathbb{R}^{d-k}$.
-The same authors introduced RealNVP~\citep{RealNVP}, which combines coupling layers with normalizing flows and multi-scale architectures for image generation.
-Glow~\citep{GLOW} extends RealNVP by introducing invertible 1x1 convolutions between each step of the flow.
+The same authors introduced RealNVP~\citep{dinh_density_2017}, which combines coupling layers with normalizing flows and multi-scale architectures for image generation.
+Glow~\citep{kingma_glow_2018} extends RealNVP by introducing invertible 1x1 convolutions between each step of the flow.
 In this work we have used UMNNs in the context of autoregressive architectures, however UMNNs could also be applied to replace the linear transformation in coupling layers.
 
-Finally, our architecture also shares a connection with Neural Ordinary Differential Equations~\citep[NODE, ][]{NODE}.
+Finally, our architecture also shares a connection with Neural Ordinary Differential Equations~\citep[NODE, ][]{chen_neural_2018}.
 The core idea of this architecture is to learn an ordinary differential equation which dynamic is parameterized by a neural network.
 Training can be carried out by backpropagating efficiently through the ODE solver, with constant memory requirements.
-Among other applications, NODE can be used to model a continuous normalizing flow with a free-form Jacobian as in FFJORD~\citep{ffjord}.
+Among other applications, NODE can be used to model a continuous normalizing flow with a free-form Jacobian as in FFJORD~\citep{grathwohl_ffjord_2018}.
 Similarly, a UMNN transformation can be seen as a structured neural ordinary differential equation in which the dynamic of the vector field is separable and can be solved efficiently by direct integration.
 
-% Most of the state-of-the-art normalising flows are built upon autoregressive networks and affine transformations. \cite{MADE} introduced masking as an efficient way to build autoregressive networks and introduced autoregressive networks for density estimation of high dimensional binary data. Masked Autoregressive Flows \citep{MAF} and Inverse Autoregressive Flows \citep{IAF} have generalised the approach for real data respectively for density estimation and for latent posterior representation in Variational Auto-Encoders. More recently, \cite{TAN} proposed to stack many different autoregressive architectures to create powerful reversible transformations.
+% Most of the state-of-the-art normalising flows are built upon autoregressive networks and affine transformations. \cite{germain_made_2015} introduced masking as an efficient way to build autoregressive networks and introduced autoregressive networks for density estimation of high dimensional binary data. Masked Autoregressive Flows \citep{MAF} and Inverse Autoregressive Flows \citep{kingma_improved_2016} have generalised the approach for real data respectively for density estimation and for latent posterior representation in Variational Auto-Encoders. More recently, \cite{oliva_transformation_2018} proposed to stack many different autoregressive architectures to create powerful reversible transformations.
 
 % With NICE, \cite{NICE} have introduced coupling layers which are bijective transformations that split the input vector into two parts. The transformation is defined as follow,
 % \begin{align}
@@ -442,11 +318,11 @@ Similarly, a UMNN transformation can be seen as a structured neural ordinary dif
 %     \mathbf{z}_{k+1:d} = e^{\mathbf{\sigma}(\mathbf{x}_{1:k})} \circ	 \mathbf{x}_{k+1:d} + \mathbf{\mu}(\mathbf{x}_{1:k}),
 % \end{align}
 % where $\mathbf{\sigma}$ and $\mathbf{\mu}$ are two unconstrained functions $\mathbb{R}^{d-k} \rightarrow \mathbb{R}^{d-k}$ and $\circ$ symbol is used to denote the Hadamard product. %The Jacobian of such transformation is lower triangular with the $k$ first elements of the diagonal equal to one and the $k-d$ last elements equal to $e^{\sigma(\mathbf{x}_{1:k})}$.
-% The same authors introduced RealNVP \citep{RealNVP} that combines coupling layers with normalising flows and multi-scale architecture for image generation. Glow \citep{GLOW} extends RealNVP by using a parametric rotation matrix to do the permutation between each step of the flow. In this work we have used UMNN with autoregressive architecture however UMNN can also be applied to replace the linear transformation in coupling layers.
+% The same authors introduced RealNVP \citep{dinh_density_2017} that combines coupling layers with normalising flows and multi-scale architecture for image generation. Glow \citep{kingma_glow_2018} extends RealNVP by using a parametric rotation matrix to do the permutation between each step of the flow. In this work we have used UMNN with autoregressive architecture however UMNN can also be applied to replace the linear transformation in coupling layers.
 
-% Recently, a new kind of neural network called neural ordinary differential equations (NODE) \citep{NODE} which is invertible under mild condition have been developed. The idea of NODE is to learn an ordinary differential equation whose dynamic is parametrized by a neural network. They show that it is possible to learn by back-propagating through the ODE solver in constant memory requirement. Among other applications, this kind of networks can be used to model a continuous normalising flows with free form Jacobian. In FFJORD \citep{ffjord}, the authors present such application of NODE and a method to leverage the computation tractability of the Jacobian by using a Hutchinson’s trace estimator.
+% Recently, a new kind of neural network called neural ordinary differential equations (NODE) \citep{chen_neural_2018} which is invertible under mild condition have been developed. The idea of NODE is to learn an ordinary differential equation whose dynamic is parametrized by a neural network. They show that it is possible to learn by back-propagating through the ODE solver in constant memory requirement. Among other applications, this kind of networks can be used to model a continuous normalising flows with free form Jacobian. In FFJORD \citep{grathwohl_ffjord_2018}, the authors present such application of NODE and a method to leverage the computation tractability of the Jacobian by using a Hutchinson’s trace estimator.
 
-% To the best of our knowledge two other works have proposed to make use of strictly monotonic transformation to build bijective mapping. \cite{NAF} introduce Neural Autoregressive Flows (NAF) a normalising flow that is built with strictly monotonic transformations. These transformations are neural networks whose activation functions are strictly monotonic and their weights are the output of a strictly positive and autoregressive HyperNetwork. They have also shown that strictly monotonic transformations are universal approximators. \cite{BNAF} propose Block Neural Autoregressive Flow (B-NAF), they improve the scalability of NAF by making use of smart masking operations instead of HyperNetworks. Our work differs from these by the free form of the neural network characterising the monotonic transformation. It simplifies weight initialisation and leverage the possibility to use any activation functions to build a strictly monotonic mapping. Moreover, the other approaches for building autoregressive monotonic transformations require to compute the Jacobian of the transformation (and to keep track of the computation for backward pass) which can be memory and computationally intensive. In contrast our approach leads to lightweight gradients expressions to the cost of requiring numerical integration.
+% To the best of our knowledge two other works have proposed to make use of strictly monotonic transformation to build bijective mapping. \cite{NAF} introduce Neural Autoregressive Flows (NAF) a normalising flow that is built with strictly monotonic transformations. These transformations are neural networks whose activation functions are strictly monotonic and their weights are the output of a strictly positive and autoregressive HyperNetwork. They have also shown that strictly monotonic transformations are universal approximators. \cite{de_cao_block_2020} propose Block Neural Autoregressive Flow (B-NAF), they improve the scalability of NAF by making use of smart masking operations instead of HyperNetworks. Our work differs from these by the free form of the neural network characterising the monotonic transformation. It simplifies weight initialisation and leverage the possibility to use any activation functions to build a strictly monotonic mapping. Moreover, the other approaches for building autoregressive monotonic transformations require to compute the Jacobian of the transformation (and to keep track of the computation for backward pass) which can be memory and computationally intensive. In contrast our approach leads to lightweight gradients expressions to the cost of requiring numerical integration.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -466,7 +342,7 @@ Therefore, the neural embedding function $\mathbf{h}^i$ must produce a fixed siz
 
 \subsection{2D toy problems}
 
-We first train a UMNN-MAF on 2-dimensional toy distributions, as defined by \cite{ffjord}.
+We first train a UMNN-MAF on 2-dimensional toy distributions, as defined by \cite{grathwohl_ffjord_2018}.
 To train the model, we minimize the negative log-likelihood of observed data
 \begin{align}
     %L(\mathcal{B}, \mathbf{\theta}) = \sum^{N}_{i=1} \mathcal{L}(\mathbf{\theta}; \mathbf{x}^i).
@@ -487,13 +363,13 @@ We also observe that numerical inversion for generating samples yields good resu
 %     %L(\mathcal{B}, \mathbf{\theta}) = \sum^{N}_{i=1} \mathcal{L}(\mathbf{\theta}; \mathbf{x}^i).
 %     L(\mathbf{\theta}) = - \sum_{n=1}^{N}\left[ \log p_Z(\mathbf{g}(\mathbf{x}^n; \mathbf{\theta})) + \sum^d_{i=1} \log f(x_i^n, \mathbf{h}^i(\mathbf{x}_{1 : i-1}^n))\right] \label{eq:loss_toy}
 % \end{align}
-% We use the toy distributions of FFJORD \citep{ffjord}. The flow used to perform the experiments is the same for all the distributions and is composed of a single transformation. More details about it can be found in Appendix \ref{app:config-toy}.
+% We use the toy distributions of FFJORD \citep{grathwohl_ffjord_2018}. The flow used to perform the experiments is the same for all the distributions and is composed of a single transformation. More details about it can be found in Appendix \ref{app:config-toy}.
 
 % It can be observed from Figure \ref{fig:toys} that our model is able to capture the density of the data. Moreover we can see that the numerical inversion for generating new samples yields to good results.
 
 \begin{figure}
     \centering
-    \includegraphics[width=.85\textwidth]{figures/toy/all_flow.png}
+    \includegraphics[width=.85\textwidth]{figures/chapter05/toy/all_flow.png}
     \vspace{-0.75em}
     \caption{Density estimation and sampling with a UMNN-MAF network on 2D toy problems. \textbf{Top}: Samples from the empirical distribution $p(\mathbf{x})$. \textbf{Middle}: Learned density $p(\mathbf{x};\mathbf{\theta})$. \textbf{Bottom}: Samples drawn by numerical inversion.
     UMNN-MAF manages to precisely capture multi-modal and/or discontinuous distributions.
@@ -521,19 +397,19 @@ We also observe that numerical inversion for generating samples yields good resu
         \hline
 
         \multirow{3}{*}{(a)} &
-        RealNVP - \cite{RealNVP} & $-0.17_{\pm.01}$ & $-8.33_{\pm.14}$ & $18.71_{\pm.02}$ & $13.55_{\pm.49}$ & $-153.28_{\pm1.78}$ & - \\
-        & Glow - \cite{GLOW}& $-0.17_{\pm.01}$ & $-8.15_{\pm.40}$ & $19.92_{\pm.08}$ & $11.35_{\pm.07}$ & $-155.07_{\pm.03}$ & - \\
-        & FFJORD - \cite{ffjord}& $\underline{-0.46}_{\pm.01}$ & $\underline{-8.59}_{\pm.12}$ & $\underline{14.92}_{\pm.08}$ & $\underline{10.43}_{\pm.04}$ & $\underline{-157.40}_{\pm.19}$ & - \\ \hline
+        RealNVP - \cite{dinh_density_2017} & $-0.17_{\pm.01}$ & $-8.33_{\pm.14}$ & $18.71_{\pm.02}$ & $13.55_{\pm.49}$ & $-153.28_{\pm1.78}$ & - \\
+        & Glow - \cite{kingma_glow_2018}& $-0.17_{\pm.01}$ & $-8.15_{\pm.40}$ & $19.92_{\pm.08}$ & $11.35_{\pm.07}$ & $-155.07_{\pm.03}$ & - \\
+        & FFJORD - \cite{grathwohl_ffjord_2018}& $\underline{-0.46}_{\pm.01}$ & $\underline{-8.59}_{\pm.12}$ & $\underline{14.92}_{\pm.08}$ & $\underline{10.43}_{\pm.04}$ & $\underline{-157.40}_{\pm.19}$ & - \\ \hline
 
         \multirow{3}{*}{(b)}
-        & MADE - \cite{MADE}& $3.08_{\pm.03}$ & $-3.56_{\pm.04}$ & $20.98_{\pm.02}$ & $15.59_{\pm.50}$ & $-148.85_{\pm.28}$ & $2.04_{\pm.01}$\\
-        & MAF - \cite{MAF} & $-0.24_{\pm.01}$ & $-10.08_{\pm.02}$ & $17.70_{\pm.02}$ & $11.75_{\pm.44}$ & $-155.69_{\pm.28}$ & $1.89_{\pm.01}$\\
-        & TAN - \cite{TAN}& $\underline{-0.60}_{\pm.01}$ & $\mathbf{\underline{-12.06}}_{\pm.02}$ & $\mathbf{\underline{13.78}}_{\pm.02}$ & $\underline{11.01}_{\pm.48}$ & $\mathbf{\underline{-159.80}}_{\pm.07}$ & $\underline{1.19}$\\\hline
+        & MADE - \cite{germain_made_2015}& $3.08_{\pm.03}$ & $-3.56_{\pm.04}$ & $20.98_{\pm.02}$ & $15.59_{\pm.50}$ & $-148.85_{\pm.28}$ & $2.04_{\pm.01}$\\
+        & MAF - \cite{papamakarios_masked_2017} & $-0.24_{\pm.01}$ & $-10.08_{\pm.02}$ & $17.70_{\pm.02}$ & $11.75_{\pm.44}$ & $-155.69_{\pm.28}$ & $1.89_{\pm.01}$\\
+        & TAN - \cite{oliva_transformation_2018}& $\underline{-0.60}_{\pm.01}$ & $\mathbf{\underline{-12.06}}_{\pm.02}$ & $\mathbf{\underline{13.78}}_{\pm.02}$ & $\underline{11.01}_{\pm.48}$ & $\mathbf{\underline{-159.80}}_{\pm.07}$ & $\underline{1.19}$\\\hline
 
         \multirow{3}{*}{(c)}
-        & NAF - \cite{NAF}& $-0.62_{\pm.01}$ & $-11.96_{\pm.33}$ & $15.09_{\pm.40}$ & $\mathbf{\underline{8.86}}_{\pm.15}$ & $-157.73_{\pm.30}$ & - \\
-        & B-NAF - \cite{BNAF}& $-0.61_{\pm.01}$ & $\underline{-12.06}_{\pm.09}$ & $14.71_{\pm.38}$ & $8.95_{\pm.07}$ & $-157.36_{\pm.03}$ & -  \\
-        & SOS - \cite{sos}& $-0.60_{\pm .01}$ & $-11.99_{\pm .41}$ & $15.15_{\pm .1}$ & $8.90_{\pm .11}$ & $-157.48_{\pm .41}$ & $1.81$\\
+        & NAF - \cite{huang_neural_2018}& $-0.62_{\pm.01}$ & $-11.96_{\pm.33}$ & $15.09_{\pm.40}$ & $\mathbf{\underline{8.86}}_{\pm.15}$ & $-157.73_{\pm.30}$ & - \\
+        & B-NAF - \cite{de_cao_block_2020}& $-0.61_{\pm.01}$ & $\underline{-12.06}_{\pm.09}$ & $14.71_{\pm.38}$ & $8.95_{\pm.07}$ & $-157.36_{\pm.03}$ & -  \\
+        & SOS - \cite{jaini_sum--squares_2019}& $-0.60_{\pm .01}$ & $-11.99_{\pm .41}$ & $15.15_{\pm .1}$ & $8.90_{\pm .11}$ & $-157.48_{\pm .41}$ & $1.81$\\
         & \textbf{UMNN-MAF (ours)}
         & $\mathbf{\underline{-0.63}}_{\pm .01}$
          %\meanstd{0.647866}{0.611536}{0.626134}
@@ -551,7 +427,7 @@ We also observe that numerical inversion for generating samples yields good resu
 \end{table}
 
 We further validate UMNN-MAF by comparing it to state-of-the-art normalizing flows.
-We carry out experiments on tabular datasets (POWER, GAS, HEPMASS, MINIBOONE, BSDS300) as well as on MNIST. We follow the experimental protocol of \cite{MAF}.
+We carry out experiments on tabular datasets (POWER, GAS, HEPMASS, MINIBOONE, BSDS300) as well as on MNIST. We follow the experimental protocol of \cite{papamakarios_masked_2017}.
 %The pre-processing of the data is identical to theirs.
 % As for the 2D toy problems, we train the model by minimizing the negative log-likelihood of the data under the normalizing flow.
 All training hyper-parameters and architectural details are given in Appendix~\ref{app:config-toy}.
@@ -564,7 +440,7 @@ At testing time we use a large number of integration steps ($100$) to compute th
 Table~\ref{tab:tabular_density} summarizes our results, where we can see that on tabular datasets, our method is competitive with other normalizing flows.
 For POWER, our architecture slightly outperforms all others.
 It is also better than other monotonic networks (category (c)) on 3 tabular datasets over 5.
-From these results, we could conclude that Transformation Autoregressive Networks~\citep[TAN, ][]{TAN} is overall the best method for density estimation.
+From these results, we could conclude that Transformation Autoregressive Networks~\citep[TAN, ][]{oliva_transformation_2018} is overall the best method for density estimation.
 It is however important to note that TAN is a flow composed of many heterogeneous transformations (both autoregressive and non-autoregressive).
 For this reason, it should not be directly compared to the other models which respective results are specific to a single architecture.
 However, TAN provides the interesting insight that combining heterogeneous components into a flow leads to better results than an homogeneous flow.
@@ -579,7 +455,7 @@ In comparison, BSDS300, which data dimension is one order of magnitude smaller t
 \begin{figure}[H]
 \centering
     \vspace{-2em}
-    \includegraphics[width=1.\textwidth]{figures/MNIST/MNIST_3_075.png}
+    \includegraphics[width=1.\textwidth]{figures/chapter05/MNIST/MNIST_3_075.png}
     \vspace{-1.em}
     \caption{Samples generated by numerical inversion of a conditional UMNN-MAF trained on MNIST. Samples $\mathbf{z}$ are drawn from an isotropic Gaussian with $\sigma=.75$.  See Appendix \ref{app:supp_results} for more details.}
     \label{fig:MNIST-samp}
@@ -654,12 +530,12 @@ It shows that on MNIST and Omniglot, UMNN-MAF slightly outperforms the classical
         \multirow{5}{*}{(a)}
         & VAE - \cite{VAE} & $86.65_{\pm.06}$ & $4.53_{\pm.02}$ & $104.28_{\pm.39}$ & $110.80_{\pm.46}$ \\
         & Planar - \cite{NF} & $86.06_{\pm.32}$ & $4.40_{\pm.06}$ & $102.65_{\pm.42}$ & $109.66_{\pm.42}$\\
-        & IAF - \cite{IAF}& $84.20_{\pm.17}$ & $4.47_{\pm.05}$ & $102.41_{\pm.04}$ & $111.58_{\pm.38}$\\
+        & IAF - \cite{kingma_improved_2016}& $84.20_{\pm.17}$ & $4.47_{\pm.05}$ & $102.41_{\pm.04}$ & $111.58_{\pm.38}$\\
         & Sylvester - \cite{SylvesterFlow}& $83.32_{\pm.06}$ & $4.45_{\pm.04}$ & $99.00_{\pm.04}$ &
         $104.62_{\pm.29}$\\
-        & FFJORD - \cite{ffjord}& $82.82_{\pm.01}$ & $4.39_{\pm.01}$ & $98.33_{\pm.09}$ & $104.03_{\pm.43}$\\ \hline
+        & FFJORD - \cite{grathwohl_ffjord_2018}& $82.82_{\pm.01}$ & $4.39_{\pm.01}$ & $98.33_{\pm.09}$ & $104.03_{\pm.43}$\\ \hline
         \multirow{2}{*}{(b)}
-        & B-NAF - \cite{BNAF}& $83.59_{\pm.15}$ & $4.42_{\pm.05}$ & $100.08_{\pm.07}$ & $105.42_{\pm.49}$\\
+        & B-NAF - \cite{de_cao_block_2020}& $83.59_{\pm.15}$ & $4.42_{\pm.05}$ & $100.08_{\pm.07}$ & $105.42_{\pm.49}$\\
         & \textbf{UMNN-MAF} (ours)
         & $84.11_{\pm .05}$  %\meanstd{84.0808}{84.0720}{84.1791}
         & $4.51_{\pm .01}$   %\meanstd{4.5268}{4.5071}{4.5026}
@@ -708,10 +584,10 @@ It shows that on MNIST and Omniglot, UMNN-MAF slightly outperforms the classical
 Computing the integral with static Clenshaw-Curtis quadrature only requires the evaluation of the integrand at predefined points. As such, batches of points can be processed all at once, which makes static Clenshaw-Curtis quadrature well suited for neural networks. However, static quadratures do not account for the error made during the integration. As a consequence, the quadrature is inaccurate when the integrand is not smooth enough and the number of integration steps is too small. In this work, we have reduced the integration error by applying the normalization described by \cite{L_regularisation} in order to control the Lipschitz constant of the integrand and appropriately set the number of integration steps. We observed that as long as the Lipschitz constant of the network does not increase dramatically ($<1000$), a reasonable number of integration steps ($<100$) is sufficient to ensure the convergence of the quadrature. An alternative solution would be to use dynamic quadrature such as dynamic Clenshaw-Curtis.
 
 \paragraph{Efficiency of numerical inversion.}
-Architectures relying on linear transformations~\citep{MAF, IAF,  RealNVP, GLOW} are trivially exactly and efficiently invertible. In contrast, the UMNN transformation has no analytic inverse.
+Architectures relying on linear transformations~\citep{papamakarios_masked_2017, kingma_improved_2016,  dinh_density_2017, kingma_glow_2018} are trivially exactly and efficiently invertible. In contrast, the UMNN transformation has no analytic inverse.
 Nevertheless, it can be inverted numerically using root-finding algorithms.
 Since most such algorithms rely on multiple nested evaluations of the function to be inverted, applying them naively to a numerical integral would quickly become very inefficient. However, the Clenshaw-Curtis quadrature is part of the nested quadrature family, meaning that the evaluation of the integral at multiple nested points can take advantage of previous evaluations and thus be implemented efficiently.
-As an alternative, \cite{parallel_wavenet} have shown that an invertible model can always be distilled to learn its inverse, and thus make the inversion efficient whatever the cost of inversion of the original model.
+As an alternative, \cite{van_den_oord_parallel_2018} have shown that an invertible model can always be distilled to learn its inverse, and thus make the inversion efficient whatever the cost of inversion of the original model.
 
 \paragraph{Scalability and complexity analysis.}
 UMNN-MAF is particularly well suited for density estimation because the computation of the Jacobian only requires a single forward evaluation of a NN. Together with the Leibniz integral rule, they make the evaluation of the log-likelihood derivative as memory efficient as usual supervised learning, which is equivalent to a single backward pass on the computation graph. By contrast, density estimation with previous monotonic transformations typically requires a backward evaluation of the computation graph of the transformer NN to obtain the Jacobian. Then, this pass must be evaluated backward again in order to obtain the log-likelihood derivative. Both NAF and B-NAF provide a method to make this computation numerically stable, however both fail at not increasing the size of the computation graph of the log-likelihood derivative, hence leading to a memory overhead. The memory saved by the Leibniz rule may serve to speed up the quadrature computation. In the case of static Clenshaw-Curtis, the function values at each evaluation point can be computed in parallel using batch of points. In consequence, when the GPU memory is large enough to store "meta-batches" of size $d\times N \times B$ (with $d$ the dimension of the data, $N$ the number of integration steps and $B$ the batch size) the computation is approximately as fast as a forward evaluation of the integrand network.
@@ -725,19 +601,4 @@ We have shown that our transformation can be composed into an autoregressive flo
 We identify several avenues for improvement and further research.
 First, we believe that numerical integration could be fasten up during training, by leveraging the fact that controlled numerical errors can actually help generalization. Moreover, the UMNN transformation would certainly profit from using a dynamic integration scheme, both in terms of accuracy and efficiency.
 Second, it would be worth comparing the newly introduced monotonic transformation with common approaches for modelling monotonic functions in machine learning. On a similar track, these common approaches could be combined into an autoregressive flow as shown in Section \ref{sec:UMNN-MAF}.
-Finally, our monotonic transformation could be used within other neural architectures than generative autoregressive networks, such as multi-scale architectures~\citep{RealNVP} and learnable 1D convolutions~\citep{GLOW}.
-
-% There are still many avenues for improvement and research. We think that numerical integration could be fasten up at training time by relying on the fact that controlled numerical errors could help generalisation. Another improvement would be to implement a dynamic version of Clenshaw Curtis quadrature. The new monotonic reversible transformation should also be combined with multi-scale architectures \citep{RealNVP} and learnable rotation matrices \citep{GLOW}.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection*{Acknowledgments}
-The authors would like to acknowledge Matthia Sabatelli, Nicolas Vecoven, Antonio Sutera and Louis Wehenkel for useful feedback on the manuscript. They would also like to thank the anonymous reviewers for many relevant remarks. Antoine Wehenkel is a research fellow of the F.R.S.-FNRS (Belgium) and acknowledges its financial support.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\bibliographystyle{abbrvnat}
-\bibliography{biblio}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\input{appendix.tex}
-\end{document}
+Finally, our monotonic transformation could be used within other neural architectures than generative autoregressive networks, such as multi-scale architectures~\citep{dinh_density_2017} and learnable 1D convolutions~\citep{kingma_glow_2018}.

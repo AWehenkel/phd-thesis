@@ -1,170 +1,33 @@
-%%%%%%%% ICML 2020 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+\chapter{Limitations of Affine Normalizing Flows}\label{ch:04}
 
-\documentclass{article}
-
-% Recommended, but optional, packages for figures and better typesetting:
-\usepackage{microtype}
-\usepackage{graphicx}
-\usepackage{booktabs} % for professional tables
-\usepackage{url}            % simple URL typesetting
-\usepackage{booktabs}       % professional-quality tables
-\usepackage{amsfonts}       % blackboard math symbols
-\usepackage{amsmath}
-\usepackage{nicefrac}       % compact symbols for 1/2, etc.
-\usepackage{xcolor}
-\usepackage{textcomp}
-\usepackage{subfig}
-\usepackage{array,multirow}
-\usepackage[nomessages]{fp}% http://ctan.org/pkg/fp
-\usepackage{relsize}
-% \usepackage{natbib} %Bibliography.
-% \setcitestyle{numbers}
-\usepackage{caption}
-% Math text commands
-%\newcommand{\mathcal}{\mathcal}
-%\newcommand{\mathbf}{\boldsymbol}
-%\newcommand{\mathbb}{\mathbb}
-
-% Math new operators
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\trace}{trace}
-\DeclareMathOperator*{\diag}{diag}
-\DeclareMathOperator*{\argmin}{arg\,min}
-\DeclareMathOperator*{\tr}{tr}
-\DeclareMathOperator{\dt}{\, \mathrm{d}\mathit{t}}
-\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
-\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
-
-
-% Math braces
-\newcommand{\brac}[1]{\left({#1}\right)}
-\newcommand{\sbrac}[1]{\left[{#1}\right]}
-\newcommand{\cbrac}[1]{\left\{{#1}\right\}}
-
-% Theorems:
-\usepackage{amsthm}
-\newtheorem{proposition}{Proposition}[section]
-
-
-% Comments commands:
-\newcommand{\gilles}[1]{\textcolor{red}{[GL: #1]}}
-\newcommand{\antoine}[1]{\textcolor{orange}{[AW: #1]}}
-%\newcommand{\textbf}[1]{\textbf{#1}}
-\newcommand{\figref}[1]{Fig.~\ref{#1}}
-
-%\usepackage{tikz}
-% \usepackage{includetikz}
-% \usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds}
-\usepackage{tikz}
-\usetikzlibrary{positioning,fit,calc,decorations.pathreplacing,arrows,backgrounds,shapes}
-\usetikzlibrary{automata,arrows}
-
-
-%%% Algorithm commands %%%%
-\newcommand{\pushline}{\Indp}% Indent
-\newcommand{\popline}{\Indm\dosemic}% Undent
-\newcommand{\nonl}{\renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
-\DeclareMathSizes{10}{9}{8}{8}
-
-
-% hyperref makes hyperlinks in the resulting PDF.
-% If your build breaks (sometimes temporarily if a hyperlink spans a page)
-% please comment out the following usepackage line and replace
-% \usepackage{icml2020} with \usepackage[nohyperref]{icml2020} above.
-\usepackage{hyperref}
-
-% Attempt to make hyperref and algorithmic work together better:
-
-% Use the following line for the initial blind version submitted for review:
-% \usepackage{icml2020}
-
-% If accepted, instead use the following line for the camera-ready submission:
-\usepackage[accepted]{icml2020}
-
-% The \icmltitle you define below is probably too long as a header.
-% Therefore, a short form for the running title is supplied here:
-\icmltitlerunning{You say Normalizing Flows I see Bayesian Networks}
-
-\begin{document}
-
-\twocolumn[
-\icmltitle{You say Normalizing Flows I see Bayesian Networks}
-
-% It is OKAY to include author information, even for blind
-% submissions: the style file will automatically remove it for you
-% unless you've provided the [accepted] option to the icml2020
-% package.
-
-% List of affiliations: The first argument should be a (short)
-% identifier you will use later to specify author affiliations
-% Academic affiliations should list Department, University, City, Region, Country
-% Industry affiliations should list Company, City, Region, Country
-
-% You can specify symbols, otherwise they are numbered in order.
-% Ideally, you should not use this facility. Affiliations will be numbered
-% in order of appearance and this is the preferred way.
-\icmlsetsymbol{equal}{*}
-
-\begin{icmlauthorlist}
-\icmlauthor{Antoine Wehenkel}{ULiege}
-\icmlauthor{Gilles Louppe}{ULiege}
-\end{icmlauthorlist}
-
-\icmlaffiliation{ULiege}{University of Li{\`e}ge}
-
-\icmlcorrespondingauthor{Antoine Wehenkel}{antoine.wehenkel@uliege.be}
-
-
-% You may provide any keywords that you
-% find helpful for describing your paper; these are used to populate
-% the "keywords" metadata in the PDF but will not be shown in the document
-\icmlkeywords{Machine Learning, ICML}
-
-\vskip 0.3in
-]
-
-% this must go after the closing bracket ] following \twocolumn[ ...
-
-% This command actually creates the footnote in the first column
-% listing the affiliations and the copyright notice.
-% The command takes one argument, which is text to display at the start of the footnote.
-% The \icmlEqualContribution command is standard text for equal contribution.
-% Remove it (just {}) if you do not need this facility.
-
-\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
-%\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
-
-\begin{abstract}
+\begin{remark}{Outline}
 Normalizing flows have emerged as an important family of deep neural networks for modelling complex probability distributions.
 In this note, we revisit their coupling and autoregressive transformation layers as probabilistic graphical models and show that they reduce to Bayesian networks  with a pre-defined topology and a learnable density at each node.
 From this new perspective, we provide three results.
 First, we show that stacking multiple transformations in a normalizing flow relaxes independence assumptions and entangles the model distribution.
 Second, we show that a fundamental leap of capacity emerges when the depth of affine flows exceeds 3 transformation layers.
 Third, we prove the non-universality of the affine normalizing flow, regardless of its depth.
-
-% This paper studies some fundamental properties of normalizing flows with probabilistic graphical models. We show that coupling and autoregressive layers lead to probabilistic models whose assumptions can be easily expressed by Bayesian Networks. Thank to this framework we prove the non universality of affine normalizing flows. We emphasize this results by showing the capacity leap that happens when the depth of the flow exceeds 3 steps. Finally, we discuss the potential future results that could be obtained by using the proposed framework.
-\end{abstract}
-
+\end{remark}
 \section{Introduction}
-Normalizing flows~\citep[NF, ][]{NF} have gained popularity in the recent years because of their unique ability to model complex data distributions while allowing both for sampling and exact density computation.
+Normalizing flows~\citep[NF, ][]{rezende2015variational} have gained popularity in the recent years because of their unique ability to model complex data distributions while allowing both for sampling and exact density computation.
 This family of deep neural networks combines a base distribution with a series of invertible transformations while keeping track of the change of density that is caused by each transformation.
 
 
 %Many applications of NFs have already been developed as demonstrated by \cite{parallel_wavenet} for speech synthesis, by \cite{NF} for variational inference and many others.
-% This research community keeps on improving the architectures, always leading to better models. Some architectures based on monotonic transformations have even been proved to be universal density estimators \cite{neural-spline-flows, NAF, BNAF, UMNN}.
+% This research community keeps on improving the architectures, always leading to better models. Some architectures based on monotonic transformations have even been proved to be universal density estimators \cite{neural-spline-flows, huang_neural_2018, BNAF, UMNN}.
 
 Probabilistic graphical models (PGMs) are well-established mathematical tools that combine graph and probability theory to ease the manipulation of joint distributions. They are commonly used to visualize and reason about the set of independencies in probabilistic models.
 %In addition to be effective tools for proofs and reasoning, these mathematical frameworks directly translates into machine learning models. %that can be learned from data with dedicated algorithms and lead to effective representation of joint distributions.
-Among PGMs, Bayesian networks~\citep[BN, ][]{Pearl-BN} offer a nice balance between readability and modeling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{d-separation}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
+Among PGMs, Bayesian networks~\citep[BN, ][]{pearl_bayesian_2011} offer a nice balance between readability and modelling capacity. Reading independencies stated by a BN is simple and can be performed graphically with the d-separation algorithm \citep{geiger_d-separation_1990}. %However BN are not perfect maps in general, i.e. they are unable to express some set of independencies.
 %\gilles{Since space is limited, I would shorten the two first paragraphs.}
 
 In this note, we revisit NFs as Bayesian networks.
-We first briefly review the mathematical grounds of these two worlds. Then, for the first time in the literature, we show that the modeling assumptions behind coupling and autoregressive transformations can be perfectly expressed by distinct classes of BNs.
+We first briefly review the mathematical grounds of these two worlds. Then, for the first time in the literature, we show that the modelling assumptions behind coupling and autoregressive transformations can be perfectly expressed by distinct classes of BNs.
 From this insight, we show that stacking multiple transformation layers relaxes independencies and entangles the model distribution.
 Then, we show that a fundamental change of regime emerges when the NF architecture includes 3 transformation steps or more.
 Finally, we prove the non-universality of affine normalizing flows.
 
-% This grants us the tools to prove the non-universality of affine normalizing flows. In addition, we show that an important regime switch appears in multiple steps NFs when the number of steps exceeds 4. Finally, we discuss how this framework can be used to extend further the modeling capacity of NFs.
+% This grants us the tools to prove the non-universality of affine normalizing flows. In addition, we show that an important regime switch appears in multiple steps NFs when the number of steps exceeds 4. Finally, we discuss how this framework can be used to extend further the modelling capacity of NFs.
 
 \section{Background}
 \subsection{Normalizing flows}
@@ -178,7 +41,7 @@ The transformation $\mathbf{g}$ implicitly defines a density $p(\mathbf{x}; \mat
     p(\mathbf{x}; \mathbf{\theta}) = p_{\mathbf{z}}(\mathbf{g}(\mathbf{x};\mathbf{\theta})) \left| \det  J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})} \right|, \label{eq:NF_DE}
 \end{equation*}
 where $J_{\mathbf{g}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{g}(\mathbf{x};\mathbf{\theta})$ with respect to $\mathbf x$.
-The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$. NFs can also be used for data generation tasks while keeping track of the density of the generated samples such as to improve the latent distribution in variational auto-encoders \citep{NF}.
+The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$. NFs can also be used for data generation tasks while keeping track of the density of the generated samples such as to improve the latent distribution in variational auto-encoders \citep{rezende2015variational}.
 In the rest of this paper, we will not distinguish between $\mathbf{g}$ and $\mathbf{g}_k$ when the discussion will be focused on only one of these steps $\mathbf{g}_k$.
 
 In general, steps $\mathbf{g}$ can take any form as long as they define a bijective map. Here, we focus on a sub-class of normalizing flows for which these steps can be mathematically described as
@@ -196,7 +59,7 @@ where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner.
 
 \subsection{Bayesian networks}
 
-Bayesian networks allow for a compact and natural representation of probability distributions by exploiting conditional independence. More precisely, a BN is a directed acyclic graph (DAG) which structure encodes for the conditional independencies through the concept of d-separation~\citep{d-separation}. Equivalently, its skeleton supports an efficient factorization of the joint distribution.
+Bayesian networks allow for a compact and natural representation of probability distributions by exploiting conditional independence. More precisely, a BN is a directed acyclic graph (DAG) which structure encodes for the conditional independencies through the concept of d-separation~\citep{geiger_d-separation_1990}. Equivalently, its skeleton supports an efficient factorization of the joint distribution.
 
 A BN is able to model a distribution $p$ if and only if it is an I-map with respect to $p$. That is, iff the set of independencies stated by the BN structure is a subset of the independencies that holds for $p$. Equivalently, a BN is a valid representation of a random vector $\mathbf{x}$ iff its density $p_{\mathbf{x}}(\mathbf{x})$ can be factorized by the BN structure as
 \begin{equation}
@@ -205,29 +68,30 @@ A BN is able to model a distribution $p$ if and only if it is an I-map with resp
 where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the vertex $i$ and $A \in \{0, 1\}^{d\times d}$ is the adjacency matrix of the BN. As an example, \figref{fig:mono-step-flows-a} is a valid BN for any distribution over $\mathbf{x}$ because it does not state any independence, leading to a factorization that results in the chain rule.
 
 
+
 \begin{figure}
-\centering
-\subfloat[]{\label{fig:mono-step-flows-a}
-   \begin{tikzpicture}[
-          node distance=.5cm and .35cm,
-          mynode/.style={draw,circle,text width=.35cm,align=center},
-          var_x/.style={draw, circle, text width=.35cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \path (x1) edge[-latex] (x2);
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \path (x3) edge[-latex] (x4);
-            %\node (b) at (1,-3) {(\textbf{b})};
-        \end{tikzpicture}
-    }
-%\hspace{1.5em}
-\subfloat[]{\label{fig:mono-step-flows-b}
+  \begin{subfigure}{.33\textwidth}
+    \begin{tikzpicture}[
+           node distance=.5cm and .35cm,
+           mynode/.style={draw,circle,text width=.35cm,align=center},
+           var_x/.style={draw, circle, text width=.35cm, align=center}
+         ]
+             \node[var_x] (x1) {$x_1$};
+             \node[var_x, right=of x1] (x2) {$x_2$};
+             \node[var_x, below=of x1] (x3) {$x_3$};
+             \node[var_x, right=of x3] (x4) {$x_4$};
+             \path (x1) edge[-latex] (x2);
+             \path (x1) edge[-latex] (x3);
+             \path (x1) edge[-latex] (x4);
+             \path (x2) edge[-latex] (x3);
+             \path (x2) edge[-latex] (x4);
+             \path (x3) edge[-latex] (x4);
+             %\node (b) at (1,-3) {(\tex\textbf{b})};
+         \end{tikzpicture}
+   \caption{} \label{fig:mono-step-flows-a}
+ \end{subfigure}
+
+ \begin{subfigure}{.33\textwidth}
    \begin{tikzpicture}[
           node distance=.5cm and .35cm,
           mynode/.style={draw,circle,text width=.35cm,align=center},
@@ -243,31 +107,99 @@ where  $\mathcal{P}_i = \{j: A_{i,j} = 1 \}$ denotes the set of parents of the v
             \path (x2) edge[-latex] (x3);
             \path (x2) edge[-latex] (x4);
     \end{tikzpicture}
-   }%\\
-   \subfloat[]{\label{fig:mono-step-flows-c}
-        \begin{tikzpicture}[
-          node distance=.5cm and .35cm,
-          var_z/.style={draw,circle,text width=.35cm,align=center},
-          var_x/.style={draw, circle, double, text width=.35cm, align=center}
-        ]
-            \node[var_x] (x1) {$x_1$};
-            \node[var_x, right=of x1] (x2) {$x_2$};
-            \node[var_x, below=of x1] (x3) {$x_3$};
-            \node[var_x, right=of x3] (x4) {$x_4$};
-            \node[var_z, left=of x1] (z1) {$z_1$};
-            \node[var_z, right=of x2] (z2) {$z_2$};
-            \node[var_z, left=of x3] (z3) {$z_3$};
-            \node[var_z, right=of x4] (z4) {$z_4$};
-            %\node (c) at (1,-3) {(\textbf{c})};
-            \path (x1) edge[-latex] (x3);
-            \path (x1) edge[-latex] (x4);
-            \path (x2) edge[-latex] (x3);
-            \path (x2) edge[-latex] (x4);
-            \foreach \x in {1,...,4}
-                \path (z\x) edge (x\x);
-        \end{tikzpicture}}
+  \caption{} \label{fig:mono-step-flows-b}
+\end{subfigure}
+
+\begin{subfigure}{.33\textwidth}
+  \begin{tikzpicture}[
+    node distance=.5cm and .35cm,
+    var_z/.style={draw,circle,text width=.35cm,align=center},
+    var_x/.style={draw, circle, double, text width=.35cm, align=center}
+  ]
+      \node[var_x] (x1) {$x_1$};
+      \node[var_x, right=of x1] (x2) {$x_2$};
+      \node[var_x, below=of x1] (x3) {$x_3$};
+      \node[var_x, right=of x3] (x4) {$x_4$};
+      \node[var_z, left=of x1] (z1) {$z_1$};
+      \node[var_z, right=of x2] (z2) {$z_2$};
+      \node[var_z, left=of x3] (z3) {$z_3$};
+      \node[var_z, right=of x4] (z4) {$z_4$};
+      %\node (c) at (1,-3) {(\textbf{c})};
+      \path (x1) edge[-latex] (x3);
+      \path (x1) edge[-latex] (x4);
+      \path (x2) edge[-latex] (x3);
+      \path (x2) edge[-latex] (x4);
+      \foreach \x in {1,...,4}
+          \path (z\x) edge (x\x);
+  \end{tikzpicture}
+ \caption{} \label{fig:mono-step-flows-c}
+\end{subfigure}
 \caption{Bayesian networks for single-step normalizing flows on a vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. (\textbf{a}) BN for an autoregressive conditioner. (\textbf{b}) BN for a coupling conditioner. (\textbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
-    \end{figure}
+\end{figure}
+% \begin{figure}
+% \centering
+%
+% \subfloat[]{\label{fig:mono-step-flows-a}
+%    \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           mynode/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             \path (x1) edge[-latex] (x2);
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%             \path (x3) edge[-latex] (x4);
+%             %\node (b) at (1,-3) {(\tex\textbf{b})};
+%         \end{tikzpicture}
+%     }
+% %\hspace{1.5em}
+% \subfloat[]{\label{fig:mono-step-flows-b}
+%    \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           mynode/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             %\node (a) at (1,-3) {(\textbf{a})};
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%     \end{tikzpicture}
+%    }%\\
+%    \subfloat[]{\label{fig:mono-step-flows-c}
+%         \begin{tikzpicture}[
+%           node distance=.5cm and .35cm,
+%           var_z/.style={draw,circle,text width=.35cm,align=center},
+%           var_x/.style={draw, circle, double, text width=.35cm, align=center}
+%         ]
+%             \node[var_x] (x1) {$x_1$};
+%             \node[var_x, right=of x1] (x2) {$x_2$};
+%             \node[var_x, below=of x1] (x3) {$x_3$};
+%             \node[var_x, right=of x3] (x4) {$x_4$};
+%             \node[var_z, left=of x1] (z1) {$z_1$};
+%             \node[var_z, right=of x2] (z2) {$z_2$};
+%             \node[var_z, left=of x3] (z3) {$z_3$};
+%             \node[var_z, right=of x4] (z4) {$z_4$};
+%             %\node (c) at (1,-3) {(\textbf{c})};
+%             \path (x1) edge[-latex] (x3);
+%             \path (x1) edge[-latex] (x4);
+%             \path (x2) edge[-latex] (x3);
+%             \path (x2) edge[-latex] (x4);
+%             \foreach \x in {1,...,4}
+%                 \path (z\x) edge (x\x);
+%         \end{tikzpicture}}
+% \caption{Bayesian networks for single-step normalizing flows on a vector $\mathbf{x} = [x_1, x_2, x_3, x_4]^T$. (\textbf{a}) BN for an autoregressive conditioner. (\textbf{b}) BN for a coupling conditioner. (\textbf{c}) Pseudo BN for a coupling conditioner, with the latent variables shown explicitly. Double circles stand for deterministic functions of the parents and non-directed edges stand for bijective relationships.} \label{fig:mono-step-flows}
+%     \end{figure}
 \begin{figure}
     \centering
         \begin{tikzpicture}[
@@ -333,7 +265,7 @@ The multivariate density $p(\mathbf{x}; \mathbf{\theta})$ induced by $\mathbf{g}
 When $p_{\mathbf{z}}(\mathbf{z})$ is a factored distribution $p_{\mathbf{z}}(\mathbf{z}) = \prod^{d}_{i=1}p(z_i)$, we identify that each component $z_i$ coupled with the corresponding function $g^i$ encodes for the conditional $p(x_{i}|\mathbf{x}_{1:i-1}; \mathbf{\theta})$.
 An explicit connection between BNs and autoregressive conditioners can be made if we define $\mathcal{P}_i = \{x_1, \hdots, x_{i-1}\}$ and compare \eqref{eq:AF-fact} with \eqref{eq:BN-fact}.  Therefore, and as illustrated in \figref{fig:mono-step-flows-a}, autoregressive conditioners can be seen as a way to model the conditional factors of a BN that does not state any independence.
 \subsection{Coupling conditioners}
-Coupling conditioners~\cite{RealNVP} are another popular type of conditioners used in normalizing flows. The conditioners $\mathbf{c}^i$ made from coupling layers are defined as
+Coupling conditioners~\cite{dinh_density_2017} are another popular type of conditioners used in normalizing flows. The conditioners $\mathbf{c}^i$ made from coupling layers are defined as
 \begin{align*}
     \mathbf{c}^i(\mathbf{x}) =
     \begin{cases}
@@ -405,22 +337,19 @@ In general, we note that edges between two nodes in a BN do not model dependence
         \end{tikzpicture}
      \caption{The Bayesian network of a three-steps normalizing flow on vector $\mathbf{x} = [x_1, x_2]^T \in \mathbb{R}^4$. It can be observed that the distribution of the intermediate latent variables, and at the end of the vector $\mathbf{x}$, becomes more entangled at each additional transformation step. Considering the undirected edges as affine relationships, we see that while $u_1^1$ and $u_2^1$ are affine transformations of the latent $\mathbf{z}$, the vector $\mathbf{x}$ cannot be expressed as a linear function of the latent $\mathbf{z}$.}
      \label{fig:2d-three-steps-flows}
-     \vspace{-1.5em}
-
-
 \end{figure}
 
 
 \section{Affine normalizing flows unlock their capacity with 3 transformation steps}
 
 We now show how some of the limitations of affine normalizers can be relaxed by stacking multiple transformation steps.
-We also discuss why some limitations cannot be relaxed even with a large number of transformation steps. We intentionally put aside monotonic normalizers because they have already been proven to lead to universal density approximators when the conditioner is autoregressive~\cite{NAF}.
+We also discuss why some limitations cannot be relaxed even with a large number of transformation steps. We intentionally put aside monotonic normalizers because they have already been proven to lead to universal density approximators when the conditioner is autoregressive~\cite{huang_neural_2018}.
 We focus our discussion on a multivariate normal with an identity covariance matrix as base distribution $p_{\mathbf{z}}(\mathbf{z})$. %The use of other base distribution is discussed later.
 
 We first observe from \figref{fig:mono-step-flows} that in a NF with a single transformation step at least one component of $\mathbf{x}$ is a function of only one latent variable.
 If the normalizer is affine and the base distribution is normal, then this necessarily implies that the marginal distribution of this component is normal as well, which will very likely not lead to a good fit.
 We easily see that adding steps relaxes this constraint.
-A more interesting question to ask is what exactly the modeling capacity gain for each additional step of affine normalizer is. Shall we add steps to increase capacity or shall we increase the capacity of each step instead?
+A more interesting question to ask is what exactly the modelling capacity gain for each additional step of affine normalizer is. Shall we add steps to increase capacity or shall we increase the capacity of each step instead?
 We first discuss a simple 2-dimensional case, which has the advantage of unifying the discussion for autoregressive and coupling conditioners, and then extend it to a more general setting.
 
 
@@ -443,7 +372,7 @@ In addition, we observe that the expression of $u^2_1$ is strictly more expressi
 Finally, $x_1$ and $x_2$ are non-linear functions of both latent variables $z_1$ and $z_2$.
 Assuming that the functions $s^i_j$ and $m^i_j$ are universal approximators, we argue that the stochastic process that generates $x_1$ and the one that generates $x_2$ are as expressive as each other.
 Indeed, by making the functions arbitrarily complex the transformation for $x_1$ could be made arbitrarily close to the transformations for $x_2$ and vice versa.
-This is true because both transformations can be seen as an affine transformation of a normal random variables whose scaling and offset factors are non-linear arbitrarily expressive transformations of all the latent variables. Because of this equilibrium between the two expressions, additional steps do not improve the modeling capacity of the flow.
+This is true because both transformations can be seen as an affine transformation of a normal random variables whose scaling and offset factors are non-linear arbitrarily expressive transformations of all the latent variables. Because of this equilibrium between the two expressions, additional steps do not improve the modelling capacity of the flow.
 The same observations can be made empirically as illustrated in \figref{fig:2d-three-steps-flows} for 2-dimensional toy problems. A clear leap of capacity occurs from 2-step to 3-step NFs, while having 4 steps or more does not result in any noticeable improvement when $s^i_j$ and $m^i_j$ already have enough capacity.
 
 For $d > 2$, autoregressive and coupling conditioners do not correspond to the same set of equations or BN. However, if the order of the vector is reversed between two transformation steps, the discussion generalizes to any value of $d$ for both conditioners. Indeed, in both cases each component of the intermediate latent vectors can be seen as having a set of conditioning variables and a set of independent variables. At each successive step the indices of the non-conditioning variables are exchanged with the conditioning ones and thus any output vector's component can be expressed either as a component of the vector form of $x_1$ or of $x_2$.
@@ -461,19 +390,16 @@ For $d > 2$, autoregressive and coupling conditioners do not correspond to the s
     \tikzset{edge/.style = {->,-latex}}
 
     \node[inner sep=0pt] (graphical) at (0,0)
-    {\includegraphics[width=.46\textwidth]{all_flows.png}};
-    \node[] () at (-7.2, 5) {1 step};
-    \node[] () at (-4.4, 5) {2 steps};
-    \node[] () at (-1.5, 5) {3 steps};
-    \node[] () at (1.45, 5) {4 steps};
-    \node[] () at (4.3, 5) {5 steps};
-    \node[] () at (7.3, 5.08) {Universal};
+    {\includegraphics[width=.96\textwidth]{figures/chapter04/all_flows.png}};
+    \node[] () at (-10.2, 7) {1 step};
+    \node[] () at (-6.4, 7) {2 steps};
+    \node[] () at (-2.5, 7) {3 steps};
+    \node[] () at (2, 7) {4 steps};
+    \node[] () at (6.3, 7) {5 steps};
+    \node[] () at (10.8, 7) {Universal};
 \end{tikzpicture}
-\hspace{-1.5em}
     \caption{Evolution of an affine normalizing flow's capacity as the number of steps increases. For comparison, the density learned by a universal density approximator is shown on the last column.}
     \label{fig:BN-steps}
-    \vspace{-1.em}
-
 \end{figure}
 \begin{figure}
     \centering
@@ -493,11 +419,9 @@ For $d > 2$, autoregressive and coupling conditioners do not correspond to the s
             \path (uKI) edge (xI);
             %\node (b) at (1,-3) {(\textbf{b})};
         \end{tikzpicture}
-    \hspace{-1.5em}
 
     \caption{The equivalent BN of a component with a unique latent variable as ancestor.}
     \label{fig:BN-x-I}
-    \vspace{-2.2em}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -529,14 +453,4 @@ We hope these results will give practitioners more intuition in the design of no
 We also believe that this work may lead to further research.
 First, unifying Bayesian networks and normalizing flows could be pushed one step further with conditioners that are specifically designed to model Bayesian networks.
 Second, the study could be extended for other type of normalizing flows such as non-autoregressive monotonic flows.
-Finally, we believe this study may spark research at the intersection of structural equation modeling, causal networks and normalizing flows.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\subsection*{Acknowledgments}
-The authors would like to thank Matthia Sabatelli, Johann Brehmer  and Louis Wehenkel for proofreading the manuscript.
-Antoine Wehenkel is a research fellow of the F.R.S.-FNRS (Belgium) and acknowledges its financial support.
-Gilles Louppe is recipient of the ULi{\`e}ge - NRB Chair on Big data and is thankful for the support of NRB.
-\bibliographystyle{abbrv}
-\bibliography{innf}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\end{document}
+Finally, we believe this study may spark research at the intersection of structural equation modelling, causal networks and normalizing flows.
