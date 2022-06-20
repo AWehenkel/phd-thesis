@@ -1,36 +1,41 @@
 % Front page ==================================================================
-
+\newgeometry{margin=0in}
 \begin{titlepage}
 	\begin{tikzpicture}[remember picture, overlay]
 	  \node[opacity=0.6,inner sep=0pt] at (current page.center)
 	   {\includegraphics[width=\paperwidth,height=\paperheight]{figures/background.png}};
 	  \end{tikzpicture}
-	\begin{addmargin}[-1cm]{-3cm}
+	\begin{addmargin}[3cm]{3cm}
     \begin{center}
         \large
+				\vspace{2em}
         {\Large \textsc{University of Li{\`e}ge}}\\[1ex]
         Faculty of Applied Sciences\\
         Department of Electrical Engineering \& Computer Science\\
+				\vspace{5cm}
 
-        \vfill
-
-        PhD dissertation\\ \vskip1cm
+        PhD dissertation\\
+				\vspace{3cm}
         \rule{14cm}{0.4pt}\\ \bigskip
         \begingroup
             \Large
             \color{Maroon}\spacedallcaps{\myTitle} \\ \bigskip
         \endgroup
-        \spacedlowsmallcaps{\mySubtitle} \\ \bigskip
-        \rule{14cm}{0.4pt}\\ \vskip1cm
+        % \spacedlowsmallcaps{\mySubtitle} \\ \bigskip
+        \rule{14cm}{0.4pt}\\
+				\vspace{3cm}
         by \textsc{Antoine Wehenkel}
-
-        \vfill
-        \vfill
-        \vfill
-
-        \hfill Advisor: Prof. \textsc{Gilles Louppe}\\
-        \hfill Sometime in 2022
     \end{center}
-    \vspace{-2.5cm}\includegraphics[width=0.5\textwidth]{figures/blason.pdf}
   \end{addmargin}
+	\vspace{7.5cm}
+	\begin{minipage}[t]{.3\textwidth}
+		\includegraphics[width=1.\textwidth]{figures/blason.pdf}
+	\end{minipage}
+	\begin{minipage}[t]{.67\textwidth}
+		\raggedleft
+		\vspace{-5em}
+		\hfill Advisor: Prof. \textsc{Gilles Louppe}\\
+		\hfill September 2022
+	\end{minipage}
 \end{titlepage}
+\restoregeometry
