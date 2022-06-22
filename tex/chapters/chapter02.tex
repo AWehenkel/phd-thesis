@@ -428,6 +428,8 @@ This naturally leads to the parameterization of $d$ functions with different inp
 Autoregressive models use different strategies to share the parameterisation between all factors. One strategy is to use recurrent neural networks where the hidden vector carries and updates the information of the successive conditioning variables\citep{van2016pixel}. However, this strategy is slow as it requires handling the input vector sequentially. Moreover, a recurrent neural network does not provide any useful inductive bias to process signals with long-range dependencies such as audio or images. A solution to these problems is to use $1d$ causal convolutional neural networks (CNNs), which process the complete vector at once and enforce the autoregressive structure in the outputs. Causal CNNs have achieved great success in modelling audio \citep{van_den_oord_wavenet_2016, van_den_oord_parallel_2018}. The PixelCNN autoregressive model generalises it to 2D causal convolutions and has shown great modelling capabilities\citep{oord_conditional_2016}.
 
 We can train convolutional autoregressive models efficiently by maximising their likelihood under the dataset. Unfortunately, sampling is inefficient because it requires sampling each variable sequentially to the previous variables. This is particularly slow for images or long time series and is one of the main drawbacks of autoregressive models. Another limitation of these models is their lack of assumptions and poor inductive bias. This is especially true for images as they enforce a causality between successive pixels, which is irrational and makes the generation procedures inappropriate for images. We rarely use autoregressive models alone but in combination with other models, such as variational auto-encoders.
+
+\textcolor{red}{Add an image that describes the sampling procedure of autoregressive nets.}
 \subsection{Energy based models}
 We have already encountered the term energy when discussing Gibbs distribution as parameterisation of Markov networks. An energy-based model (EBMs)  defines a parametric Gibbs distribution as
 \begin{align}
@@ -440,6 +442,8 @@ EBMs allow us to parameterise probability distributions with free-form neural ne
 We can directly compute the partition function in the discrete case. We can easily access the model's likelihood function and learn the model with MLE. In the continuous setting - $\mathcal{Y} \triangleq \mathbb{R}^d$, approximating the likelihood is the main challenge for learning EBMs. We review three strategies that enable us to learn continuous EBMs.
 
 The most natural strategy is to approximate the normalising factor with Monte Carlo estimation. However, this requires to sample from the energy-based model, which is not immediate either. A solution is to resort to sampling strategies that work with unnormalised distributions, such as MCMC techniques.
+
+\textcolor{red}{Add an image of the energy landscape of a 2d distribution.}
 
 \paragraph{Contrastive learning.}
 Strategies that avoid resorting to sampling exist. In particular, \citet{gutmann2012noise} proposed using contrastive learning to train the EBM and estimate the normalising constant jointly. The intuition is that if the energy function models correctly the training distribution, it should enable discriminating between noise and samples from the distribution. Indeed, let us consider a balanced binary classification problem where samples from class $0$ follow a known noise distribution $P_n$, and class $1$ is the training set. As long as the supports of the noise and the training distributions match, the Bayes optimal classifier is a function of the log ratio between the two densities. Then learning corresponds to minimising a cross-entropy loss of a classifier expressed as a function of the EBM. This strategy is sensitive to the distribution of the noise. In particular, it often leads to inaccurate estimation of the energy landscape in low-density regions of the noise distribution. We can roughly interpret generative adversarial networks (GANs) as some contrastive learning of an EBM where the noise distribution is the generator and evolves along with training. The discriminator implicitly defines the energy function. Similarly, \citet{grathwohl2019your} noticed that any classifier could be seen as an EBM. It is interesting to note that contrastive learning could be particularly well suited for transferring an explicit generative model to a new dataset with similar support.
@@ -492,26 +496,63 @@ In addition, \citet{ho_denoising_2020} empirically demonstrate that it is suffic
     L_\text{DDPM}(\mathbf{y}_0; \bm{\theta}) := \mathbb{E}_{t, \mathbf{y}_0, \mathbf{y}_t}\left[ \frac{1}{2\sigma^2_t}\lVert \mathbf{\mu}_{\bm{\theta}}(\mathbf{y}_t, t) - \tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)  \rVert^2\right],
 \end{align}
 where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(\mathbf{y}_{t-1}|\mathbf{y}_{0}, \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$. We refer the reader to \citet{ho_denoising_2020} for the detailed derivation of the simplified loss function.
+\textcolor{red}{Add a markov chain that describes DDPM.}
 
 \paragraph{Continuous-time diffusion}
 Denoising score matching and DDPM rest on the idea of perturbing data at multiple noise scale. Continuous-time diffusion generalizes this idea to an infinite number of noise scales which corresponds to formulating the forward and reverse processes as stochastic differential equations (SDE). \citet{song2020score} formally describe the diffusion process as the solution to an It{\^o} SDE:
 \begin{align}
-  \text{d}\bm{y} = \bm{f}(\bm{y}, t) \text{d}t + g(t) \text{d}\bm{w},
+  \text{d}\bm{y} = \bm{f}(\bm{y}, t) \text{d}t + g(t) \text{d}\bm{w}, \label{eq:continuous_diffusion}
 \end{align}
 where $\bm{w}$ is the standard Wiener process (a.k.a., Brownian motion), $\bm{f}(\cdot, t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ is a vector-valued function called the drift coefficient of $\bm{y}(t)$, and $g(\cdot): \mathbb{R} \rightarrow \mathbb{R}$ is a scalar function known as
 the diffusion coefficient of $\bm{y}(t)$.
 
 In this formulation, $\bm{y}(\cdot): \mathbb{R} \rightarrow \mathbb{R}^d$ becomes a function of time where initial states $\bm{y}(0)$ are provided by the training samples. We design the drift and diffusion coefficients to enforce a known noise distribution $p_T$ (e.g., $p_T = \mathcal{N}(\bm 0, I)$) after running the SDE from $t=0$ to $t=T$. We can then generate artificial samples from $P_0 = P(Y)$ by sampling an initial state $\bm{y}_T \sim p_T$ and running the reverse SDE defined by \citet{anderson1982reverse} as
 \begin{align}
-  \text{d}\bm{y} = \left[ \bm{f}(\bm{y}, t) \text{d}t - g(t)^2 \nabla_Y \log P_t(Y=\bm{y}) \right] \text{d}t + g(t) \text{d}\bm{w},
+  \text{d}\bm{y} = \left[ \bm{f}(\bm{y}, t) \text{d}t - g(t)^2 \nabla_Y \log P_t(Y=\bm{y}) \right] \text{d}t + g(t) \text{d}\bm{w},\label{eq:continuous_reverse_diffusion}
 \end{align}
 where the Wiener process and time flow from $t=T$ to $t=0$. The reverse process closely resembles stochastic Langevin dynamics with infinitesimal steps.
 
-The score functions $\nabla_Y \log P_t(Y=\bm{y})$ are indexed by time $t$ and parameterized by a neural network $\bm{s}_{\bm{\theta}}(\cdot, t) : \mathbb{R}^d \rightarrow \mathbb{R}^d$ that takes both the state $\bm{y}(t)$ and the time $t$. We train the neural networks with score matching at all noise scales. Formally, the objective takes the following form
+The score functions $\nabla_Y \log P_t(Y=\bm{y})$ are indexed by time $t$ and parameterized by a neural network $\bm{s}_{\bm{\theta}}(\cdot, t) : \mathbb{R}^d \rightarrow \mathbb{R}^d$ that takes both the state $\bm{y}(t)$ and the time $t$. We train the neural networks with score matching at all noise scales. Formally, the learning problem is
 \begin{align}
-  \bm{\theta}^\star = \argmin_{\bm{\theta}} \mathbb{E}_t\Bigg[ \lambda(t) \mathbb{E}_{\bm{y}(0)} \mathbb{E}_{\bm{y}(t)\mid \bm{y}(0)}\left[ \lVert \bm{s}_{\bm{\theta}}(\bm{y}(t), t) - \nabla_{Y_t} \log P_{0:t}\Big(\bm{y}(t) \mid \bm{y}(0)\Big) \rVert^2 \right] \Bigg]. \label{eq:continuous_diffusion_objective}
+  \bm{\theta}^\star = \argmin_{\bm{\theta}} \mathbb{E}_t\Bigg[ \mathbb{E}_{\bm{y}(0)} \mathbb{E}_{\bm{y}(t)\mid \bm{y}(0)}\left[ \lVert \bm{s}_{\bm{\theta}}(\bm{y}(t), t) - \nabla_{Y_t} \log P_{0:t}\Big(\bm{y}(t) \mid \bm{y}(0)\Big) \rVert^2 \right] \Bigg]. \label{eq:continuous_diffusion_objective}
 \end{align}
 For adequatte drift and diffusion coefficients, the diffusion kernel $P_{0:t}\Big(\bm{y}(t) \mid \bm{y}(0)\Big)$ is easy to sample from and can be evaluated in closed-form. And we can use Monte Carlo estimations of the objective function in \Cref{eq:continuous_diffusion_objective} to train a neural network with stochastic gradient descent. We can resort to sliced score matching \citep{song2020sliced} to optimize $\bm{s}_{\bm{\theta }}$ from samples of the forward process when the diffusion kernel cannot be evaluated directly.
+
+There exists a duality between SDEs and ordinary differential equations (ODE) that allows us to transform one into the other while maintaining the same marginal distribution over the states. The ODE corresponding to \Cref{eq:continuous_reverse_diffusion} is
+\begin{align}
+  \text{d}\bm{y} = \left[ \bm{f}(\bm{y}, t) - \frac{1}{2}g(t)^2 \nabla_Y \log P_t(Y=\bm{y}) \right] \text{d}t.
+\end{align}
+Provided the approximation $\bm{s}_{\bm{\theta}}$ and an initial random state $\bm{y}_T \sim P_T$ we can then use an ODE solver to generate samples.
+
+This duality is very important as it provides a direct way of evaluating the model's likelihood via the instantaneous change of variables. This theorem states that the change in log probability of a continuous random variables $\bm{y}(t) \sim P(\bm{y}(t))$ transformed by an ODE $\frac{\text{d}\bm{y}}{\text{d}t} = \bm{h}(\bm{y}(t), t)$, where $\bm{h}$ is uniformly Lisphitz, follows a differential equation
+\begin{align}
+  \frac{\partial \log P(\bm{y}(t))}{\partial t} = -\operatorname{tr}(\frac{d\bm{h}}{\text{d}\bm{y}(t)}), \label{eq:NODE_NF}
+\end{align}
+where $\operatorname{tr}(\frac{d\bm{h}}{\text{d}\bm{y}(t)})$ is the trace of the Jacobian of $\bm{h}$. This draws a direct connection between diffusion models and normalizing flows that constitute the next class of deep probabilistic models we are going to discuss.
+
+\subsection{Normalizing flows}
+A Normalizing Flow~\citep[NF, ][]{rezende2015variational} is defined as a sequence of invertible transformations $\mathbf{u}_i : \mathbb{R}^d \to \mathbb{R}^d$  ($i=1, ..., k$) composed together to create an expressive invertible mapping $\mathbf{u} = \mathbf{u}_1 \circ \dots \circ \mathbf{u}_k : \mathbb{R}^d \to \mathbb{R}^d$. This mapping can be used to perform density estimation, using $\mathbf{u}(\cdot ;\mathbf{\theta}): \mathbb{R}^d \rightarrow \mathbb{R}^d$ to map a sample $\mathbf{x} \in \mathbb{R}^d$ onto a latent vector $\mathbf{z} \in \mathbb{R}^d$ equipped with a prescribed density $p_{\mathbf{z}}(\mathbf{z})$ such as an isotropic Normal. The transformation $\mathbf{u}$ implicitly defines a density $p(\mathbf{x}; \mathbf{\theta})$ as given by the change of variables formula,
+\begin{equation}
+    p(\mathbf{x}; \mathbf{\theta}) = p_Z(\mathbf{u}(\mathbf{x};\mathbf{\theta})) \left| \det  J_{\mathbf{u}(\mathbf{x};\mathbf{\theta})} \right|, \label{eq:NF_DE}
+\end{equation}
+where $J_{\mathbf{u}(\mathbf{x};\mathbf{\theta})}$ is the Jacobian of $\mathbf{u}(\mathbf{x};\mathbf{\theta})$ with respect to $\mathbf x$.
+The resulting model is trained by maximizing the likelihood of the data $\{\mathbf{x}^1, ..., \mathbf{x}^N\}$.
+
+It is common for normalizing flows to stack the same parametric function $\mathbf{u}_i$ (with different parameters values) and to reverse variables ordering after each transformation. For this reason, we will focus on how to build one of these repeated transformations, which we further refer to as $\mathbf{g}: \mathbb{R}^d\rightarrow \mathbb{R}^d$. In general the steps $\mathbf{g}$ can take any form as long as they define a bijective map. Here, we focus  on a sub-class of normalizing flows for which the steps can be mathematically described as
+\begin{align}
+    \mathbf{g}(\mathbf{x}) = \begin{bmatrix}
+g^1(x_{1}; \mathbf{c}^1(\mathbf{x}))  & \hdots & g^d(x_{d}; \mathbf{c}^d(\mathbf{x}))
+\end{bmatrix}^T,\label{eq:gnf}
+\end{align}
+where the $\mathbf{c}^i$ are the \textbf{conditioners} which role is to constrain the structure of the Jacobian of $\mathbf{g}$.
+The functions $g^i$, partially parameterized by their conditioner, must be invertible with respect to their input variable $x_i$. They are often referred to as transformers, however in this work we will use the term \textbf{normalizers} to avoid any confusion with attention-based transformer architectures.
+
+The conditioners examined in this work can be combined with any normalizer. In particular, we consider affine and monotonic normalizers. An affine normalizer $g: \mathbb{R} \times \mathbb{R}^2 \rightarrow \mathbb{R}$ can be expressed as
+$g(x;m, s) = x\exp(s) + m$, where $m \in \mathbb{R}$ and $s \in \mathbb{R}$ are computed by the conditioner. There exist multiple methods to parameterize monotonic normalizers \citep{huang_neural_2018, de_cao_block_2020, durkan_neural_2019, jaini_sum--squares_2019}, one contribution of this another one called Unconstrained Monotonic Neural Networks~\citep[UMNNs, ][]{UMNN} which can be expressed as
+$g(x; \mathbf{c}) = \int^x_0 f(t, \mathbf{c}) dt + \beta(\mathbf{c})$, where $\mathbf{c} \in \mathbb{R}^{|\mathbf{c}|}$ is an embedding made by the conditioner and $f: \mathbb{R}^{|\mathbf{c}| + 1} \rightarrow \mathbb{R}^+$ and  $\beta: \mathbb{R}^d\rightarrow\mathbb{R}$ are two neural networks respectively with a strictly positive scalar output and a real scalar output. \cite{huang_neural_2018} proved NFs built with autoregressive conditioners and monotonic normalizers are universal density approximators of continuous random variables.
+
+
+We have described discrete normalizing flows for which $k$ is a finite number. There also exist continuous normalizing flows that correspond to infinitesimal transformations defined by an ODE $\frac{\text{d} \bm{y} }{\text{d}t} = \bm{h}(\bm{y}(t), t)$ as mentioned at the end of the discussion on diffusion models. Continuous NFs were first introduce introduced in the seminal work on neural ordinary equations by \citet[NODE,][]{chen_neural_2018}. Soon after \citet{grathwohl_ffjord_2018} proposed to use the Hutchinson trace estimator in \Cref{eq:NODE_NF} to reduce the computation cost of continuous NFs. As previously mentioned continuous NFs can be parameterized by any Lipshitz continuous function and are thus easy to parameterize with neural networks. This is not as simple for discrete NFs and that is why the rest of this discussion is only about discrete flows. The goal of this discussion is to provide an overview of the main characteristics of NFs and some existing parameterization. \citet{papamakarios_normalizing_2019, kobyzev_normalizing_2020} will provide additional details to the greedy reader.
 
 
 \subsection{Variational auto-encoders}
@@ -522,8 +563,6 @@ For adequatte drift and diffusion coefficients, the diffusion kernel $P_{0:t}\Bi
 - Practical considerations
 
 - Parameterizing the prior and posterior functions.
-\subsection{Normalizing flows}
-- Intuitive idea and change of variables theorem.
 \subsection{Discussion}
 
 \section{The multiple definitions of hybrid modelling}
