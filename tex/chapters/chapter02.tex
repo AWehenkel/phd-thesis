@@ -442,8 +442,41 @@ where $\nabla_Y E_{\bm{\theta}}[i] = \frac{\partial E_{\bm{\theta}}}{\partial y_
 
 It is interesting to note that back in 2010, \citet{vincent2011connection} suggested to use score matching to learn denoising models - models that represents the conditional distribution $P(Y\mid \tilde Y)$ of a clean random variable $Y$ given a noisy version $\tilde{Y} = Y + n$ perturbed by some noise $n$ (e.g. a white Gaussian noise). This idea naturally brings us to diffusion models that have recently become state-of-the-art deep generative models for image synthesis.
 \subsection{Diffusion models}
-Diffusion models encompass deep generative models that are all connected by the idea of corrupting structured data into noise and learning a model that reverses the corruption process. We distinguish two sub-classes of diffusion models: 1) Continuous-time models \citep{song_generative_2019, song2020score} that formalise the diffusion and generative process as stochastic differential equations and learn the model with denoising score-matching; 2) Discrete-time models dubbed \textit{denoising diffusion probabilistic modelling} \citep{dickstein_deep_2015, ho_denoising_2020} that fix the number of corruption steps as a hyperparameter of the model and use variational inference to derive a bound on the model's likelihood. We mainly focus our discussion on the discrete-time models and provide an intuitive discussion of continuous-time at the end of the discussion. We encourage the reader interested in continuous-time models to look at the following papers for more information: \citep{song_generative_2019, song2020score, song2021maximum, dockhorn2021score}.
+Diffusion models encompass deep generative models that are all connected by the idea of corrupting structured data into noise and learning a model that reverses the corruption process. We distinguish two sub-classes of diffusion models: 1) Continuous-time models \citep{song_generative_2019, song2020score} that formalise the diffusion and generative process as stochastic differential equations and learn the model with denoising score-matching; 2) Discrete-time models dubbed \textit{denoising diffusion probabilistic models} \citep{sohl-dickstein_deep_2015, ho_denoising_2020} that fix the number of corruption steps as a hyperparameter of the model and use variational inference to derive a bound on the model's likelihood. We first provide a thorough description of discrete-time models, and then discuss intuitively continuous-time. We encourage the reader interested in continuous-time models to look at the following papers for more information: \citep{song_generative_2019, song2020score, song2021maximum, dockhorn2021score}.
 
+\paragraph{Discret-time diffusion.}
+Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs while \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis, achieving results close to the state-of-the-art on this task.
+DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information.
+Formally, the reverse process is a latent variable model of the form
+$$p_\phi(\mathbf{x}_0) := \int p_\phi(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T},$$
+where $\mathbf{x}_0:=\mathbf{x}$ denotes the observations and $\mathbf{x}_1, \dots, \mathbf{x}_T$ denote latent variables of the same dimensionality as $\mathbf{x}_0$. The joint distribution $p_\phi(\mathbf{x}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
+\begin{align}
+    &p_\phi(\mathbf{x}_{0:T}) := p_\phi(\mathbf{x}_{T}) \prod^T_{t=1} p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}),\\
+    &p_\phi(\mathbf{x}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}),\\ &p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}) := \mathcal{N}(\mathbf{\mu_\phi}(\mathbf{x}_t, t), \sigma_t^2 \text{I}).
+\end{align}
+Similar to VAEs, the reverse Markov chain is trained on an $\operatorname{ELBO}$. However, the approximate posterior $q(\mathbf{x}_{1:T}|\mathbf{x}_0)$ is fixed to a diffusion process that is also a first order Markov chain with Gaussian transitions,
+\begin{align}
+    &q(\mathbf{x}_{1:T}|\mathbf{x}_0) := \prod^T_{t=1} q(\mathbf{x}_{t}|\mathbf{x}_{t-1}),\\
+    &q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_{t-1}, \beta_t \text{I}),
+\end{align}
+where $\beta_1, \hdots, \beta_T$ are the variance schedule that is either fixed as training hyper-parameters or learned.
+The $\operatorname{ELBO}$ is then given by
+\begin{align}
+    \operatorname{ELBO} := \mathbb{E}_q\left[ \log \frac{p_\phi(\mathbf{x_{0:T}})}{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \right] \leq \log p_\phi(\mathbf{x}_0). \label{eq:ELBO_DDPM}
+\end{align}
+
+Provided that the variance schedule $\beta_t$ is small and that the number of timesteps $T$ is large enough, the Gaussian assumptions on the generative process $p_\phi$ are reasonable. \citet{ho_denoising_2020} take advantage of the Gaussian transitions to express the $\operatorname{ELBO}$ as
+\begin{align}
+        \mathbb{E}_q \biggl[& \mathbb{KL}\left[q(\mathbf{x}_T|\mathbf{x}_0)||p(\mathbf{x}_T)\right] - \log p_\phi(\mathbf{x}_0|\mathbf{x}_1) \phantom{\biggr]} \notag \\
+    \phantom{\biggl[}&+ \sum_{t=2}^T \mathbb{KL}\left[q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)||p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)\right]
+     \biggr]. \label{eq:simple_DDPM_ELBO}
+\end{align}
+The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)$ and the conditional forward posterior $q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t), \tilde{\beta}_t \text{I})$, where $\tilde{\beta}_t$ are functions of the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
+In addition, \citet{ho_denoising_2020} empirically demonstrate that it is sufficient to take optimization steps on uniformly sampled terms of the sum instead of computing it completely. The final objective closely resembles denoising score matching over multiple noise levels \citep{ScoreMatching}. These observations combined with additional simplifications leads to a simplified loss
+\begin{align}
+    L_\text{DDPM}(\mathbf{x}_0; \phi) := \mathbb{E}_{t, \mathbf{x}_0, \mathbf{x}_t}\left[ \frac{1}{2\sigma^2_t}|| \mathbf{\mu}_\phi(\mathbf{x}_t, t) - \tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)  ||^2\right],
+\end{align}
+where $\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)$ is the mean of $q(\mathbf{x}_{t-1}|\mathbf{x}_{0}, \mathbf{x}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{x}_{0}$.
 - Training with the ELBO and as a latent variables model.
 
 - Relationship with energy based model and score matching/noise contrastive training
