@@ -41,7 +41,12 @@ In particular, a model that embeds notions of uncertainty is more powerful than 
 We thus need a language to express this stochasticity. The language of \textit{probability} is the one to make statements about uncertain events. It allows contrast between what is possible versus what is plausible. The distinction is essential as it will enable us to eventually make deterministic decisions by neglecting the most unlikely events and focusing on plausible events. An old bottle has a higher chance of being corked than a recent one. On the opposite, it might also taste better. We can use probability to express this fact and select a bottle to our taste with high probability.
 
 \subsection{Probabilistic model}
-A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practically, it defines a probability distribution between the set of variables considered valuable to describe the phenomenon (e.g., $X, Y, Z$). When it models the joint observations, the distribution can be the joint between all variables (e.g., $P(X, Y, Z)$). It can also be a conditional distribution  (e.g., $P(X \mid Y, Z)$) if we consider some of the variables known when using this model. We mostly limit our discussion to the former case for simplicity but with no loss of generality. For discrete variables, the mathematical object $P(X, Y, Z)$ is a probability and a density for continuous variables. In the following of this chapter, we will often use the symbol $P$ with no additional mention of the variable's type (discrete vs continuous) to generalise the discussion to both types.
+A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practically, it defines a probability distribution between the set of variables considered valuable to describe the phenomenon (e.g., $X, Y, Z$). When it models the joint observations, the distribution can be the joint between all variables (e.g., $P(X, Y, Z)$). It can also be a conditional distribution  (e.g., $P(X \mid Y, Z)$) if we consider some of the variables known when using this model. We mostly limit our discussion to the former case for simplicity but with no loss of generality.
+
+\begin{side_note}{Formalism}
+  We will abstract the domain (discrete or continuous) of the random variables when possible. We will use the term (conditional) probability distribution to referring to the object $P$ that fully describes the stochastic behaviour of a random variable $X$ taking values in $\mathcal{X}$. When the domain $\mathcal{X}$ is discrete, $P$ corresponds to the probability function $P(X=\cdot): \mathcal{X} \rightarrow \left[0, 1 \right]$ that satisfies the three Kolmogorov's axioms. In the case of a continuous domain, we will narrow our discussion to real values $\mathcal{X} \triangleq \mathbb{R}^d$, where $d$ is the dimensionality of the random variable. In this context, the probability distribution is the density function $P(X=\cdot): \mathcal{X} \rightarrow \mathbb{R}_{+}$ which defines the probability that a realization $\bm{x}$ of $X$ lies in a sub-domain $\mathcal{A}$ as $\int_{\bm{x} \in \mathcal{A}} P(X=\bm{x}) \text{d} \bm{x}$. The probability functions implied by the density must also satisfy Kolmogorov's axioms. We will also clearly mention the domain of the random variable when it will matter for the discussion.
+\end{side_note}
+% For discrete variables, the mathematical object $P(X, Y, Z)$ is a probability and a density for continuous variables. In the following of this chapter, we will often use the symbol $P$ with no additional mention of the variable's type (discrete vs continuous) to generalise the discussion to both types.
 
 One goal of building a probabilistic model, arguably the main one, is to perform \textit{inference}. That is to answer questions in the context of the models. These questions come in different flavours. What is the most likely value of $Y$ if we are to observe $X$? What is the conditional distribution of $Y$ in this case? Do we want to evaluate the value $P(Y \mid X)$ or just sample from it? For these purposes, the probabilistic models may have to handle different types of queries: \textit{marginalization, conditioning, sampling, and probability evaluation}.
 
@@ -218,26 +223,36 @@ Solving $\label{eq:obj_VI}$ is possible if we have a parametric family of distri
 where $\mathcal{N}(0, I)$ denotes a normal distribution.
 In this ideal case, the optimization problem becomes:
 \begin{align}
-  \theta^\star &= \argmin_\theta \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y\mid E=e) \right]\\
-  &= \argmin_\theta KL\left[Q_\theta(Y)\Vert P(Y, E=e) \right] + \mathbb{E}_{y}\left[P(E=e)\right]\\
+  \theta^\star &= \argmin_\theta \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y\mid E=e) \right]\\ \label{eq:VI_optim}
+  &= \argmin_\theta \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y, E=e) \right] + \mathbb{E}_{\bm y}\left[\log P(E=e)\right]\\
   &= \argmin_\theta \mathbb{E}_{z}\left[ \log \frac{Q_\theta(f_\theta(z))}{P(f_\theta(z), E=e)} \right].
 \end{align}
 We can optimise the equation with stochastic gradient descent (SGD) by approximating the objective function with Monte Carlo samples at each gradient step.
 
 However, evaluating $P(f_\theta(z), E=e)$ in the last equation is not always possible (e.g. the variables in $M$ have at least one child). In this context, we may create an approximation $Q_{\theta^\star}(Y, M\mid E=e)$ of $P(Y, M\mid E=e)$ instead. We can then generate samples from the joint and thus from the marginal $P(Y\mid E=e)$. If we need to evaluate the approximate $Q_{\theta^\star}(Y\mid E=e) := \int Q_{\theta^\star}(Y, M\mid E=e) \text{d}M$, we can find a surrogate model $\tilde Q_\psi$ by solving the following optimization problem:
 \begin{align}
-  \psi^\star &= \argmin_\psi KL\left[Q_{\theta^\star}(Y, M\mid E=e)\Vert \tilde Q_\psi(Y) \right]. \label{eq:approx_posterior}
+  \psi^\star &= \argmin_\psi \mathbb{KL}\left[Q_{\theta^\star}(Y, M\mid E=e)\Vert \tilde Q_\psi(Y) \right]. \label{eq:approx_posterior}
 \end{align}
 We can also optimize this equation with SGD and Monte Carlo samples as it only requires to sample from and evaluate $Q_{\theta^\star}(Y, M\mid E=e)$, and to evaluate $Q_\psi(Y)$. We can convince ourselves that the solution to \Cref{eq:approx_posterior} is $Q_{\theta^\star}(Y\mid E=e)$,
 \begin{align}
-  &\min_Q KL\left[P(Y, M)\Vert Q(Y) \right]\\
+  &\min_Q \mathbb{KL}\left[P(Y, M)\Vert Q(Y) \right]\\
   &=\min_Q \mathbb{E}_{P(Y) P(M\mid Y)}\left[\log P(Y) + \log P(M\mid Y) - \log Q(Y)\right]\\
   &=\min_Q \mathbb{E}_{P(Y) P(M\mid Y)}\left[\log P(Y) - \log Q(Y)\right]\\
   &= \min_Q \mathbb{E}_{P(Y)}\left[\log P(Y) - \log Q(Y)\right]\\
-  &= \min_Q KL\left[P(Y)\Vert Q \right].
+  &= \min_Q \mathbb{KL}\left[P(Y)\Vert Q \right].
 \end{align}
 
 VI requires a parametric distribution differentiable to sampling and density evaluation. The family of distributions must contain instances close to the true posterior to achieve good results. In addition, solving the optimisation can be complicated even if provided with a parametric universal density approximator. However, VI is preferable to sampling strategies for multiple reasons. It eventually becomes faster than sampling as \ref{eq:obj_VI} returns a model from which we can generate as many samples as wanted. This approach also automatically provides a surrogate of the posterior density. Finally, we can apply this approach to learning a parametric posterior distribution that approximates $P(Y\mid E=e)$ for any value of $e$.
+
+Another interesting application of VI is for estimating a bound on the log-marginal $\log P(E)$ of the larger model $P(Y, E)$. We can directly derive from \Cref{eq:VI_optim}:
+\begin{align}
+  \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y\mid E=e)\right] &\geq 0\\
+  \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y, E=e) \right] + \mathbb{E}_{y}\left[\log P(E=e)\right] &\geq 0\\
+  \mathbb{E}_{\bm y \sim Q_\theta(Y=\bm{y})}\left[ \log \frac{P(E=e\mid Y=\bm{y}) P(Y=\bm{y})}{Q_\theta(Y=\bm{y})} \right] &\leq \log P(E=e)\\
+  \underbrace{\mathbb{E}_{\bm y \sim Q_\theta(Y=\bm{y})}\left[ \log P(E=e\mid Y=\bm{y})\right] - \mathbb{KL}\left[Q_\theta(Y)\Vert P(Y)\right]}_{\operatorname{ELBO}} &\geq \log P(E=e) \label{eq:elbo}
+\end{align}
+This estimated lower bound on the evidence ($\operatorname{ELBO}$) is useful to approximate the log-likelihood of a parametric model $P_{\bm \psi}(E)$ defined as the marginal of a larger model $P_{\bm \psi}(Y, E)$.
+We will see later that this the main technique for learning deep probabilistic models that formulates the generative process as a stochastic map from latent variables to observations.
 % \textcolor{red}{Discuss the case of exact inference in continuous is maybe hopeless.}
 \subsubsection{Learning}
 We have just seen that inference can be formulated as learning a probabilistic model. We now describe strategies to learn the parameters of a BN.
@@ -444,39 +459,40 @@ It is interesting to note that back in 2010, \citet{vincent2011connection} sugge
 \subsection{Diffusion models}
 Diffusion models encompass deep generative models that are all connected by the idea of corrupting structured data into noise and learning a model that reverses the corruption process. We distinguish two sub-classes of diffusion models: 1) Continuous-time models \citep{song_generative_2019, song2020score} that formalise the diffusion and generative process as stochastic differential equations and learn the model with denoising score-matching; 2) Discrete-time models dubbed \textit{denoising diffusion probabilistic models} \citep{sohl-dickstein_deep_2015, ho_denoising_2020} that fix the number of corruption steps as a hyperparameter of the model and use variational inference to derive a bound on the model's likelihood. We first provide a thorough description of discrete-time models, and then discuss intuitively continuous-time. We encourage the reader interested in continuous-time models to look at the following papers for more information: \citep{song_generative_2019, song2020score, song2021maximum, dockhorn2021score}.
 
-\paragraph{Discret-time diffusion.}
+\paragraph{Discrete-time diffusion.}
 Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs while \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis, achieving results close to the state-of-the-art on this task.
 DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information.
 Formally, the reverse process is a latent variable model of the form
-$$p_\phi(\mathbf{x}_0) := \int p_\phi(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T},$$
-where $\mathbf{x}_0:=\mathbf{x}$ denotes the observations and $\mathbf{x}_1, \dots, \mathbf{x}_T$ denote latent variables of the same dimensionality as $\mathbf{x}_0$. The joint distribution $p_\phi(\mathbf{x}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
+$$P_{\bm{\theta}}(Y=\mathbf{y}) := \int P_{\bm{\theta}}(\mathbf{y}_{0:T}) d\mathbf{y}_{1:T},$$
+where $\mathbf{y}_0:=\mathbf{y} \in \mathbb{R}^d$ denotes the observations and $\mathbf{y}_1, \dots, \mathbf{y}_T$ denote latent variables of the same dimensionality as $\mathbf{y}$. The joint distribution $P_{\bm{\theta}}(\mathbf{y}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
 \begin{align}
-    &p_\phi(\mathbf{x}_{0:T}) := p_\phi(\mathbf{x}_{T}) \prod^T_{t=1} p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}),\\
-    &p_\phi(\mathbf{x}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}),\\ &p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_{t}) := \mathcal{N}(\mathbf{\mu_\phi}(\mathbf{x}_t, t), \sigma_t^2 \text{I}).
+    &P_{\bm{\theta}}(\mathbf{y}_{0:T}) := P_{\bm{\theta}}(\mathbf{y}_{T}) \prod^T_{t=1} P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_{t}),\\
+    & \text{where } P_{\bm{\theta}}(\mathbf{y}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}) \quad \text{ and } \quad P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_{t}) := \mathcal{N}(\mathbf{\mu_\phi}(\mathbf{y}_t, t), \sigma_t^2 \text{I}).
 \end{align}
-Similar to VAEs, the reverse Markov chain is trained on an $\operatorname{ELBO}$. However, the approximate posterior $q(\mathbf{x}_{1:T}|\mathbf{x}_0)$ is fixed to a diffusion process that is also a first order Markov chain with Gaussian transitions,
+We want to estimate the parameters of the generative (reverse) with maximum likelihood estimation. However, we do not have access to the likelihood function $P_{\bm{\theta}}(Y=\mathbf{y})$ explicitly but only to the joint distribution between the observation and the latent variables $P_{\bm{\theta}}(\mathbf{y}_{0:T})$. This is exactly the setting that motivated us to discuss and derive the $\operatorname{ELBO}$ in \Cref{eq:ELBO}.
+Here, the approximate posterior $Q(\mathbf{y}_{1:T}|\mathbf{y}_0)$ is a diffusion process that is also a first order Markov chain with Gaussian transitions,
 \begin{align}
-    &q(\mathbf{x}_{1:T}|\mathbf{x}_0) := \prod^T_{t=1} q(\mathbf{x}_{t}|\mathbf{x}_{t-1}),\\
-    &q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{x}_{t-1}, \beta_t \text{I}),
+    &Q(\mathbf{y}_{1:T}|\mathbf{y}_0) := \prod^T_{t=1} q(\mathbf{y}_{t}|\mathbf{y}_{t-1}),\\
+    &Q(\mathbf{y}_{t}|\mathbf{y}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{y}_{t-1}, \beta_t \text{I}),
 \end{align}
 where $\beta_1, \hdots, \beta_T$ are the variance schedule that is either fixed as training hyper-parameters or learned.
 The $\operatorname{ELBO}$ is then given by
 \begin{align}
-    \operatorname{ELBO} := \mathbb{E}_q\left[ \log \frac{p_\phi(\mathbf{x_{0:T}})}{q(\mathbf{x_{1:T}}|\mathbf{x_0})} \right] \leq \log p_\phi(\mathbf{x}_0). \label{eq:ELBO_DDPM}
+    \operatorname{ELBO} := \mathbb{E}_q\left[ \log \frac{P_{\bm{\theta}}(\mathbf{y_{0:T}})}{q(\mathbf{y_{1:T}}|\mathbf{x_0})} \right] \leq \log P_{\bm{\theta}}(\mathbf{y}_0). \label{eq:ELBO_DDPM}
 \end{align}
 
-Provided that the variance schedule $\beta_t$ is small and that the number of timesteps $T$ is large enough, the Gaussian assumptions on the generative process $p_\phi$ are reasonable. \citet{ho_denoising_2020} take advantage of the Gaussian transitions to express the $\operatorname{ELBO}$ as
+Provided that the variance schedule $\beta_t$ is small and that the number of timesteps $T$ is large enough, the Gaussian assumptions on the generative process $P_{\bm{\theta}}$ are reasonable. \citet{ho_denoising_2020} take advantage of the Gaussian transitions to express the $\operatorname{ELBO}$ as
 \begin{align}
-        \mathbb{E}_q \biggl[& \mathbb{KL}\left[q(\mathbf{x}_T|\mathbf{x}_0)||p(\mathbf{x}_T)\right] - \log p_\phi(\mathbf{x}_0|\mathbf{x}_1) \phantom{\biggr]} \notag \\
-    \phantom{\biggl[}&+ \sum_{t=2}^T \mathbb{KL}\left[q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)||p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)\right]
+        \mathbb{E}_q \biggl[& \mathbb{KL}\left[Q(\mathbf{y}_T|\mathbf{x}_0)\Vert p(\mathbf{y}_T)\right] - \log P_{\bm{\theta}}(\mathbf{y}_0|\mathbf{y}_1) \phantom{\biggr]} \notag \\
+    \phantom{\biggl[}&+ \sum_{t=2}^T \mathbb{KL}\left[q(\mathbf{y}_{t-1}|\mathbf{y}_t, \mathbf{y}_0)\Vert P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_t)\right]
      \biggr]. \label{eq:simple_DDPM_ELBO}
 \end{align}
-The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $p_\phi(\mathbf{x}_{t-1}|\mathbf{x}_t)$ and the conditional forward posterior $q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t), \tilde{\beta}_t \text{I})$, where $\tilde{\beta}_t$ are functions of the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
+The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_t)$ and the conditional forward posterior $Q(\mathbf{y}_{t-1}|\mathbf{y}_t, \mathbf{y}_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t), \tilde{\beta}_t \text{I})$, where $\tilde{\beta}_t$ are functions of the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
 In addition, \citet{ho_denoising_2020} empirically demonstrate that it is sufficient to take optimization steps on uniformly sampled terms of the sum instead of computing it completely. The final objective closely resembles denoising score matching over multiple noise levels \citep{ScoreMatching}. These observations combined with additional simplifications leads to a simplified loss
 \begin{align}
-    L_\text{DDPM}(\mathbf{x}_0; \phi) := \mathbb{E}_{t, \mathbf{x}_0, \mathbf{x}_t}\left[ \frac{1}{2\sigma^2_t}|| \mathbf{\mu}_\phi(\mathbf{x}_t, t) - \tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)  ||^2\right],
+    L_\text{DDPM}(\mathbf{y}_0; \bm{\theta}) := \mathbb{E}_{t, \mathbf{y}_0, \mathbf{y}_t}\left[ \frac{1}{2\sigma^2_t}|| \mathbf{\mu}_{\bm{\theta}}(\mathbf{y}_t, t) - \tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)  ||^2\right],
 \end{align}
-where $\tilde{\mu}_t(\mathbf{x}_0, \mathbf{x}_t)$ is the mean of $q(\mathbf{x}_{t-1}|\mathbf{x}_{0}, \mathbf{x}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{x}_{0}$.
+where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(\mathbf{y}_{t-1}|\mathbf{y}_{0}, \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$.
 - Training with the ELBO and as a latent variables model.
 
 - Relationship with energy based model and score matching/noise contrastive training
