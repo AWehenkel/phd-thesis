@@ -44,7 +44,7 @@ We thus need a language to express this stochasticity. The language of \textit{p
 A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practically, it defines a probability distribution between the set of variables considered valuable to describe the phenomenon (e.g., $X, Y, Z$). When it models the joint observations, the distribution can be the joint between all variables (e.g., $P(X, Y, Z)$). It can also be a conditional distribution  (e.g., $P(X \mid Y, Z)$) if we consider some of the variables known when using this model. We mostly limit our discussion to the former case for simplicity but with no loss of generality.
 
 \begin{side_note}{Formalism}
-  In this thesis, we will abstract the domain (discrete or continuous) of the random variables when possible. The term (conditional) probability distribution refers to the object $P$ that fully describes the stochastic behaviour of a random variable $X$ taking values in $\mathcal{X}$. When the domain $\mathcal{X}$ is discrete, $P$ corresponds to the probability function $P(X=\cdot): \mathcal{X} \rightarrow \left[0, 1 \right]$ that satisfies the three Kolmogorov's axioms. In the case of a continuous domain, we will narrow our discussion to real values $\mathcal{X} \triangleq \mathbb{R}^d$, where $d$ is the dimensionality of the random variable. In this context, the probability distribution is the density function $P(X=\cdot): \mathcal{X} \rightarrow \mathbb{R}_{+}$ which defines the probability that a realization $\bm{x}$ of $X$ lies in a sub-domain $\mathcal{A}$ as $\int_{\bm{x} \in \mathcal{A}} P(X=\bm{x}) \text{d} \bm{x}$. The probability functions implied by the density must also satisfy Kolmogorov's axioms. We will also clearly mention the domain of the random variable when it will matter for the discussion.
+  In this background, we will abstract the domain (discrete or continuous) of the random variables when possible. The term (conditional) probability distribution refers to the object $P$ that fully describes the stochastic behaviour of a random variable $X$ taking values in $\mathcal{X}$. When the domain $\mathcal{X}$ is discrete, $P$ corresponds to the probability function $P(X=\cdot): \mathcal{X} \rightarrow \left[0, 1 \right]$ that satisfies the three Kolmogorov's axioms. In the case of a continuous domain, we will narrow our discussion to real values $\mathcal{X} \triangleq \mathbb{R}^d$, where $d$ is the dimensionality of the random variable. In this context, the probability distribution is the density function $P(X=\cdot): \mathcal{X} \rightarrow \mathbb{R}_{+}$ which defines the probability that a realization $\bm{x}$ of $X$ lies in a sub-domain $\mathcal{A}$ as $\int_{\bm{x} \in \mathcal{A}} P(X=\bm{x}) \text{d} \bm{x}$. The probability functions implied by the density must also satisfy Kolmogorov's axioms. We will also clearly mention the domain of the random variable when it will matter for the discussion. Later in the thesis we focus on the continuous case and use a lowercase $p$ to denote the probability density function.
 \end{side_note}
 % For discrete variables, the mathematical object $P(X, Y, Z)$ is a probability and a density for continuous variables. In the following of this chapter, we will often use the symbol $P$ with no additional mention of the variable's type (discrete vs continuous) to generalise the discussion to both types.
 
@@ -129,8 +129,9 @@ The introduction of an undirected representation of the distribution of interact
 Many great resources on PGMs exist and our goal is not to compete with them. We provide sufficient materials to get the reader interested and understand the main advantages and limitations of standard algorithms. This provides a common ground between the reader and the author to motivate the connections with deep generative models and improvements to classical PGMs we have broughts in the scope of this thesis. We invite the reader interested by additional details to check \citet{}, the main reference used to guide this introduction to PGMs.
 
 \subsection{The curses of dimensionality}
+% \textcolor{red}{add a figure that shows how the distance between two random points grows as the number of dimension grows.}
 \paragraph{Learning is hard.} We consider a bunch of unfair coins $\bm{x} = \left[x_1, \dots, x_d \right]$. Given a dataset of simulatenuous throws $\mathcal{D} = \{\bm{x}_i\}_{i=1}^N$ , we want to learn a probabilistic model $P(X=\bm{x})$. A natural approach is to represent the joint probability as a $d$-dimensional array with an entry for each possible realization. In this context, learning corresponds to filling the $2^d$ values in the table. We can reduce this number by factorizing the distribution as
-$$P(\bm{x}) = P(x_1)\Pi_{i=2}^d p(x_i\mid x_{<i}),$$ and by acknowledging that the (conditional) probabilities of a tail and a head sum up to $1$. Unfortunately we do not gain much as the number of entries in the table still grows exponentially ($\sum_{i=1}^d 2^{i-1} = 2^{d-1} - 1$) and learning still quickly gets very dificult with the number of dimensions. This phenomenon is broadly refereed as a \textit{curse of dimensionality} and also hits continuous variables. However this is just a recall to the reality as we always need assumptions to create models - good news is we can fight the curse of dimensionality with modelling assumptions. For example, it is reasonable to assume the coins independent, the joint distribution is then factorized into $d$ terms: $ P(\bm{x}) = \Pi_{i=1}^d p(x_i)$. For continuous variables smoothness and constraints on the possible types of interactions between variables may allow us to achieve modelling results that challenge the curse of dimensionality. We will see soon strategies to express different modelling assumptions.
+$$P(\bm{x}) = P(x_1)\Pi_{i=2}^d P(x_i\mid x_{<i}),$$ and by acknowledging that the (conditional) probabilities of a tail and a head sum up to $1$. Unfortunately we do not gain much as the number of entries in the table still grows exponentially ($\sum_{i=1}^d 2^{i-1} = 2^{d-1} - 1$) and learning still quickly gets very dificult with the number of dimensions. This phenomenon is broadly refereed as a \textit{curse of dimensionality} and also hits continuous variables. However this is just a recall to the reality as we always need assumptions to create models - good news is we can fight the curse of dimensionality with modelling assumptions. For example, it is reasonable to assume the coins independent, the joint distribution is then factorized into $d$ terms: $ P(\bm{x}) = \Pi_{i=1}^d P(x_i)$. For continuous variables smoothness and constraints on the possible types of interactions between variables may allow us to achieve modelling results that challenge the curse of dimensionality. We will see soon strategies to express different modelling assumptions.
 % - If we do not restrain the hypothesis space or bias the learning in some sense the curse of dimensionality kills us. -> Learning is hard.
 
 \paragraph{Sampling is hard.} We want to sample realisations provided the joint distribution $p(X=\bm x)$. To this end, we may use approximate sampling schemes (e.g., MCMC, or importance sampling) that rely on a proposal distribution (e.g., a normal distribution) and an acceptance/rejection strategy. As the number of dimension increases the gap between the proposal distribution and the one of interest will naturally grows, and the acceptance rate will collapse. This means we need to understand some modelling assumptions in order to develop efficient sampling strategy. We will see later how rewarding is the joined development of the model class and the sampling strategy.
@@ -266,7 +267,7 @@ where $\mathcal{B} = \mathcal{G} \times \mathcal{F}$ denotes the set of possible
 
 The formulation in \ref{eq:learn_BN} does not say much about concrete strategies to fit the parameters of a BN. In practice, we often separate structure learning from distribution fitting. Structure learning is a combinatorial problem, whereas fitting the parameters of conditional distributions is a continuous optimisation problem; solving both issues jointly is an open problem. In \Cref{ch:06}, we will see one strategy to formulate the combinatorial problem into a continuous one; these are advanced concepts beyond this background's scope. Now, we focus on the two sub-problems independently.
 
-\paragraph{Distribution learning}
+\paragraph{Distribution learning.}
 We suppose a prescribed topology and only focus on learning the best factors in \eqref{eq:BN-fact}. For this purpose we can parameterize the factors with a vector $\bm \theta$ and update \eqref{eq:learn_BN} into
 \begin{align}
   {\bm \theta}^\star  = \argmax_{\bm \theta} \sum_{i=1}^N \log \prod^d_{j=1}P_{\bm \theta}(X_j^i\mid \mathcal{P}_j) - \log \pi(\bm \theta).
@@ -274,7 +275,7 @@ We suppose a prescribed topology and only focus on learning the best factors in 
 \end{align}
 The choice of the parameterisation and the prior $\pi$ are crucial to finding a good model when $N$ is finite. Although parametric universal density approximators exist, such as normalizing flows, learning the parameters of these functions can be challenging when the dataset is small or the phenomenon modelled is complex. The optimisation problem described by \eqref{eq:learn_factors} is usually solved via stochastic gradient descent.
 
-\paragraph{Structure learning}
+\paragraph{Structure learning.}
 It is sometimes difficult to define a relevant structure a priori, and it may be interesting to learn it from data instead. Structure learning aims to find a sparse topology that does not imply (conditional) independence in contradiction with the data. We can formulate this search as an optimisation problem under constraints in the space of DAGs $\mathcal{G}$:
 \begin{align}
  G^\star = \argmin_{G \in \mathcal{G}} \sum_{i=1}^d\sum_{j=1}^d A_{i,j}(G) \quad \text{such that} \quad I(G) \subseteq I(\mathcal{D}), \label{eq:learn_structure}
@@ -387,9 +388,38 @@ where the joint distribution is normalised respectively by $Z=\sum_{x \in \mathc
 $$ \tilde{P}_{\bm{\phi}(X)} = \phi_1(D_1) \times \dots \times \phi_K(D_K), $$
 which is a multivariate function $\mathcal{X} \rightarrow \mathbb{R}$. When the factors are stricly positive, the unnormalised distribution can be written as $$ \tilde{P}_{\bm{\phi}(X=x)} = e^{-E(x)}, $$ where E is dubbed the energy function. This family of distributions is called Gibbs distributions. A Gibbs distribution factorises over a Markov network if each factor is a complete subgraph of the network.
 
-We see how Markov networks define a joint distribution with an unnormalised function that scores the plausibility of each possible realisation. Usually the factors are strictly positive and are parameterised with an energy function $E$ as $\phi(\cdot) = e^(-E(\cdot))$. Provided the graph structure and factors, we can use sampling algorithms, such as MCMC, to generate realisations that follow the distribution modelled by the network. These models are difficult to learn without additional restrictions as the joint distribution is not explicitly defined. Moreover, the parameterisation can become very complex as the number of factors tends to grow with the complexity of the graph. In practice, we often must restrict the graph's complexity and parameterisation to factors with no more than two variables.
+We see how Markov networks define a joint distribution with an unnormalised function that scores the plausibility of each possible realisation. Usually the factors are strictly positive and are parameterised with an energy function $E$ as $\phi(\cdot) = e^{-E(\cdot)}$. Provided the graph structure and factors, we can use sampling algorithms, such as MCMC, to generate realisations that follow the distribution modelled by the network. These models are difficult to learn without additional restrictions as the joint distribution is not explicitly defined. Moreover, the parameterisation can become very complex as the number of factors tends to grow with the complexity of the graph. In practice, we often must restrict the graph's complexity and parameterisation to factors with no more than two variables.
 
-Restricted Boltzmann machines (RBMs) are a popular class of Markov networks where binary variables are split into visible and hidden units with a bipartite graph. This restriction allows efficient learning algorithms inspired by the Hebbian plasticity of the brain. The parameterisation of RBMs is a matrix of weights $W$ that describes the interactions between visible and hidden units. We also add two vectors of offset $\bm{b}_H$ and $\bm{b}_V$ respectively for hidden and visible units. The joint distribution between visible and hidden units is computed as
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[
+      node distance=2.cm and 1.5cm,
+      var_x/.style={draw, circle, text width=.4cm, align=center},
+      simple/.style={align=center}
+    ]
+        \node[var_x] (a) {$V_1$};
+        \node[simple, right=of a] (b) {$\dots$};
+        \node[var_x, right=of b] (c) {$V_m$};
+
+        \node[var_x, below=of a] (w) {$H_1$};
+        \node[simple, right=of w] (x) {$\dots$};
+        \node[var_x, right=of x] (y) {$H_n$};
+
+        \path (a) edge[-] (w);
+        \path (a) edge[-] (x);
+        \path (a) edge[-] (y);
+        \path (b) edge[-] (w);
+        \path (b) edge[-] (x);
+        \path (b) edge[-] (y);
+        \path (c) edge[-] (w);
+        \path (c) edge[-] (x);
+        \path (c) edge[-] (y);
+        %\node (b) at (1,-3) {(\textbf{b})};
+    \end{tikzpicture}
+    \caption{A Restricted Boltzmann machines compose of $n$ hidden units $H_i$ and $m$ visible units $V_j$. The Markov network is a bipartite graph separating hidden and visible units into two groups fully connected to each other.}\label{fig:RBM}
+\end{figure}
+
+Restricted Boltzmann machines (RBMs) are a popular class of Markov networks where binary variables are split into visible units, denoted $V \in \{0, 1\}^m$, and hidden units, $H \in \{0, 1\}^n$, with a bipartite graph as depicted in \Cref{fig:RBM}. This restriction allows efficient learning algorithms inspired by the Hebbian plasticity of the brain. The parameterisation of RBMs is a matrix of weights $W \in \mathbb{R}^{m\times n}$ that describes the interactions between visible and hidden units. We also add two vectors of offset $\bm{b}_H$ and $\bm{b}_V$ respectively for hidden and visible units. The joint distribution between visible and hidden units is computed as
 $$ P(V=\bm{v}, H=\bm{h}) = \frac{1}{Z} \phi(V=\bm{v}, H=\bm{h}), $$
 where the factor is $ \phi(V, H)=e^{-E(V, H)} $ and the energy function takes the particular form
 $$ E(V=\bm{v}, H=\bm{h}) = -\bm{b}_H^T \bm{h} - \bm{b}_V^T \bm{v} - \bm{v}^T W \bm{h}.  $$
@@ -410,7 +440,7 @@ The last section ends with Restricted Boltzmann machines which are arguably one 
 
 We have observed that graphical models are appealing for understanding and prescribing modelling assumptions. However, we also note that they do not rigorously describe efficient parameterization of the conditional probability distributions in the continuous setting. This section will present many machine learning algorithms that produce different types of probabilistic models. We will highlight the correspondance of some of these models within the probabilistic graphical models when possible.
 \subsection{Why neural networks?}
-Before diving into learning algorithms, we explain why neural networks are suitable for parameterisation (conditional) probabilistic distributions. In the context of this thesis we abstract neural networks as flexible parametric functions that maps an input space $\mathcal{X}$ to an output space $\mathcal{Y}$ as a differentiable function $f_{\bm{theta}}: \mathcal{X} \rightarrow \mathcal{Y}$ of its parameters $\bm{\theta}$. Although neural networks are universal function approximators, the parameterisation of a probability distribution is challenging and requires the right architectural choice. We often present neural networks as deterministic models; however, many strategies exist to parameterise probability distributions, as we will see in the next sections.
+Before diving into learning algorithms, we explain why neural networks are suitable for parameterisation (conditional) probabilistic distributions. In the context of this thesis we abstract neural networks as flexible parametric functions that maps an input space $\mathcal{X}$ to an output space $\mathcal{Y}$ as a differentiable function $f_{\bm{\theta}}: \mathcal{X} \rightarrow \mathcal{Y}$ of its parameters $\bm{\theta}$. Although neural networks are universal function approximators, the parameterisation of a probability distribution is challenging and requires the right architectural choice. We often present neural networks as deterministic models; however, many strategies exist to parameterise probability distributions, as we will see in the next sections.
 
 Normalizing flows are neural networks that directly parameterise the probability distribution but require strong architectural constraints, as we will see later. This is particularly inconvenient when working with structured data (e.g. images, sound, graphs, etc.) because specialised architectures (e.g. convolutions) do not directly satisfy the architectural constraints. Another possibility is to use a neural network to parameterise a known distribution such as a Gaussian. For example, we can model $P(Y|X)$ as a multivariate Gaussian $\mathcal{N}(\bm{\mu}, \Sigma)$ where a free-form neural network (e.g. with convolutions) computes the mean vector and covariance matrix as a parametric function of the input $X$. This strategy makes a strong assumption on the conditional distribution of $Y$ given $X$, which is sometimes realistic but mostly inaccurate when $X$ is an empty vector and when our goal is to model the marginal over a subject of interest $Y$ (e.g. a dataset of images). In this latter case, autoregressive models factorise the distribution and apply the same strategy to create an effective parameterisation, as we will see in \Cref{subsec:AM}. The most natural parameterisation of continuous distributions with neural networks is to use a random vector as input and train the neural networks to generate samples similar to the training set. These implicit models allow us to use complex architectures well suited to the modelling task but require specialised training algorithms, as we will see in the following sections.
 
@@ -464,6 +494,72 @@ It is interesting to note that back in 2010, \citet{vincent2011connection} sugge
 Diffusion models encompass deep generative models that are all connected by the idea of corrupting structured data into noise and learning a model that reverses the corruption process. We distinguish two sub-classes of diffusion models: 1) Continuous-time models \citep{song_generative_2019, song2020score} that formalise the diffusion and generative process as stochastic differential equations and learn the model with denoising score-matching; 2) Discrete-time models dubbed \textit{denoising diffusion probabilistic models}~\citep[DDPM][]{sohl-dickstein_deep_2015, ho_denoising_2020} that fix the number of corruption steps as a hyperparameter of the model and use variational inference to derive a bound on the model's likelihood. We first provide a thorough description of discrete-time models and then discuss intuitively continuous-time. We encourage the reader interested in continuous-time models to look at the following papers for more information: \citep{song_generative_2019, song2020score, song2021maximum, dockhorn2021score}.
 
 \paragraph{Discrete-time diffusion.}
+\begin{figure*}
+    \centering
+    \begin{subfigure}{.75\textwidth}
+  \centering
+  \begin{tikzpicture}[
+    node distance=.1cm and 1.cm,
+    mynode/.style={draw, circle, text width=.7cm, align=center},
+    simple/.style={align=center}
+]
+\node[mynode] (b) at (0, 0) {$Y_{T}$};
+\node[simple, right=of b] (c) {$\dots$};
+\node[simple, right=of b] (c) {$\dots$};
+\node[mynode, right=of c] (d) {$Y_{t}$};
+\node[mynode, right=of d] (e) {$Y_{t-1}$};
+\node[simple, right=of e] (f) {$\dots$};
+\node[mynode, right=of f] (g) {$Y$};
+
+\node[simple, above=of b]  (Y_T) {$\mathcal{N}(\mathbf{0}, I)$};
+\node[simple, above=of e]  (Z) {$P_{\bm{\theta}}(Y_{t-1}|Y_{t})$};
+\node[simple, above=of g]  (Z) {$\approx P(Y)$};
+
+
+\path (b) edge[-latex] (c);
+\path (c) edge[-latex] (d);
+\path (d) edge[-latex] (e);
+\path (e) edge[-latex] (f);
+\path (f) edge[-latex] (g);
+
+\end{tikzpicture}
+  \caption{}
+  \label{}
+\end{subfigure}
+
+\vspace{2em}
+
+\begin{subfigure}{.75\textwidth}
+  \centering
+  \begin{tikzpicture}[
+    node distance=.1cm and 1.cm,
+    mynode/.style={draw, circle, text width=.7cm, align=center},
+    simple/.style={align=center}
+]
+\node[mynode] (b)  at (0, 0) {$Y_{T}$};
+\node[simple, right=of b] (c) {$\dots$};
+\node[mynode, right=of c] (d) {$Y_{t}$};
+\node[mynode, right=of d] (e) {$Y_{t-1}$};
+\node[simple, right=of e] (f) {$\dots$};
+\node[mynode, right=of f] (g) {$Y$};
+
+
+\node[simple, below=of d]  (Y_T) {$Q(Y_{t}|Y_{t-1})$};
+\node[simple, below=of g]  (Z) {$P(Y)$};
+\node[simple, below=of b]  (Z) {$\approx \mathcal{N}(\mathbf{0}, I)$};
+
+\path (b) edge[latex-] (c);
+\path (c) edge[latex-] (d);
+\path (d) edge[latex-] (e);
+\path (e) edge[latex-] (f);
+\path (f) edge[latex-] (g);
+
+\end{tikzpicture}
+\caption{}
+\label{}
+\end{subfigure}
+\caption{The description of a discrete-time diffusion with Bayesian networks, more precisely Markov chains. \textbf{(a)} The reverse (generative) process samples an initial state from a normal distribution and generates observations $Y$ by transiting between states with the learned conditional distribution $P_{\bm{\theta}}(Y_{t-1}|Y_{t})$. \textbf{(b)} The diffusion process progressively corrupts observations from the dataset $Y \sim P(Y)$ with a prescribed corruption kernel $Q(Y_{t}|Y_{t-1})$ that eventually converge to noise.}
+\end{figure*}
 Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs. \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis and achieved results close to the state-of-the-art on this task.
 DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information.
 Formally, the reverse process is a latent variable model of the form
@@ -476,7 +572,7 @@ where $\mathbf{y}_0:=\mathbf{y} \in \mathbb{R}^d$ denotes the observations and $
 We want to estimate the parameters of the generative (reverse) process with maximum likelihood estimation. However, we do not have access to the likelihood function $P_{\bm{\theta}}(Y=\mathbf{y})$ explicitly but only to the joint distribution between the observation and the latent variables $P_{\bm{\theta}}(\mathbf{y}_{0:T})$. This is exactly the setting that motivated us to discuss and derive the $\operatorname{ELBO}$ in \Cref{eq:elbo}.
 Here, the approximate posterior $Q(\mathbf{y}_{1:T}|\mathbf{y}_0)$ is a diffusion process that is also a first order Markov chain with Gaussian transitions,
 \begin{align}
-    &Q(\mathbf{y}_{1:T}|\mathbf{y}_0) := \prod^T_{t=1} q(\mathbf{y}_{t}|\mathbf{y}_{t-1}),\\
+    &Q(\mathbf{y}_{1:T}|\mathbf{y}_0) := \prod^T_{t=1} Q(\mathbf{y}_{t}|\mathbf{y}_{t-1}),\\
     &Q(\mathbf{y}_{t}|\mathbf{y}_{t-1}) := \mathcal{N}(\sqrt{1-\beta_t} \mathbf{y}_{t-1}, \beta_t \text{I}),
 \end{align}
 where $\beta_1, \hdots, \beta_T$ are the variance schedule that is either fixed as training hyper-parameters or learned.
@@ -498,7 +594,7 @@ In addition, \citet{ho_denoising_2020} empirically demonstrate that it is suffic
 where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(\mathbf{y}_{t-1}|\mathbf{y}_{0}, \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$. We refer the reader to \citet{ho_denoising_2020} for the detailed derivation of the simplified loss function.
 \textcolor{red}{Add a markov chain that describes DDPM.}
 
-\paragraph{Continuous-time diffusion}
+\paragraph{Continuous-time diffusion.}
 Denoising score matching and DDPM rest on perturbing data at multiple noise scales. Continuous-time diffusion generalises this idea to an infinite number of noise scales corresponding to formulating the forward and reverse processes as stochastic differential equations (SDE). \citet{song2020score} formally describe the diffusion process as the solution to an It{\^o} SDE:
 \begin{align}
   \text{d}\bm{y} = \bm{f}(\bm{y}, t) \text{d}t + g(t) \text{d}\bm{w}, \label{eq:continuous_diffusion}
@@ -560,6 +656,47 @@ The tractability of the likelihood function has a price. Discrete NFs require st
 A simpler solution is to formulate the generative process as a stochastic mapping between low dimensional latent variables to observations instead and use NFs to model conditional distributions. These models are called variational auto-encoders and are covered below.
 
 \subsection{Variational auto-encoders}
+\begin{figure*}
+    \centering
+    \begin{subfigure}{.45\textwidth}
+  \centering
+  \begin{tikzpicture}[
+    node distance=.1cm and 1.cm,
+    mynode/.style={draw, circle, text width=.4cm, align=center},
+  simple/.style={text width=2cm,align=center}
+]
+\node[mynode] (x1) {$Y$};
+\node[mynode, left=of x1] (z1) {$Z$};
+\node[simple, above=of x1]  (Y_Z) {$P_{\mathbf{\theta}}(Y\mid Z)$};
+\node[simple, above=of z1]  (Z) {$P(Z)$};
+
+\path (z1) edge[-latex] (x1);
+
+\end{tikzpicture}
+  \caption{}
+  \label{}
+\end{subfigure}
+\begin{subfigure}{.45\textwidth}
+\centering
+\begin{tikzpicture}[
+node distance=.1cm and 1.cm,
+mynode/.style={draw, circle, text width=.4cm, align=center},
+simple/.style={text width=2cm,align=center}
+]
+\node[mynode] (x1) {$Y$};
+\node[mynode, left=of x1] (z1) {$Z$};
+\node[simple, above=of x1]  (Y_Z) {$P(Y)$};
+\node[simple, above=of z1]  (Z) {$Q_{\bm{\psi}}(Z\mid Y)$};
+
+\path (x1) edge[-latex] (z1);
+
+\end{tikzpicture}
+\caption{}
+\label{}
+\end{subfigure}
+\caption{The description of a variational auto-encoder with Bayesian networks. \textbf{(a)} The decoding process samples the latent variables from $P(Z)$ and generates observations $Y$ by sampling conditionaly from $P_{\mathbf{\theta}}(Y\mid Z)$. \textbf{(b)} The encoding process takes an observation from the dataset $Y \sim P(Y)$ and computes the approximate posterior $Q_{\bm \psi}(Z\mid Y)$ corresponding to the model in \textbf{(a)}.}
+\end{figure*}
+
 We have already discussed some generative models based on latent variables with diffusion models. The main difference here is to not assume a prescribed mapping from the observations $Y$ to the latent $Z$. Instead a variational auto-encoder~\citep[VAE, ][]{kingma_auto-encoding_2013} trains jointly an encoder network that models the posterior distribution $Q_{\bm \psi}(Z\mid Y) \approx P(Z\mid Y) $ and a decoder network that parameterizes the stochastic mapping $P_{\bm \theta}(Y\mid Z)$ from latent variables to observations. This allows us to embed good inductive bias in the decoder that generates observations from latent variables. A good example is the NVAE~\citep{vahdat_nvae_2020} that formulates this mapping hierarchically for images, using different latent variables to describe the high-level and low-level structure of the image.
 
 Formally, we want to learn a generative model of an unknown distribution $P(Y)$ given a dataset $\mathcal{D} \triangleq \{\mathbf{y}^i\}^N_{i=1}$ of $N$ i.i.d observations $\mathbf{y}^i \sim P(Y)$ sampled from this unknown distribution.
@@ -582,13 +719,26 @@ The $\operatorname{ELBO}$ becomes tighter as the approximate posterior $Q_{\bm \
 Learning the generative model is finally performed by jointly optimising the parameters $\mathbf{\theta}$ of the decoder and ${\bm \psi}$ of the approximate posterior via stochastic gradient ascent.
 In the original VAE, the encoder models the approximate posterior as a conditional multivariate Gaussian distribution $\mathcal{N}(\mu_{\bm \psi}(\mathbf{y}), \diag(\sigma_{\bm\psi}^2(\mathbf{y})))$.
 
-In practice, the good optimisation of VAEs depends on the ability of the encoder $Q_{\bm \psi}(Z|Y)$ to approximate the posterior well at all possible observations $Y$. This also implies that marginalizing out $Y$ - $Q(Z) \triangleq \frac{1}{N}\sum_{\bm{y}_i \in \mathcal{D}} Q_{\bm \psi}(Z|Y)$ - should closely match the prior distribution $P(Z)$ which is often difficult. A strategy is to make both the posterior and prior distribution generic by parameterising them with normalizing flows.
+In practice, the good optimisation of VAEs depends on the ability of the encoder $Q_{\bm \psi}(Z|Y)$ to approximate the posterior well at all possible observations $Y$. This also implies that marginalizing out $Y$ from the encoder - i.e. $Q(Z) \triangleq \frac{1}{N}\sum_{\bm{y}_i \in \mathcal{D}} Q_{\bm \psi}(Z|Y)$ - should closely match the prior distribution $P(Z)$ which is often difficult. A strategy is to make both the posterior and prior distribution generic by parameterising them with normalizing flows.
 \subsection{Discussion}
+As we have seen the separation between two classes of models is sometimes blurry. NFs and autoregressive models have more in common than differences. Similarly, the only difference between a classical VAE and a diffusion model is on the parameterization of the approximate posterior distribution. Moreover diffusion models ends up achieving the exact same goal as a NF, it maps a noise distribution to the data distribution with an invertible transformation. Energy based models are slighlty more original in contrast but most of the algorithms relevant to unnormalized models end up being also interesting for other models such as continuous diffusion models.
+
+- Say there exist many variations of these algorithms (e.g. hierarchical vae, implicit diffuion, ...).
 
 \section{The multiple definitions of hybrid modelling}
+- hybrid modelling can be combining discrete and continuous variables. This is not something we consider in  this thesis.
+- We instead consider hybrid learning as fitting a simple class of models, e.g. a parametetric relationship between some interpretable latent variables and the observations, together with a deep probablistic models that can correct for the misspecification of small models.
 
 \section{Chalenges and opportunities}
+We have now presented the main deep probablistic models. All these models offer different balance between simplicity, tractability and expressivity. Some models, such as diffusion and energy-based models, define the probablistic model implicitly and even involve sampling algorithms to express the modelled distribution. For others, such as NFs and autoregressive models, the distribution is modeled explicitly - we can access the model's likelihood. Sampling these models is not always computationally efficient but is a deterministic procedures that does not depend on any hyperparameters in contract to diffusion and energy-based models. Finally, VAEs offer a nice balance between expressivity and tractability. Although the model's likelihood is only approximated via the ELBO, these models are usually easy to sample from.
 
+We also contrast the graphical and deep models. Graphical models embed hard prescribed knowledge into the structure whereas deep models mostly rely on soft constraints present in inductive bias of the neural networks' architecture and training algorithm. Our goal in this thesis is to contribute to more efficient deep probablistic models. In the first three chapters, we focus on the expressivity of VAEs and NFs. Drawing connections between NFs and Bayesian networks allows us to
+
+Say that:
+- Drawing connections between different classes of model is important as it allows to betteer understand different aspects of the algorithms.
+  This is very important as these models are complex and better understanding allow to make the right design choice.
+- We want to also argue that composisionality of models is very important. This is how modelling was done historically and it has achieved great success. By drawing connection between models we allow this more naturally. But we also want to push that further by combining strong deterministic models with deep probabilistic models.
+- This is key to achieve good models. Models that are aligned with previously accepeted theories, models that generalize outside from the simple training distributions, models that are trained efficiently because they rely on a useful inductive bias.
 \section{Summary}
 
 \textcolor{red}{Add a schematic view of how different models are related to each others and where we made the connections/contributions}
