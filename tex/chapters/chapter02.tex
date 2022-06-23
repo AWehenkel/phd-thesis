@@ -466,25 +466,33 @@ We can train convolutional autoregressive models efficiently by maximising their
 
 \textcolor{red}{Add an image that describes the sampling procedure of autoregressive nets.}
 \subsection{Energy based models}
-\begin{figure}
+\begin{figure*}
   \centering
-  \includegraphics[width=.85\textwidth]{figures/chapter02/energy-landscape.png}
-  \caption{The energy landscape of a 2D distributions that has two modes.}
-  \label{}
-\end{figure}
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/chapter02/energy-landscape.pdf}
+    \caption{}
+    \label{fig:Energy}
+  \end{subfigure}
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{figures/chapter02/pdf-landscape.pdf}
+    \caption{}
+    \label{fig:pdf}
+  \end{subfigure}
+  \caption{The energy landscape of a 2D bi-modal distribution (\textbf{a}) and the corresponding probability density function (\textbf{b}).}
+\end{figure*}
 We have already encountered the term energy when discussing Gibbs distribution as parameterisation of Markov networks. An energy-based model (EBMs)  defines a parametric Gibbs distribution as
 \begin{align}
   P_{\bm{\theta}}(Y=\bm{y}) = \frac{1}{Z(\bm{\theta})} e^{-E_{\bm{\theta}}(\bm{y})},
 \end{align}
-where $E_{\bm{\theta}}(\cdot): \mathcal{Y}\rightarrow \mathbb{R}$ is dubbed energy function and $Z(\bm{\theta})$ is called the partition function.
+where $E_{\bm{\theta}}(\cdot): \mathcal{Y}\rightarrow \mathbb{R}$ is dubbed energy function and $Z(\bm{\theta})$ is called the partition function. For example, the \Cref{fig:Energy} shows the energy function of a 2D distribution with two modes, the integral over the suppose is not equal to $1$ but the energy is proportional to .
 
 EBMs allow us to parameterise probability distributions with free-form neural networks taking values in $\mathbb{R}$. This is particularly appealing as it unlocks the use of any architecture in contrast to other deep probabilistic models. These models have the precious ability to combine the flexibility of neural networks with the architectural inductive bias critical to the greatest successes of deep learning. However, there is a price to pay in exchange. These models do not grant access to the likelihood function, and we must ellaborate innovative strategies to approximate MLE.
 
 We can directly compute the partition function in the discrete case. We can easily access the model's likelihood function and learn the model with MLE. In the continuous setting - $\mathcal{Y} \triangleq \mathbb{R}^d$, approximating the likelihood is the main challenge for learning EBMs. We review three strategies that enable us to learn continuous EBMs.
 
 The most natural strategy is to approximate the normalising factor with Monte Carlo estimation. However, this requires to sample from the energy-based model, which is not immediate either. A solution is to resort to sampling strategies that work with unnormalised distributions, such as MCMC techniques.
-
-\textcolor{red}{Add an image of the energy landscape of a 2d distribution.}
 
 \paragraph{Contrastive learning.}
 Strategies that avoid resorting to sampling exist. In particular, \citet{gutmann2012noise} proposed using contrastive learning to train the EBM and estimate the normalising constant jointly. The intuition is that if the energy function models correctly the training distribution, it should enable discriminating between noise and samples from the distribution. Indeed, let us consider a balanced binary classification problem where samples from class $0$ follow a known noise distribution $P_n$, and class $1$ is the training set. As long as the supports of the noise and the training distributions match, the Bayes optimal classifier is a function of the log ratio between the two densities. Then learning corresponds to minimising a cross-entropy loss of a classifier expressed as a function of the EBM. This strategy is sensitive to the distribution of the noise. In particular, it often leads to inaccurate estimation of the energy landscape in low-density regions of the noise distribution. We can roughly interpret generative adversarial networks (GANs) as some contrastive learning of an EBM where the noise distribution is the generator and evolves along with training. The discriminator implicitly defines the energy function. Similarly, \citet{grathwohl2019your} noticed that any classifier could be seen as an EBM. It is interesting to note that contrastive learning could be particularly well suited for transferring an explicit generative model to a new dataset with similar support.
