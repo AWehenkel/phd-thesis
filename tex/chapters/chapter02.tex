@@ -13,7 +13,6 @@
 
   The previous chapter established that modelling has played a major role in the progress of science and engineering.
   In this chapter, we argue that accounting for uncertainty is crucial for many, if not all, modelling tasks.
-  % The goal is to set an agreement between the author and the reader on the existing challenges and opportunities in probabilistic modelling.
   \\
   This chapter is on \textit{probabilistic modelling} and shall answer the following questions:
   \begin{enumerate}
@@ -22,7 +21,7 @@
     \item How can we use a probabilistic model?
     \item What are the technical challenges considered in this thesis?
   \end{enumerate}
-
+    For this purpose, we start by abstracting the concepts ruling probabilistic modelling and motivating the relevance of developing powerful tools in this context. We also present material to apprehend two classes of models relevant to this thesis, probabilistic graphical models and deep probabilistic models. Our discussion provides a high-level overview of these models and their different trade-offs.
 % This chapter concerns the definition of unsupervised learning with a brief review of classical methods.
 % Graphical models (in particular B-net are introduced here.)
 % It continues with a review of deep generative modelling, with a discussion between explicit and implicit generative modelling.
@@ -30,7 +29,7 @@
 % are discussed in more details in further chapters.
 \end{chapter_outline}
 
-\textcolor{red}{Clearly mention that deep generative models is a class of probabilistic model and so it is important to first clarify what are probabilistic models; why they are useful and why this is still q very qctive reserch area. (it might be simple to add this in the outline.)}
+% \textcolor{red}{Clearly mention that deep generative models is a class of probabilistic model and so it is important to first clarify what are probabilistic models; why they are useful and why this is still q very qctive reserch area. (it might be simple to add this in the outline.)}
 
 \section{Introduction}
 The invention of computers enabled the automatisation of many tasks historically accomplished by humans. One key ingredient of this revolution is the ability to let computers reason - to make an informed judgment based on logical arguments and observations. The set of hypotheses on which this logic builds is a \textit{model}. Both humans and machines rely on reasoning to perform tasks. As an example, let us consider that we want to choose a bottle of wine at the restaurant. We first need some hypotheses, e.g., - What kind of wine do people like at the table? Red or white? Strong or delicate? - What is the budget? - What are we going to eat tonight? - What is the wine list? Etc. Provided this model, we can make an informed choice: remove the wines that are too expensive or would unpleased someone at the table, and \textit{wine not} pick one of the remaining that goes well with tonight's dinner? More seriously, a scientist needs a model of the earth and its atmosphere to explain climate change. Youtube considers your videos historical and a model that relates watched videos to recommendations to suggest videos. In these contexts and many others, the model plays a central part. We want good models, ones that lead to proper judgment. One that leads to the right wine, one that fits the climate over the last centuries, one that makes you click on one of the suggested videos.
@@ -105,8 +104,8 @@ Learning as inference is sometimes criticised by practitioners who do not like t
 \paragraph{Machine learning = probabilistic modeling.}
 \begin{figure}
   \centering
-  \includegraphics{figures/chapter02/ch2_train_test_error.pdf}
-  \caption{This plot is taken from \citet{louppe2014understanding}. It shows the necessary trade-off between the model's complexity and generalization performance. As the model becomes more complex it starts overfitting the trainin data and the test performance decreases.}
+  \includegraphics[width=.5\textwidth]{figures/chapter02/ch2_train_test_error.pdf}
+  \caption{This plot is taken from \citet{louppe2014understanding}. It shows the necessary trade-off between the model's complexity and generalisation performance. As the model gets too complex, it starts overfitting the training data, decreasing test performance.}
   \label{fig:ch02:learning_curves}
 \end{figure}
 The attentive reader will notice that machine learning (ML) was only mentioned once until now, when discussing the bayesian and frequentist interpretations of probability.
@@ -467,6 +466,12 @@ We can train convolutional autoregressive models efficiently by maximising their
 
 \textcolor{red}{Add an image that describes the sampling procedure of autoregressive nets.}
 \subsection{Energy based models}
+\begin{figure}
+  \centering
+  \includegraphics[width=.5\textwidth]{figures/chapter02/energy-landscape.png}
+  \caption{The energy landscape of a 2D distributions that has two modes.}
+  \label{}
+\end{figure}
 We have already encountered the term energy when discussing Gibbs distribution as parameterisation of Markov networks. An energy-based model (EBMs)  defines a parametric Gibbs distribution as
 \begin{align}
   P_{\bm{\theta}}(Y=\bm{y}) = \frac{1}{Z(\bm{\theta})} e^{-E_{\bm{\theta}}(\bm{y})},
@@ -507,7 +512,8 @@ Diffusion models encompass deep generative models that are all connected by the 
   \begin{tikzpicture}[
     node distance=.1cm and 1.cm,
     mynode/.style={draw, circle, text width=.7cm, align=center},
-    simple/.style={align=center}
+    simple/.style={align=center},
+    simplebis/.style={align=center, text width=1.7cm},
 ]
 \node[mynode] (b) at (0, 0) {$Y_{T}$};
 \node[simple, right=of b] (c) {$\dots$};
@@ -517,7 +523,7 @@ Diffusion models encompass deep generative models that are all connected by the 
 \node[simple, right=of e] (f) {$\dots$};
 \node[mynode, right=of f] (g) {$Y$};
 
-\node[simple, above=of b]  (Y_T) {$\mathcal{N}(\mathbf{0}, I)$};
+\node[simplebis, above=of b]  (Y_T) {$\mathcal{N}(\mathbf{0}, I)$};
 \node[simple, above=of e]  (Z) {$P_{\bm{\theta}}(Y_{t-1}|Y_{t})$};
 \node[simple, above=of g]  (Z) {$\approx P(Y)$};
 
@@ -540,7 +546,8 @@ Diffusion models encompass deep generative models that are all connected by the 
   \begin{tikzpicture}[
     node distance=.1cm and 1.cm,
     mynode/.style={draw, circle, text width=.7cm, align=center},
-    simple/.style={align=center}
+    simple/.style={align=center},
+    simplebis/.style={align=center, text width=1.7cm},
 ]
 \node[mynode] (b)  at (0, 0) {$Y_{T}$};
 \node[simple, right=of b] (c) {$\dots$};
@@ -552,7 +559,7 @@ Diffusion models encompass deep generative models that are all connected by the 
 
 \node[simple, below=of d]  (Y_T) {$Q(Y_{t}|Y_{t-1})$};
 \node[simple, below=of g]  (Z) {$P(Y)$};
-\node[simple, below=of b]  (Z) {$\approx \mathcal{N}(\mathbf{0}, I)$};
+\node[simplebis, below=of b]  (Z) {$\approx \mathcal{N}(\mathbf{0}, I)$};
 
 \path (b) edge[latex-] (c);
 \path (c) edge[latex-] (d);
@@ -565,9 +572,10 @@ Diffusion models encompass deep generative models that are all connected by the 
 \label{}
 \end{subfigure}
 \caption{The description of a discrete-time diffusion with Bayesian networks, more precisely Markov chains. \textbf{(a)} The reverse (generative) process samples an initial state from a normal distribution and generates observations $Y$ by transiting between states with the learned conditional distribution $P_{\bm{\theta}}(Y_{t-1}|Y_{t})$. \textbf{(b)} The diffusion process progressively corrupts observations from the dataset $Y \sim P(Y)$ with a prescribed corruption kernel $Q(Y_{t}|Y_{t-1})$ that eventually converge to noise.}
+\label{fig:DDPM}
 \end{figure*}
-Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs. \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis and achieved results close to the state-of-the-art on this task.
-DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information.
+Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs. \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis and achieved results close to the state-of-the-art on this task. DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information. These processes takes the form of Markov chains as depicted in \Cref{fig:DDPM}.
+
 Formally, the reverse process is a latent variable model of the form
 $$P_{\bm{\theta}}(Y=\mathbf{y}) := \int P_{\bm{\theta}}(\mathbf{y}_{0:T}) d\mathbf{y}_{1:T},$$
 where $\mathbf{y}_0:=\mathbf{y} \in \mathbb{R}^d$ denotes the observations and $\mathbf{y}_1, \dots, \mathbf{y}_T$ denote latent variables of the same dimensionality as $\mathbf{y}$. The joint distribution $P_{\bm{\theta}}(\mathbf{y}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
@@ -598,7 +606,6 @@ In addition, \citet{ho_denoising_2020} empirically demonstrate that it is suffic
     L_\text{DDPM}(\mathbf{y}_0; \bm{\theta}) := \mathbb{E}_{t, \mathbf{y}_0, \mathbf{y}_t}\left[ \frac{1}{2\sigma^2_t}\lVert \mathbf{\mu}_{\bm{\theta}}(\mathbf{y}_t, t) - \tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)  \rVert^2\right],
 \end{align}
 where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(\mathbf{y}_{t-1}|\mathbf{y}_{0}, \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$. We refer the reader to \citet{ho_denoising_2020} for the detailed derivation of the simplified loss function.
-\textcolor{red}{Add a markov chain that describes DDPM.}
 
 \paragraph{Continuous-time diffusion.}
 Denoising score matching and DDPM rest on perturbing data at multiple noise scales. Continuous-time diffusion generalises this idea to an infinite number of noise scales corresponding to formulating the forward and reverse processes as stochastic differential equations (SDE). \citet{song2020score} formally describe the diffusion process as the solution to an It{\^o} SDE:
