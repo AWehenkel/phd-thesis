@@ -471,7 +471,7 @@ $$P_{\bm{\theta}}(Y=\mathbf{y}) := \int P_{\bm{\theta}}(\mathbf{y}_{0:T}) d\math
 where $\mathbf{y}_0:=\mathbf{y} \in \mathbb{R}^d$ denotes the observations and $\mathbf{y}_1, \dots, \mathbf{y}_T$ denote latent variables of the same dimensionality as $\mathbf{y}$. The joint distribution $P_{\bm{\theta}}(\mathbf{y}_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
 \begin{align}
     &P_{\bm{\theta}}(\mathbf{y}_{0:T}) := P_{\bm{\theta}}(\mathbf{y}_{T}) \prod^T_{t=1} P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_{t}),\\
-    & \text{where } P_{\bm{\theta}}(\mathbf{y}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}) \quad \text{ and } \quad P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_{t}) := \mathcal{N}(\mathbf{\mu_\phi}(\mathbf{y}_t, t), \sigma_t^2 \text{I}).
+    & \text{where } P_{\bm{\theta}}(\mathbf{y}_{T}) := \mathcal{N}(\mathbf{0}, \text{I}) \quad \text{ and } \quad P_{\bm{\theta}}(\mathbf{y}_{t-1}|\mathbf{y}_{t}) := \mathcal{N}(\mathbf{\mu_\psi}(\mathbf{y}_t, t), \sigma_t^2 \text{I}).
 \end{align}
 We want to estimate the parameters of the generative (reverse) process with maximum likelihood estimation. However, we do not have access to the likelihood function $P_{\bm{\theta}}(Y=\mathbf{y})$ explicitly but only to the joint distribution between the observation and the latent variables $P_{\bm{\theta}}(\mathbf{y}_{0:T})$. This is exactly the setting that motivated us to discuss and derive the $\operatorname{ELBO}$ in \Cref{eq:elbo}.
 Here, the approximate posterior $Q(\mathbf{y}_{1:T}|\mathbf{y}_0)$ is a diffusion process that is also a first order Markov chain with Gaussian transitions,
@@ -557,16 +557,32 @@ Remarkably, NFs are the only deep probabilistic model that explicitly provides a
 
 The tractability of the likelihood function has a price. Discrete NFs require strongly constraining the architecture used to parameterise the bijective transformations. This often leads to poor inductive bias and reduces these models' efficiency for some data modalities such as images. For continuous models, the principal cost is the potential complexity of solving the associated neural ODE and the difficulty of optimising NODE models. In general, the most fundamental issue of NFs is to enforce a latent space that has the same dimensionality as the data whereas it is often more reasonable to assume these data lie on a lower-dimensional manifold. People have worked at solving this issue, e.g., \citet{brehmer2020flows} introduced $\mathcal{M}\text{-flow}$ that learns a manifold and a density on it jointly; however these methods either requires a prescribed manifold, or they resort to adversarial optimization which cut down the simple training loop of classical NFs.
 
-A simpler solution is not to try to model the generation process with a flow directly, instead to formulate it as a latent process and use NFs to model conditional distributions. This leads us to the last class of algorihms that we will cover in this background, variational auto-encoders.
+A simpler solution is to formulate the generative process as a stochastic mapping between low dimensional latent variables to observations instead and use NFs to model conditional distributions. These models are called variational auto-encoders and are covered below.
 
 \subsection{Variational auto-encoders}
-- Simplified diffusion model with only one level of latent variables
+We have already discussed some generative models based on latent variables with diffusion models. The main difference here is to not assume a prescribed mapping from the observations $Y$ to the latent $Z$. Instead a variational auto-encoder~\citep[VAE, ][]{kingma_auto-encoding_2013} trains jointly an encoder network that models the posterior distribution $Q_{\bm \psi}(Z\mid Y) \approx P(Z\mid Y) $ and a decoder network that parameterizes the stochastic mapping $P_{\bm \theta}(Y\mid Z)$ from latent variables to observations. This allows us to embed good inductive bias in the decoder that generates observations from latent variables. A good example is the NVAE~\citep{vahdat_nvae_2020} that formulates this mapping hierarchically for images, using different latent variables to describe the high-level and low-level structure of the image.
 
-- ELBO formulation
+Formally, we want to learn a generative model of an unknown distribution $P(Y)$ given a dataset $\mathcal{D} \triangleq \{\mathbf{y}^i\}^N_{i=1}$ of $N$ i.i.d observations $\mathbf{y}^i \sim P(Y)$ sampled from this unknown distribution.
+The original VAE postulates a two-step generative process in which some unobserved variables $\mathbf{z} \in \mathbb{R}^h$ are first sampled from a prior distribution $P(Z)$ and then observations $\mathbf{y}$ are generated from a conditional distribution $P_{\mathbf{\theta}}(Y\mid Z=\mathbf{z})$. The generative process can be expressed mathematically as
+\begin{align}
+     \mathbf{z} \sim P(Z) \quad \text{and} \quad \mathbf{y} \sim P_{\mathbf{\theta}}(Y\mid Z=\mathbf{z}).
+\end{align}
+The prior $P(Z)$ is often an isotropic Gaussian while the likelihood $P_{\mathbf{\theta}}(X\mid Z=\mathbf{z})$ is parameterised with a neural network. The likelihood model decodes latent variables into observations and is thus usually referred to as the decoder in the literature. In its original formulation, the likelihood is parameterized with a multivariate Gaussian $\mathcal{N}\bigg(\mathbf{\mu_\theta}(\mathbf{z}), \diag\big(\sigma_\theta^2(\mathbf{z})\big)\bigg)$ when the domain $\mathcal{Y}$ is continuous, and a categorical distribution when it is discrete.
 
-- Practical considerations
+Training aims to find the parameters $\mathbf{\theta}$ of the decoder that maximize the sum of the marginal likelihoods of individual points, the MLE which optimises $$\log P_{\mathbf{\theta}}(Y)= \sum_{\mathbf{y}\in \mathcal{D}}\log \int P_{\mathbf{\theta}}(\mathbf{y}\mid \mathbf{z}) P(\mathbf{z}) \text{d}\mathbf{z}.$$
 
-- Parameterizing the prior and posterior functions.
+These integrals are intractable but we rely on variational inference again to approximate the MLE objective. The introduction of an encoder network that approximates the posterior distribution $Q_{\bm \psi}(Z\mid Y)$ allows maximizing the associated evidence lower bound
+\begin{align}
+    \operatorname{ELBO}(\bm{y}; \mathbf{\theta}, \mathbf{\psi})&:=\mathbb{E}_Q\left[\log \frac{P_{\mathbf{\theta}} (\mathbf{y}\mid \mathbf{z}) P(\mathbf{z})}{Q_\psi(\mathbf{z}\mid \mathbf{y})} \right]\label{eq:ELBO_VAE}\\
+    &=\log P_{\mathbf{\theta}}(\mathbf{y}) - \mathbb{KL}\left[Q_{\bm \psi}(Z\mid \mathbf{y})\Vert P_{\mathbf{\theta}} (Z\mid \mathbf{y})\right]\\
+    &\leq \log P_{\mathbf{\theta}}(\mathbf{x}).
+\end{align}
+
+The $\operatorname{ELBO}$ becomes tighter as the approximate posterior $Q_{\bm \psi}(\mathbf{z}|\mathbf{y})$ gets closer to the true posterior.
+Learning the generative model is finally performed by jointly optimising the parameters $\mathbf{\theta}$ of the decoder and ${\bm \psi}$ of the approximate posterior via stochastic gradient ascent.
+In the original VAE, the encoder models the approximate posterior as a conditional multivariate Gaussian distribution $\mathcal{N}(\mu_{\bm \psi}(\mathbf{y}), \diag(\sigma_{\bm\psi}^2(\mathbf{y})))$.
+
+In practice, the good optimisation of VAEs depends on the ability of the encoder $Q_{\bm \psi}(Z|Y)$ to approximate the posterior well at all possible observations $Y$. This also implies that marginalizing out $Y$ - $Q(Z) \triangleq \frac{1}{N}\sum_{\bm{y}_i \in \mathcal{D}} Q_{\bm \psi}(Z|Y)$ - should closely match the prior distribution $P(Z)$ which is often difficult. A strategy is to make both the posterior and prior distribution generic by parameterising them with normalizing flows.
 \subsection{Discussion}
 
 \section{The multiple definitions of hybrid modelling}
