@@ -190,7 +190,7 @@ If we do not make assumptions, probabilistic modelling becomes hopeless as the d
     \caption{Two Bayesian networks of a $4$D variable. (\textbf{a}) No independence. (\textbf{b}) A couple of independence, hence a reduced number of edges and of parameters.} \label{fig:BN-fig}
 \end{figure}
 
-A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a random vector taking values $X \in \mathcal{X}_1 \times \dots \times \mathcal{X}_d$ distributed under $P_{X}$. A BN for $X$ is a directed acyclic graph with one vertex for each random variable $X_i$ of $X$. In this network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{d-separation}. A BN is a valid representation of a random vector $X$ iff its probability distribution (continuous or discrete) factorizes as
+A Bayesian network is a directed acyclic graph (DAG) that represents independence assumptions between the components of a random vector. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a random vector taking values $X \in \mathcal{X}_1 \times \dots \times \mathcal{X}_d$ distributed under $P_{X}$. A BN for $X$ is a directed acyclic graph with one vertex for each random variable $X_i$ of $X$. In this network, the absence of edges models conditional independence between groups of components through the concept of d-separation~\citep{geiger_d-separation_1990}. A BN is a valid representation of a random vector $X$ iff its probability distribution (continuous or discrete) factorizes as
 \begin{align}
     P_{X}(X) = \prod^d_{i=1}P(X_i\mid \mathcal{P}_i),\label{eq:BN-fact}
 \end{align}
@@ -199,6 +199,24 @@ where  $\mathcal{P}_i = \{X_j: A_{i,j} = 1 \}$ denotes the set of parents of the
 \figref{fig:BN-fig} is a valid BN for any distribution over $X$ because it does not state any independence and leads to a factorisation that corresponds to the chain rule. However, in practice, we seek a sparse and valid BN which models most of the independence between the components of $X$, leading to an efficient factorisation of the modelled probability distribution. It is worth noting that making hypotheses on the graph structure is equivalent to assuming certain conditional independence between some of the vector's components.
 
 Understanding the independence assumptions underlying a DAG is key to appreciating BNs. For this purpose, d-separation describes rules to check if conditional independence holds in all distributions that factorise over a DAG. This algorithm is described in \Cref{alg:d-separation} and allows checking whether the topology is well suited to model a phenomenon of interest. In addition, it also enables characterising all (conditional) independencies that follow from a set of distinct independence assumptions. D-separation is \textit{sound}, it only detects existing independence. However, it is not \textit{complete} as it misses independence assumptions hidden in the parameterisation of conditional distributions. For example, the BN in \Cref{fig:BN-fig-a} can model any joint distribution for $X$; applying d-separation to this graph would reject all independence, even though the distribution modelled could contain independence.
+
+\begin{algorithm}
+\caption{D-separation.}\label{alg:d-separation}
+  \begin{algorithmic}
+    \Function{IsIndependent}{$X$, $Y$, $Z$, $G$}
+      \State \Comment{\small Return True iif $X \indep Y \mid Z$ is modelled by the Bayesian network with topology $G$.}
+      \For{$N \in Z$}
+        \State $P \gets \text{Parents}(Z)$ \Comment{Returns \textbf{directed} parents (v-structure if more than one)}
+        \For{$P_i, P_j \in P, \quad P_i \neq P_j$}
+          \State $G \gets \Call{AddUndirectedEdge}{P_i, P_j, G}$
+        \EndFor
+        \State $G \gets \Call{RemoveNode}{N, G}$
+      \EndFor
+      \State \Return{\Call{IsNotReachable}{$X$, $Y$, $G$}}
+    \EndFunction
+   \end{algorithmic}
+\end{algorithm}
+
 \subsubsection{Parameterization}
 The value of BNs is to reduce the description of a joint distribution to topology and a batch of $1$D conditional distributions. The topology is often prescribed by domain knowledge, while learning the conditional distributions from data is common. As mentioned earlier, learning aims at selecting (or weighting) within a class of models. A natural way to define a model class is to use parameters to describe the free parts of the model. For BNs, the free parts are usually only the conditional distributions as parameterising distributions is more straightforward and leads to simpler optimisation problems than graph structures. For discrete variables, we use categorical distributions, and each conditioning factor corresponds to distinct parameter values. Continuous variables offer many alternative parameterisations, e.g. the exponential family where parameters are a linear function of the conditioning factors. Gaussians with linear interactions are arguably one of the most popular parameterisations. These models, dubbed Gaussian Bayesian networks, were historically the only ones with an efficient training algorithm as they correspond to multivariate Gaussian distributions \citep{wermuth1980linear} for which closed-form MLE exists. In \Cref{ch:06}, we introduce normalizing flows as a more expressive parameterisation and use stochastic gradient descent to approach the MLE.
 \subsubsection{Inference}
