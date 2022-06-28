@@ -207,7 +207,7 @@ Understanding the independence assumptions underlying a DAG is key to appreciati
       \State \Comment{\small Return True iif $X \indep Y \mid Z$ is modelled by the Bayesian network with topology $G$.}
       \For{$N \in Z$}
         \State $P \gets \text{Parents}(Z)$ \Comment{Returns \textbf{directed} parents (v-structure if more than one)}
-        \For{$P_i, P_j \in P, \quad P_i \neq P_j$}
+        \For{$P_i \neq P_j \in P$}
           \State $G \gets \Call{AddUndirectedEdge}{P_i, P_j, G}$
         \EndFor
         \State $G \gets \Call{RemoveNode}{N, G}$
@@ -311,15 +311,17 @@ In parallel to these three generic formulations (\ref{eq:learn_BN},~\ref{eq:lear
 
 
 \subsubsection{Duality between directed graphs and distributions}
-I-map
+If a distribution $P$ factorises over a Bayesian network with graph $G$, we can use d-separation to check whether some conditional independence must hold. In this case, we say that the Bayesian network is an \textit{I-map} of the independence in $P$ - any independence expressed by the BN is present in $P$. However, we have also observed that any distribution factorises over the complete graph. Complete Bayesian networks are unsatisfactory as they do not reflect any independence assumptions necessary for manipulating the distribution efficiently.
 
-Perfect-map
+The goal is thus to find a sparse graph that is an $I-map$. In particular, we say that a graph $G$ is a \textit{minimal I-map} for a set of independencies if it is an I-map and if the removal of even a single edge ends the I-map property. We are generally only interested in BNs that are an I-map of the modelled distribution. However, \textit{minimal I-map} are not perfect because they can miss some independencies in $P$. A graph $G$ is a \textit{P-map} for a set of independencies $\mathcal{I}$ if the independence modelled by the graphs $\mathcal{I}_G$ are equal to $\mathcal{I}$ - that is, any independence modelled by $G$ is in $\mathcal{I}$, and all independencies in $\mathcal{I}$ are modelled by  $G$.
 
-Limitations
+Clearly, any P-map is a minimal I-map, and we are always chasing P-maps. Unfortunately, Bayesian networks are not universal P-maps. Some sets of independencies $\mathcal{I}$ are impossible to express faithfully with directed graphs. In such a case, either the graph misses some independence or expresses false independence. We will see that undirected graphs can represent faithfully such independencies but have other limitations and are not universal P-maps either.
 \subsubsection{Causality}
-- Causal interpretation
-- Usage
-- Sampling as a causal phenomenon
+It is natural to interpret the arrows in a BN as causal relationships between variables. This interpretation is dangerous as it is not necessarily correct. For example, two complete BNs with opposed arrows may express the same distribution but opposite causal relationships. However, suppose we draw a causal graph between random variables. In that case, a directed edge from $X$ to $Y$ means that the former causes the latter. The corresponding BN is an I-map of the distributions between the variables. Causal graphs can be interpreted as BNs.
+
+We can recycle algorithms and interpretation from BNs to causal graphs but not vice-versa. We can also try to understand some algorithms by assuming the BN is a valid causal graph. For example, causality implies that we shall first sample parents to generate the children and provides a natural interpretation of the ancestral sampling algorithm. As we will see in the next section, some (in)dependence assumptions about the distributions are fundamentally non-causal, which hints at why BNs are not universal P-maps.
+
+Causality has now become a significant sub-field of artificial intelligence and strongly impacts machine learning. Do-calculus \citep{pearl1994probabilistic} is a tool that allows inference with causal rather than probabilistic facts. Such reasoning patterns are necessary to answer counterfactual questions scientifically. In addition, causal assumptions prove the generalisation and robustness of some machine learning algorithms. This provides additional motivations for using directed graphs, hence BNs, to model distributions. As said, this also inevitably contradicts some (in)dependence assumptions we may want to formulate and motivate the following discussion about undirected representations.
 \subsection{Undirected graphical models - Markov networks}
 We have shown with Bayesian networks that graph structures can represent important properties of probability distributions and lead to many specialised algorithms for learning and inference. The duality between Bayesian and causal networks provides a simple procedure to constrain the structure of the networks when we have a causal understanding of the studied process. However, the duality also limits the representativeness of this structure, as shown in the following example. Let $X_1, X_2, X_3, X_4$ be four random variables related by the following independence statements: $\{ X_1 \indep X_3 \mid (X_2, X_4), X_2 \indep X_4 \mid (X_1, X_3)\}$. We observe that a Bayesian network cannot faithfully represent such independence statements. Indeed the assumptions impose that $X_2$ and $X_4$ d-separate $X_1$ and $X_3$ and vice versa. This imposes that the structure of the BN resembles \Cref{fig:MN-fig-b}. However, it is impossible to add directions to the edges without adding a cycle or a V-structure that would contradict at least one of the independence hypotheses.
 
