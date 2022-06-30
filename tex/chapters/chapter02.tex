@@ -620,8 +620,8 @@ We first provide a thorough description of discrete-time models and then discuss
 Inspired by non-equilibrium statistical physics, \citet{sohl-dickstein_deep_2015} originally introduced DDPMs. \citet{ho_denoising_2020}  demonstrated only more recently how to train these models for image synthesis and achieved results close to the state-of-the-art on this task. DDPMs formulate generative modelling as the reverse operation of diffusion, a physical process which progressively destroys information. These processes takes the form of Markov chains as depicted in \Cref{fig:DDPM}.
 
 Formally, the reverse process is a latent variable model of the form
-$$P_{\bm{\theta}}(Y=\mathbf{y}) := \int P_{\bm{\theta}}(Y_{0:T} \mathbf{y}_{0:T}) d\mathbf{y}_{1:T},$$
-where $Y_0:=Y$ takes value in $\mathcal{Y} \triangleq \in \mathbb{R}^d$ and denotes the observations. The latent variables $Y_1, \dots, Y_T$ have the same dimensionality as $Y$. The joint distribution $P_{\bm{\theta}}(Y_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
+$$P_{\bm{\theta}}(Y=\mathbf{y}) := \int P_{\bm{\theta}}(Y_{0:T} = \mathbf{y}_{0:T}) d\mathbf{y}_{1:T},$$
+where $Y_0:=Y$ takes value in $\mathcal{Y} \triangleq \mathbb{R}^d$ and denotes the observations. The latent variables $Y_1, \dots, Y_T$ have the same dimensionality as $Y$. The joint distribution $P_{\bm{\theta}}(Y_{0:T})$ is modelled as a first order Markov chain with Gaussian transitions, that is
 \begin{align}
     &P_{\bm{\theta}}(Y_{0:T}) := P_{\bm{\theta}}(Y_{T}) \prod^T_{t=1} P_{\bm{\theta}}(Y_{t-1}|Y_{t}),\\
     & \text{where } P_{\bm{\theta}}(Y_{T}) := \mathcal{N}(\mathbf{0}, \text{I}) \quad \text{ and } \quad P_{\bm{\theta}}(Y_{t-1}|Y_{t}) := \mathcal{N}(\mathbf{\mu_\psi}(Y_t, t), \sigma_t^2 \text{I}).
@@ -635,20 +635,20 @@ Here, the approximate posterior $Q(Y_{1:T}|Y_0)$ is a diffusion process that is 
 where $\beta_1, \hdots, \beta_T$ are the variance schedule that is either fixed as training hyper-parameters or learned.
 The $\operatorname{ELBO}$ is then given by
 \begin{align}
-    \operatorname{ELBO} := \mathbb{E}_Q\left[ \log \frac{P_{\bm{\theta}}(\mathbf{y_{0:T}})}{Q(\mathbf{y_{1:T}}|\mathbf{x_0})} \right] \leq \log P_{\bm{\theta}}(Y_0). \label{eq:ELBO_DDPM}
+    \operatorname{ELBO} := \mathbb{E}_Q\left[ \log \frac{P_{\bm{\theta}}(Y_{0:T})}{Q(Y_{1:T}|Y_0)} \right] \leq \log P_{\bm{\theta}}(Y_0). \label{eq:ELBO_DDPM}
 \end{align}
 
 Provided that the variance schedule $\beta_t$ is small and that the number of timesteps $T$ is large enough, the Gaussian assumptions on the generative process $P_{\bm{\theta}}$ are reasonable. \citet{ho_denoising_2020} take advantage of the Gaussian transitions to express the $\operatorname{ELBO}$ as
 \begin{align}
-        \mathbb{E}_Q \biggl[& \mathbb{KL}\left[Q(Y_T|\mathbf{y}_0)\Vert p(Y_T)\right] - \log P_{\bm{\theta}}(Y_0|Y_1) + \sum_{t=2}^T \mathbb{KL}\left[Q(Y_{t-1}|Y_t, Y_0)\Vert P_{\bm{\theta}}(Y_{t-1}|Y_t)\right]
+        \mathbb{E}_Q \biggl[& \mathbb{KL}\left[Q(Y_T|Y_0)\Vert P_{\bm{\theta}}(Y_T)\right] - \log P_{\bm{\theta}}(Y_0|Y_1) + \sum_{t=2}^T \mathbb{KL}\left[Q(Y_{t-1}|Y_t, Y_0)\Vert P_{\bm{\theta}}(Y_{t-1}|Y_t)\right]
      \biggr]. \label{eq:simple_DDPM_ELBO}
 \end{align}
-The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $P_{\bm{\theta}}(Y_{t-1}|\mathbf{y}_t)$ and the conditional forward posterior $Q(Y_{t-1}|Y_t, Y_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(Y_0, Y_t), \tilde{\beta}_t \text{I})$, where $\tilde{\mu}_t$ and $\tilde{\beta}_t$ depends on the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
+The inner sum in \Cref{eq:simple_DDPM_ELBO} is made of comparisons between the Gaussian generative transitions $P_{\bm{\theta}}(Y_{t-1}|Y_t)$ and the conditional forward posterior $Q(Y_{t-1}|Y_t, Y_0)$ which can also be expressed in closed form as Gaussians $\mathcal{N}(\tilde{\mu}_t(Y_0, Y_t), \tilde{\beta}_t \text{I})$, where $\tilde{\mu}_t$ and $\tilde{\beta}_t$ depends on the variance schedule. The KL can thus be calculated with closed form expressions which reduces the variance of the final expression.
 In addition, \citet{ho_denoising_2020} empirically demonstrate that it is sufficient to take optimisation steps on uniformly sampled terms of the sum instead of computing it completely. The final objective resembles denoising score matching over multiple noise levels \citep{vincent2011connection}. These observations, combined with additional simplifications, lead to a simplified loss
 \begin{align}
-    L_\text{DDPM}(\mathbf{y}_0; \bm{\theta}) := \mathbb{E}_{t, \mathbf{y}_t \mid Y_0 = \mathbf{y}_0}\left[ \frac{1}{2\sigma^2_t}\lVert \mathbf{\mu}_{\bm{\theta}}(Y_t=\mathbf{y}_t, t) - \tilde{\mu}_t(Y_0=\mathbf{y}_0, Y_t=\mathbf{y}_t)  \rVert^2\right],
+    L_\text{DDPM}(Y_0; \bm{\theta}) := \mathbb{E}_{t, \mathbf{y}_t \mid Y_0 = \mathbf{y}_0}\left[ \frac{1}{2\sigma^2_t}\lVert \mathbf{\mu}_{\bm{\theta}}(Y_t=\mathbf{y}_t, t) - \tilde{\mu}_t(Y_0=\mathbf{y}_0, Y_t=\mathbf{y}_t)  \rVert^2\right],
 \end{align}
-where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(\mathbf{y}_{t-1}|\mathbf{y}_{0}, \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$. We refer the reader to \citet{ho_denoising_2020} for the detailed derivation of the simplified loss function.
+where $\tilde{\mu}_t(\mathbf{y}_0, \mathbf{y}_t)$ is the mean of $Q(Y_{t-1} = \mathbf{y}_{t-1}|Y_0 = \mathbf{y}_{0}, Y_t = \mathbf{y}_{t})$, the forward diffusion posterior conditioned on the observation $\mathbf{y}_{0}$. We refer the reader to \citet{ho_denoising_2020} for the detailed derivation of the simplified loss function.
 
 \paragraph{Continuous-time diffusion.}
 Denoising score matching and DDPM rest on perturbing data at multiple noise scales. Continuous-time diffusion generalises this idea to an infinite number of noise scales corresponding to formulating the forward and reverse processes as stochastic differential equations (SDE). \citet{song2020score} formally describe the diffusion process as the solution to an It{\^o} SDE:
@@ -658,7 +658,7 @@ Denoising score matching and DDPM rest on perturbing data at multiple noise scal
 where $\bm{w}$ is the standard Wiener process (a.k.a., Brownian motion), $\bm{f}(\cdot, t): \mathbb{R}^d \rightarrow \mathbb{R}^d$ is a vector-valued function called the drift coefficient of $\bm{y}(t)$, and $g(\cdot): \mathbb{R} \rightarrow \mathbb{R}$ is a scalar function known as
 the diffusion coefficient of $\bm{y}(t)$.
 
-In this formulation, $\bm{y}(\cdot): \mathbb{R} \rightarrow \mathbb{R}^d$ becomes a function of time where initial states $\bm{y}(0)$ are provided by the training samples. We design the drift and diffusion coefficients to enforce a known noise distribution $p_T$ (e.g., $p_T = \mathcal{N}(\bm 0, I)$) after running the SDE from $t=0$ to $t=T$. We can then generate artificial samples from $P_0 = P(Y)$ by sampling an initial state $\bm{y}_T \sim p_T$ and running the reverse SDE defined by \citet{anderson1982reverse} as
+In this formulation, $\bm{y}(\cdot): \mathbb{R} \rightarrow \mathbb{R}^d$ becomes a function of time where initial states $\bm{y}(0)$ are provided by the training samples. We design the drift and diffusion coefficients to enforce a known noise distribution $P_T$ (e.g., $P_T = \mathcal{N}(\bm 0, I)$) after running the SDE from $t=0$ to $t=T$. We can then generate artificial samples from $P_0 = P(Y)$ by sampling an initial state $\bm{y}_T \sim P_T$ and running the reverse SDE defined by \citet{anderson1982reverse} as
 \begin{align}
   \text{d}\bm{y} = \left[ \bm{f}(\bm{y}, t) \text{d}t - g(t)^2 \nabla_Y \log P_t(Y=\bm{y}) \right] \text{d}t + g(t) \text{d}\bm{w},\label{eq:continuous_reverse_diffusion}
 \end{align}
