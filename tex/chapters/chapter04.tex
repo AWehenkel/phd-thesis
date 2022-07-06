@@ -27,16 +27,11 @@ The reader may skip section 2 which presents normalizing flows and Bayesian netw
 
 \section{Epilogue}
 \subsection{Scientific impact}
-\begin{figure}
-  \includegraphics[width=.2\textwidth]{figures/impact_scholar/You_say_I_see.png}
-  \caption{}
-  \label{}
-\end{figure}
-
 After the publication of this short article, the idea of combining NFs and BNs has led to Graphical Normalizing Flows, which are later presented in \Cref{ch:06}. At the same workshop, \citet{khemakhem_causal_2020} presented connections between autoregressive NFs and causal networks, sub-class of BNs featured with causal interpretation. Subsequent work has also focused on combining probabilistic graphical models with normalizing flows such as \citet{mouton2022graphical, mouton2022siren}.
 
 We regret that our work has not gained more attention from practitioners who use affine normalizing flows. Indeed, it is still widespread to encounter publications that stack tens of NF steps (e.g., \citep{daxamortized}). This still happens, although other work reached the same conclusion regarding the number of steps in affine NFs. In particular, \citet{koehler2021representational} shows that three steps of affine coupling flows are sufficient to express any distribution on $\mathbb{R}^d$. On the one hand, this result aligns with ours, which says stacking more than three steps does not increase the expressivity of an NF.
 On the other hand, it also contradicts our statement about the non-universality of affine flows. We explain this by observing that \citet{koehler2021representational} allows degenerate flows, flows for which the Jacobian explodes or shrinks, which corresponds to non-invertibility and is discarded in our discussion. Indeed, \citet{behrmann2021understanding} also shows that exploding Jacobians can cause numerical instabilities with the training and sampling of NFs.
 
+As of July 2022, this article has received 8 citations according to Google Scholar since its publication in July 2019.
 \subsection{Conclusion and opportunities}
 It is now clear that stacking more than three steps does not increase the expressivity of the class of models. However, it is unclear whether the training of flows gets simpler or more demanding by stacking steps, potentially more than three. Indeed the log-likelihood of a flow directly uses the Jacobian of each step; this may act as some skip connection in the gradient flow and potentially overcome potential gradient explosion or vanishing in deep neural networks with no skip connections. In the following chapter, we do not address this question; however, we introduce a new transformation that can significantly improve the expressivity of each normalizing flow step. This transformation allows us to reduce further the number of steps required and even achieves universal density approximation.
