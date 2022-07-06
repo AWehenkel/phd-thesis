@@ -1,26 +1,23 @@
 \chapter{Deep Latent Variables Generative Models}\label{ch:03}
 
-\begin{remark}{Outline}
-Among likelihood-based approaches for deep generative modelling, variational autoencoders (VAEs) offer scalable amortized posterior inference and fast sampling. However, VAEs are also more and more outperformed by competing models such as normalizing flows (NFs), deep-energy models, or the new denoising diffusion probabilistic models (DDPMs).
-In this preliminary work, we improve VAEs by demonstrating how DDPMs can be used for modelling the prior distribution of the latent variables. The diffusion prior model improves upon Gaussian priors of classical VAEs and is competitive with NF-based priors.
-Finally, we hypothesize that hierarchical VAEs could similarly benefit from the enhanced capacity of diffusion priors.
-\end{remark}
+\begin{chapter_outline}
+  In this chapter, we demonstrate that distinct class of models can benefit from eachother properties. In particular, we study the complementary of variational autoencoders (VAEs) and denoising diffusion probabilistic models (DDPMs). VAEs offer scalable amortized posterior inference and fast sampling but are also more and more outperformed by competing models such as normalizing flows (NFs) or deep-energy models. We improve VAEs by modelling the prior distribution of the latent variables with a diffusion process. The diffusion prior model improves upon Gaussian priors of classical VAEs and is competitive with NF-based priors.
+  This contribution shows that connecting different classes of deep probabilistic models can unlock new modelling capacity and properties that are unreachable by each class of models independently.
+\end{chapter_outline}
 \section{Prologue}
-A word on the role of this part of the manuscript. Focus on the expressivity of deep probablistic models.
+The role of this chapter is to demonstrate, with a simple example, that different (deep) probabilistic models shall not be studied independently. Instead, building a broad understanding of all these models allows us to try an almost infinite set of combinations, each owning distinct properties. Each class of models has its own assets and limitations but combining two models together can help in reducing the weaknesses of the two classes of models while keeping their benefit. Here we focus on solving one limitation of classical VAEs with DDPMs.
 
-\subsection{Retrospective state of the art}
-
-\paragraph{Variational auto-encoder}
-
-\paragraph{Diffusion models}
+We must acknowledge that the simplicity of combining probabilistic models stems from the unified framework used to train neural networks. Indeed, it is nowadays very natural to parameterize probabilistic models with neural networks. In these cases, models share a unique training procedure based on stochastic gradient descent. This allows the joint optimization of all components of a `super` model composed of distinct types of DPMs as long as we can express the final objective as a function of these models.
 
 \section{The paper: Diffusion Priors In Variational Autoencoders}
 
 \subsection{Author contributions}
+The paper is co-authored by me and Gilles Louppe. As the leading author, I developed the connections between diffusion models and variational autoencoders, made the experiments, and wrote the paper. In particular, I derived the ELBO associated to the denoising diffusion priors in VAES. Gilles Louppe supervised me throughout this project, offered suggestions and helped in writing the paper.
 
 \subsection{Reading tips}
+The reader may skip section 2 which presents VAEs and DDPMs already introduced the background chapter. We also encourage the reader to first focus on understanding the relationship between Figure~1 and coupling layers presented in section~3.2. The reader can then focus on understanding section~3.3 which provides the ground for the rest of the paper.
 
-\subsection{Minor corrections}
+% \subsection{Minor corrections}
 
 \includepdf[pages=-]{papers/innf_latent_diffusion.pdf}
 
@@ -43,7 +40,8 @@ A word on the role of this part of the manuscript. Focus on the expressivity of 
   \caption{Tweets advertising (\textbf{a}) The continuous-time diffusion models in the latent space from \citet{vahdat2021score} (\textbf{b}) The discrete-time diffusion models in the latent space from ours.}
 \end{figure*}
 
-As of July 2022, this article has received 5 citations according to Google Scholar since its publication in June 2021. We shall contrast this number with the 48 citations received by \citet{vahdat2021score} which was published in December 2021, at NeurIPS 2021 and was first released as a pre-print on Arxiv, in June 2021. Although the ideas expressed in the two papers are very similar, our work did not gain as much visibility as theirs. We acknowledge at least three fair reasons to explain this. First, publishing at NeurIPS brings much more visibility than at a workshop at ICML. This is natural as the reviewing process of NeurIPS is much stronger. Second, \citet{vahdat2021score} achieve state-of-the-art image synthesis by combining their idea with the right neural architectures, training tricks and computation power. In contrast, our work is a proof of concept and does not achieve state-of-the-art performance. In this regard, our work is preliminary compared to theirs. Finally, advertising science is arguably nowadays as important as science itself in machine learning.\citet{vahdat2021score} made a very good job as it can be seen by one tweet from the first author who advertised their paper in \Cref{fig:cont_tweet}. In contrast, Gilles Louppe advertised our paper on Twitter but it had $6\times$ smaller reach as it can be observed in \Cref{fig:discrete_tweet}.
+According to Google Scholar, our article has received five citations between its publication in June 2021 and July 2022. We shall contrast this number with the 48 citations received by \citet{vahdat2021score}, which was published in December 2021 at NeurIPS 2021 and was first released as a preprint on Arxiv in June 2021. Although the ideas expressed in the two papers are similar, our work did not gain as much visibility as theirs. We acknowledge at least three fair reasons to explain this. First, publishing at NeurIPS brings much more visibility than at a workshop at ICML. This is natural as the reviewing process of NeurIPS is much stronger. Second, \citet{vahdat2021score} achieve state-of-the-art image synthesis by combining their idea with the proper neural architectures, training tricks and computation power.
+In contrast, our work is a proof of concept and does not achieve state-of-the-art performance. In this regard, our work is preliminary compared to theirs. Finally, advertising science is arguably nowadays as important as the science itself in machine learning.\citet{vahdat2021score} made an excellent job, as can be seen by one tweet from the first author who advertised their paper in \Cref{fig:cont_tweet} and had $6\times$ higher reach than a similar advertisement by Gilles Louppe in \Cref{fig:discrete_tweet}.
 \subsection{The practitioner's eye}
 
 \subsection{What happened since then?}
