@@ -1,12 +1,12 @@
-\chapter{Combining models}\label{ch:03}
+\chapter{Mixing models}\label{ch:03}
 
 \begin{chapter_outline}
 
-  In this chapter, we demonstrate the benefits of combining distinct classes of models with a concrete example. In particular, we study the complementary between variational autoencoders (VAEs) and denoising diffusion probabilistic models (DDPMs). VAEs offer scalable amortised posterior inference and fast sampling but are also more and more outperformed by competing models such as normalizing flows (NFs) or deep-energy models. We improve VAEs by modelling the prior distribution of the latent variables with a diffusion process. The diffusion prior model improves upon Gaussian priors of classical VAEs and is competitive with NF-based priors.
+  In this chapter, we demonstrate the benefits of mixing together distinct classes of models. In particular, we study the complementary between variational autoencoders (VAEs) and denoising diffusion probabilistic models (DDPMs). VAEs offer scalable amortised posterior inference and fast sampling but are also more and more outperformed by competing models such as normalizing flows (NFs) or deep-energy models. We improve VAEs by modelling the prior distribution of the latent variables with a diffusion process. The diffusion prior model improves upon Gaussian priors of classical VAEs and is competitive with NF-based priors.
   This contribution shows that connecting different classes of models can unlock modelling capacities and properties that are unreachable by each model class independently.
 \end{chapter_outline}
 \section{Prologue}
-In this chapter, we bring evidence from which we guess different (deep) probabilistic models shall not be studied independently. Building a broad and deep understanding of all these frameworks unlocks many model combinations. These combinations may help reduce the weaknesses of each class of models separately while maintaining the separate assets of each class.
+In this chapter, we argue that different (deep) probabilistic models shall not be studied independently. Building a broad and deep understanding of many probabilistic modelling frameworks unlocks many model combinations. These combinations may help reduce the weaknesses of each class of models separately while maintaining the assets of each class.
 
 The gradient-descent-based training framework of neural networks is critical in developing these `super` deep probabilistic models that combine more than one type of model. This framework allows learning all components of a `super` model jointly as soon as the objective function is a differentiable function of the model's components. This chapter uses this feature to combine denoising diffusion probabilistic models and variational autoencoders.
 
