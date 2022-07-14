@@ -45,19 +45,19 @@ Since the publication of this article, diffusion models have become very popular
 
 In the near future, the attractivity of diffusion models for modelling distributions over images, and other data modalities, should stay high. There remain many open questions such as \textit{why do diffusion models represent high dimensional data such as images so well?} The answer relies upon the inductive bias of diffusion models; however, which part exactly is an open question. Diffusion models also have some limitations. The sampling procedure is convoluted as it requires evaluating the neural network modelling the denoising function (or score function) many successive times. Pushing further the connections between diffusion models and other probabilistic models such as normalizing flows and VAEs might help reduce the sample synthesis's complexity.
 
-\begin{figure*}
+\begin{figure*}[h]
   \centering
   \begin{subfigure}[b]{.48\textwidth}
     \centering
-    \includegraphics[width=.95\textwidth]{figures/impact_scholar/cont_diff_tweet.png}
+    \includegraphics[width=.85\textwidth]{figures/impact_scholar/cont_diff_tweet.png}
     \caption{}
     \label{fig:cont_tweet}
   \end{subfigure}
   \begin{subfigure}[b]{.48\textwidth}
     \centering
-    \includegraphics[width=.95\textwidth]{figures/impact_scholar/discret_diff_tweet.png}
+    \includegraphics[width=.9\textwidth]{figures/impact_scholar/discret_diff_tweet.png}
     \caption{}
     \label{fig:discrete_tweet}
   \end{subfigure}
-  \caption{Tweets advertising (\textbf{a}) The continuous-time diffusion models in the latent space from \citet{vahdat2021score} (\textbf{b}) The discrete-time diffusion models in the latent space from ours.}
+  \caption{Tweets advertising (\textbf{a}) continuous-time diffusion models in the latent space from \citet{vahdat2021score} (\textbf{b}) discrete-time diffusion models in the latent space.}
 \end{figure*}
