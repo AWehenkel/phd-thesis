@@ -1,6 +1,7 @@
-# From Black-Box to Hybrid Generative Models
+# Contributions to Deep Probabilistic Modelling
 
 PhD Dissertation, Antoine Wehenkel, ?? 2022, Liège. 
 
 ---
-My baby.
+
+Under construction.
