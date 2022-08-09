@@ -11,11 +11,9 @@
 \end{chapter_outline}
 
 \section{Prologue}
-This chapter highlights further the relevance of bridging distinct classes of probabilistic models together. These connections provide new viewpoints that can help us focus on some models' components and abstract others less relevant to what we want to understand.
+This chapter highlights further the relevance of bridging distinct classes of probabilistic models together. These connections provide new viewpoints that can help us focus on some models' components and abstract others less relevant to what we want to understand. In particular, we derive a property of affine normalizing flows that is particularly relevant for practitioners. We show that stacking more than three steps of normalizing flows is poorly motivated. Adding more steps unnecessarily slows down the inversion of the flow for no gain in expressivity. In addition, we show that affine normalizing flows are not universal density approximators which is important to keep in mind when applying such models.
 
-In this specific case, we derive properties of affine normalizing flows that have significant consequences for the practitioners who want to use normalizing flows. In many cases, the best choice is to stack three steps of normalizing flows. Not more. Adding more will unnecessarily slow down the inversion of the flow. On the contrary, increasing the capacity of each step will only marginally impact the sampling complexity. Provably, the latter solution is as expressive as the former but has a reduced cost.
-
-This chapter shall convince the reader that gaining theoretical understanding of probablistic models is key for using these models appropriately. To this purpose, taking a new perspective by drawing connections between different types of models, here graphical and deep probablistic models, is an efficient solution. With simple analogies we are then able to reason intuitivly on the class of models.
+This chapter shall convince the reader that gaining a theoretical understanding of probabilistic models is key to using these models appropriately. For this purpose, taking a new perspective by drawing connections between different types of models, here graphical and deep probabilistic models, is an efficient solution. With simple analogies, we are then able to reason intuitively on the class of models.
 
 Without further ado, we invite the reader to overview the next section and jump into the publication.
 \section{The paper: You say Normalizing Flows I see Bayesian Networks}
