@@ -2,31 +2,44 @@
 
 \begin{chapter_outline}
 
-Monotonic neural networks have recently been proposed as a way to define invertible transformations.
-These transformations can be combined into powerful autoregressive flows that have been shown to be universal approximators of continuous probability distributions.
+We introduce a new neural parametization of monotonic functions within autoregressive flows and define a new class of universal approximators of continuous probability distributions.
 Architectures that ensure monotonicity typically enforce constraints on weights and activation functions, which enables invertibility but leads to a cap on the expressiveness of the resulting transformations.
-In this work, we propose the Unconstrained Monotonic Neural Network (UMNN) architecture based on the insight that a function is monotonic as long as its derivative is strictly positive. In particular, this latter condition can be enforced with a free-form neural network whose only constraint is the positiveness of its output.
-We evaluate our new invertible building block within a new autoregressive flow (UMNN-MAF) and demonstrate its effectiveness on density estimation experiments.
-We also illustrate the ability of UMNNs to improve variational inference.
+The Unconstrained Monotonic Neural Networks introduced in this work are based on the insight that a function is monotonic as long as its derivative is strictly positive. This latter condition can be enforced with a free-form neural network whose only constraint is the positiveness of its output.
+We evaluate our new invertible building block within a new autoregressive flow and demonstrate its effectiveness on density estimation experiments.
 \end{chapter_outline}
 
 \section{Prologue}
-- Here we show that implicit parameterization of functions can help define new class of transformtions that increase the expressivity of NFs.
 
-- Other way of increasing the expressivity.
+- Reducing the class of functions may be very interesting as it provide more efficient algorithms (learning and sampling)
+- But doing it too much can hurt the expressivity, here we aim for the best monotonic function.
+- Argue that working on the parameterization is very important
+- Alternative solution at the time were not ideal regarding conditionning and Jacobian computing.
 
-- Impact.
+In opposition to the last two chapters, this chapter does not combine or study the relationships between different probabilistic models. Instead, we aim to improve the expressivity of normalizing flows by introducing a new parameterisation for monotonic functions which are appropriate building blocks of invertible functions.
+
 
 \section{The paper: Unconstrained Monotonic Neural Networks}
+\subsection{Author contributions}
+The paper is co-authored by me and Gilles Louppe. As the leading author, I developed the connections between normalizing flows and Bayesian networks, made the experiments, and wrote the paper. Gilles Louppe supervised me throughout this project, offered suggestions and helped in writing the paper.
+
+\subsection{Reading tips}
+
 \includepdf[pages=-]{papers/UMNN_neurips2019.pdf}
 
 \section{Epilogue}
 
 \subsection{Scientific impact}
+- This paper has been well received and Often use to parameterize monotonic functions.
+
+- Normalizing flows are standardly used in many applications since these papers (discuss neural spline flow as the main concurrent method). It can be C-inf continuous. Our flow is competitive and has been used for many applications such as
+
+- Neural autoregressive, block neural, SOS and neural spline flows. In contrast to NSF (and SOS???) we have C-inf very easily.
 
 \subsection{Conclusion and opportunities}
-- The popular use of monotonic transformations in neural networks. It is a useful inductive bias.
+- The popular use of monotonic transformations in neural networks. It is a useful inductive bias. And applications are still full of opportunities.
 
-- Implicit model that compute gradient implicitly are also very popular.
+- Regarding NF the challenge is to reduce the space of hypothesis further with respect to some aspects (invariance, equivariance, etc...) but be able to model complex distributions. It seems these two aspects are actually coupled.
 
-- Normalizing flows are standardly used in many applications since these papers (discuss neural spline flow as the main concurrent method).
+- Implicit models that compute gradient implicitly are also very popular and providing explicit access to the first order derivative rather than function itself may be interesting as we often want to enforce properties on both components. For example we can constraint the Lipshitz constrait by constraint the output value of the first order derivative. There are also work such autoint that aims to define the integral but train with the derivative only and then use the integral at test time.
+
+- Interestingly we can very easily generalize to multiple features with the Kolmogorov-Arnold representation theorem. In this context we could also try to study convex neural network parameterized with UMNNS. A flow parameterize the gradient of a convex function, but it is unclear how we can go back from the gradient of a function to the function itself in a tractable way.
