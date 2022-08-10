@@ -25,9 +25,10 @@ This chapter proposes a new parameterisation of monotonic transformations with n
 
 \section{The paper: Unconstrained Monotonic Neural Networks}
 \subsection{Author contributions}
-The paper is co-authored by me and Gilles Louppe. As the leading author, I developed the connections between normalizing flows and Bayesian networks, made the experiments, and wrote the paper. Gilles Louppe supervised me throughout this project, offered suggestions and helped in writing the paper.
+Gilles Louppe and I co-authored the paper. The main idea behind this paper, enforcing monotonicity via constant-signed first-order derivative, came out during a discussion about monotonic transformations with Gilles and should be attributed to him. I had the original ideas of implicit differentiation via the Leibniz rule and the use of binary search for inverting the transformation. As the leading author, I wrote the code for the Clenshaw-Curtis quadrature and its implicit differentiation, together with the code for the autoregressive normalizing flows and corresponding experiments. This was my PhD's first paper, and Gilles gave me substantial help writing it.
 
 \subsection{Reading tips}
+The reader may skip section~3.1 and 3.2, which describe autoregressive normalizing and are very similar to the corresponding section in the background. The rest of the paper flows by itself.
 
 \includepdf[pages=-]{papers/UMNN_neurips2019.pdf}
 
