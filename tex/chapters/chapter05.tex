@@ -9,13 +9,18 @@ We evaluate our new invertible building block within a new autoregressive flow a
 \end{chapter_outline}
 
 \section{Prologue}
+An important aspect of deep probabilistic models is the neural network architecture that parameterises the numerical parts of the model. As for any machine learning model, we aim to find a parameterisation that is both flexible and embeds the constraints or inductive bias that we believe in apriori. This may take many forms, such as hierarchical layers for data structured by different levels of structure; convolutions for time or space equivariance; autoregressive layers for enforcing a tractable likelihood; etc... It is why an essential part of research is devoted to finding new differentiable parameterisations that match the requirements of the different class of generative models.
 
-- Reducing the class of functions may be very interesting as it provide more efficient algorithms (learning and sampling)
-- But doing it too much can hurt the expressivity, here we aim for the best monotonic function.
-- Argue that working on the parameterization is very important
-- Alternative solution at the time were not ideal regarding conditionning and Jacobian computing.
+One particular class of models that forces us to invent specific neural parameterisations are normalizing flows. These models require bijective transformations, which are not guaranteed with free-form neural networks. A common solution is to combine scalar invertible transformations with a constrained structure of the Jacobian, such as autoregressive or coupling dependence. \citet{rezende2015variational}, and shortly after \citet{kingma_improved_2016, dinh_density_2017}, originally proposed to use affine layers as invertible scalar transformations. In the previous chapter, we have highlighted an important limitation of these affine transformations. In particular, their inability to split the density of a unimodal base distribution into multiple modes. This limitation lies in the lack of expressivity of affine transform that only plays with the first two modes of the base distribution.
 
-In opposition to the last two chapters, this chapter does not combine or study the relationships between different probabilistic models. Instead, we aim to improve the expressivity of normalizing flows by introducing a new parameterisation for monotonic functions which are appropriate building blocks of invertible functions.
+This chapter proposes a new parameterisation of monotonic transformations with neural networks. The term monotonic is a synonym for continuously bijective scalar functions, which is why monotonic functions are appealing parameterisations for normalizing flows. We observe that having a constant-sign first-order derivative enforces a monotonic behaviour in any continuous function. We propose to parameterise this first-order derivative rather than the monotonic function itself. This allows us to use any neural network as long as its output is signed-constant, which we can induce with an appropriate output activation function. We discuss the consequences of this parameterisation in detail and compare it to alternative parameterisations in the paper and \Cref{epi:ch05}.
+
+% - Reducing the class of functions may be very interesting as it provide more efficient algorithms (learning and sampling)
+% - But doing it too much can hurt the expressivity, here we aim for the best monotonic function.
+% - Argue that working on the parameterization is very important
+% - Alternative solution at the time were not ideal regarding conditionning and Jacobian computing.
+%
+% In opposition to the last two chapters, this chapter does not combine or study the relationships between different probabilistic models. Instead, we aim to improve the expressivity of normalizing flows by introducing a new parameterisation for monotonic functions which are appropriate building blocks of invertible functions.
 
 
 \section{The paper: Unconstrained Monotonic Neural Networks}
@@ -26,7 +31,7 @@ The paper is co-authored by me and Gilles Louppe. As the leading author, I devel
 
 \includepdf[pages=-]{papers/UMNN_neurips2019.pdf}
 
-\section{Epilogue}
+\section{Epilogue} \label{epi:ch05}
 
 \subsection{Scientific impact}
 - This paper has been well received and Often use to parameterize monotonic functions.
