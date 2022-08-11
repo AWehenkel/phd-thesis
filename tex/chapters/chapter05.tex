@@ -9,7 +9,7 @@ We evaluate our new invertible building block within a new autoregressive flow a
 \end{chapter_outline}
 
 \section{Prologue}
-An important aspect of deep probabilistic models is the neural network architecture that parameterises the numerical parts of the model. As for any machine learning model, we aim to find a parameterisation that is both flexible and embeds the constraints or inductive bias that we believe in apriori. This may take many forms, such as hierarchical layers for data structured by different levels of structure; convolutions for time or space equivariance; autoregressive layers for enforcing a tractable likelihood; etc... It is why an essential part of research is devoted to finding new differentiable parameterisations that match the requirements of the different class of generative models.
+Finding an appropriate parameterisation for the numerical parts of deep probabilistic models is essential in practice. As for any machine learning model, we aim to find a parameterisation that is both flexible and embeds the constraints and some domain knowledge. This may take many forms, such as hierarchical layers for data structured by different levels of structure; convolutions for time or space equivariance; autoregressive layers for enforcing a tractable likelihood; etc... It is why an essential part of research is devoted to finding new differentiable parameterisations that match the requirements of the different class of generative models.
 
 One particular class of models that forces us to invent specific neural parameterisations are normalizing flows. These models require bijective transformations, which are not guaranteed with free-form neural networks. A common solution is to combine scalar invertible transformations with a constrained structure of the Jacobian, such as autoregressive or coupling dependence. \citet{rezende2015variational}, and shortly after \citet{kingma_improved_2016, dinh_density_2017}, originally proposed to use affine layers as invertible scalar transformations. In the previous chapter, we have highlighted an important limitation of these affine transformations. In particular, their inability to split the density of a unimodal base distribution into multiple modes. This limitation lies in the lack of expressivity of affine transform that only plays with the first two modes of the base distribution.
 
@@ -25,21 +25,31 @@ This chapter proposes a new parameterisation of monotonic transformations with n
 
 \section{The paper: Unconstrained Monotonic Neural Networks}
 \subsection{Author contributions}
-Gilles Louppe and I co-authored the paper. The main idea behind this paper, enforcing monotonicity via constant-signed first-order derivative, came out during a discussion about monotonic transformations with Gilles and should be attributed to him. I had the original ideas of implicit differentiation via the Leibniz rule and the use of binary search for inverting the transformation. As the leading author, I wrote the code for the Clenshaw-Curtis quadrature and its implicit differentiation, together with the code for the autoregressive normalizing flows and corresponding experiments. This was my PhD's first paper, and Gilles gave me substantial help writing it.
+Gilles Louppe and I co-authored the paper. Its core idea, enforcing monotonicity via constant-signed first-order derivative, came out during a discussion about monotonic transformations with Gilles and can be attributed to him. I had the original ideas of implicit differentiation via the Leibniz rule and the use of binary search for inverting the transformation. As the leading author, I wrote the code for the Clenshaw-Curtis quadrature and its implicit differentiation, together with the code for the autoregressive normalizing flows and corresponding experiments. This was my PhD's first paper, and Gilles gave me substantial help writing it.
 
 \subsection{Reading tips}
-The reader may skip section~3.1 and 3.2, which describe autoregressive normalizing and are very similar to the corresponding section in the background. The rest of the paper flows by itself.
+The reader can skip section~3.1 and 3.2, which describe autoregressive normalizing and are very similar to the corresponding section in the background. The rest of the paper flows by itself.
 
 \includepdf[pages=-]{papers/UMNN_neurips2019.pdf}
 
 \section{Epilogue} \label{epi:ch05}
 
 \subsection{Scientific impact}
+The paper focuses on normalizing flows as an important application of the newly introduced monotonic transformation. However, monotonic transformations can help with many other challenges in machine learning. Among them, model calibration is arguably an essential issue in machine learning. Uncalibrated models provide biased confidence scores; model calibration corrects this bias to better estimate the model's confidence. Recently, \citet{gruber2022trustworthy, deycalibrated, rahimi2020intra} relied on unconstrained monotonic neural networks to parameterise the calibration layers in diverse settings. Another application is to induce a monotonic relationship between a subset of the input variables and the model's output. For example, \citet{yurk2021county} study the effect of business closures on the speed of propagation of COVID-19 with ML models. They enforce a monotonic relationship between the tightness of public policies and the observed reproduction rate in their models with an unconstrained monotonic neural network.
+
+
+- Impact on the NFs. Layer used by Graph flows, important to be able to model multimodal distributions. Showed that inversion of monotonic models is possible. And we can also compute the derivative with respect to this operation if it is really needed. This is something used by stochastic flows.
+
+Since its publication in December 2019, this paper has received
 - This paper has been well received and Often use to parameterize monotonic functions.
 
-- Normalizing flows are standardly used in many applications since these papers (discuss neural spline flow as the main concurrent method). It can be C-inf continuous. Our flow is competitive and has been used for many applications such as
 
+
+\subsection{Alternative monotonic normalizing flows}
 - Neural autoregressive, block neural, SOS and neural spline flows. In contrast to NSF (and SOS???) we have C-inf very easily.
+- Normalizing flows are standardly used in many applications since these papers (discuss neural spline flow as the main concurrent method). It can be C-inf continuous. Our flow is competitive and has been used for many applications such as
+\subsection{Is universality the goal?}
+No. We also aim for additional constraints because we cannot learn efficiently without this.
 
 \subsection{Conclusion and opportunities}
 - The popular use of monotonic transformations in neural networks. It is a useful inductive bias. And applications are still full of opportunities.
