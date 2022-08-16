@@ -1,13 +1,53 @@
+
+
 \chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
 
 \begin{chapter_outline}
+- This one is about pushing further the connections between bayesian networks and NFs. We unify the two by presenting the graphical normalizing flows. It allows to naturally embed know dependencies into normalizing flows. This is a stronger form of inductive bias. In addition, we also showcase a weaker form of inductive bias for the NF by learning the structure of the BNs by combining the grqphicql normalizing flows with Graph with notears.
 
-???
+Normalizing flows model complex probability distributions by combining a base distri- bution with a series of bijective neural networks. State-of-the-art architectures rely on coupling and autoregressive transformations to lift up invertible functions from scalars to vectors. In this work, we revisit these transformations as probabilistic graphical models, showing they reduce to Bayesian networks with a pre-defined topology and a learnable density at each node. From this new perspective, we propose the graphical normalizing flow, a new invertible transformation with either a prescribed or a learnable graphical structure. This model provides a promising way to inject domain knowledge into nor- malizing flows while preserving both the in- terpretability of Bayesian networks and the representation capacity of normalizing flows. We show that graphical conditioners discover relevant graph structure when we cannot hy- pothesize it. In addition, we analyze the effect of l1-penalization on the recovered structure and on the quality of the resulting den- sity estimation. Finally, we show that graph- ical conditioners lead to competitive white box density estimators.
 \end{chapter_outline}
+
 \section{Prologue}
-\section{Graphical Normalizing Flows}
+
+1. We need assumptions to learn probabilistic models from data in higher dimensions. A natural assumption is (conditional independence) which is what was classically done by BNs and naturally reduce the complexity of learning the joint distribution.
+
+2. At the same time, BNs have not been used as extensively for continuous data than for discrete because of the difficulty for parameterizing. Here we demonstrate that combining BNs with normalizing flows is beautiful as it naturally encode the product rule which as the basis for using autoregressive networks. Our view generalize both autoregressive and coupling layers into a unique framework that allows for any DAG.
+
+3. The problem with NFs is that they are harder to combine with classical inductive bias of neural networks. Here we introduce the most natural inductive bias for distributions into the language of flows.
+
+4. We can try to learn the topology together with the cond distribitions which improve the interepratibility of the probabilistic model learnt by flows.
+
+5. Motivation in the context of the thesis. Combining models is good, it allows to learn more efficiently. To understand better the learnt models. Our model can be informed by expert about independence we should see in the data. Or at least the information that we must see some independence without explicitly stating which ones.
+
+
+\section{The paper: Graphical Normalizing Flows}
+\subsection{Author contributions}
+Gilles Louppe and I co-authored the paper. Its core idea, enforcing monotonicity via constant-signed first-order derivative, came out during a discussion about monotonic transformations with Gilles and can be attributed to him. I had the original ideas of implicit differentiation via the Leibniz rule and the use of binary search for inverting the transformation. As the leading author, I wrote the code for the Clenshaw-Curtis quadrature and its implicit differentiation, together with the code for the autoregressive normalizing flows and corresponding experiments. This was my PhD's first paper, and Gilles gave me substantial help writing it.
+
+\subsection{Reading tips}
+The reader can skip section~3.1 and 3.2, which describe autoregressive normalizing and are very similar to the corresponding section in the background. The rest of the paper flows by itself.
+
 \includepdf[pages=-]{papers/GNF_AISTATS.pdf}
 
 \section{Epilogue}
+
 \subsection{On the relationship between smoothness and independence}
 - Discuss Smooth normalizing flows, glow, NFs on sphere etc...
+
+\subsection{The relationship between causal and independence discovery.}
+
+\subsection{Scientific impact}
+
+- Used to discover causal models
+
+- Unify
+
+\subsection{Conclusion and opportunities}
+
+Limitations regarding the intractability of optimizing structure. Our optimization problem is very hard to solve. Further work on the optimization landscape is needed. Limitations regarding the point estimate we provide of the independence in the end whereas - complete posterior is better and might help smoothing the loss. For causal discovery this is very limiting as we might have many graphs with alsmot the same independence but that corresponds to very different causal models. Proiding the complete distribution over DAG would be awesome for causal discovery.
+
+It has not been used to much by users of flows. Two reasons. independence is too strong. Sometimes not known. Here again starting with a prior instead of a complete matrix or DAG would help. But also it is not clear how we could naturally enforce weak interactions as softer constraint.
+
+It is also nicely showing the interest of embedding expert knowledge when possible. When not, the unification of BNet with flows allow to exploit the algorithms of structure learning for NFs. It allows more interpretability.
+But also more work is requireed to make these algorithms simpler to use and scale to higher dimensions. Also independence is not always the best way to express/enforce desirable/expected properties of the probabilistic model.
