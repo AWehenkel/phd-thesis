@@ -3,9 +3,7 @@
 \chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
 
 \begin{chapter_outline}
-- This one is about pushing further the connections between bayesian networks and NFs. We unify the two by presenting the graphical normalizing flows. It allows to naturally embed know dependencies into normalizing flows. This is a stronger form of inductive bias. In addition, we also showcase a weaker form of inductive bias for the NF by learning the structure of the BNs by combining the grqphicql normalizing flows with Graph with notears.
-
-Normalizing flows model complex probability distributions by combining a base distri- bution with a series of bijective neural networks. State-of-the-art architectures rely on coupling and autoregressive transformations to lift up invertible functions from scalars to vectors. In this work, we revisit these transformations as probabilistic graphical models, showing they reduce to Bayesian networks with a pre-defined topology and a learnable density at each node. From this new perspective, we propose the graphical normalizing flow, a new invertible transformation with either a prescribed or a learnable graphical structure. This model provides a promising way to inject domain knowledge into nor- malizing flows while preserving both the in- terpretability of Bayesian networks and the representation capacity of normalizing flows. We show that graphical conditioners discover relevant graph structure when we cannot hy- pothesize it. In addition, we analyze the effect of l1-penalization on the recovered structure and on the quality of the resulting den- sity estimation. Finally, we show that graph- ical conditioners lead to competitive white box density estimators.
+  We introduce the graphical normalizing flow which unlock new inductive bias in normalizing flows. This new architecture unifies coupling and autoregressive layers under a simple layer built upon Bayesian networks dubed graphical conditioner. Graphical normalizing flows allows embedding domain knowledge in the form of independence assumptions into normalizing flows. They also preserve both the interpretability of Bayesian networks and the representation capacity of normalizing flows. In addition to the elegant embedding of prescribed independencies, graphical conditioners can also discover relevant independence from data only. We analyze the effect of l1-penalization on the recovered probabilistic model and show it unlocks new generalization potential. Finally, we also show that graphical conditioners are competitive with state-of-the-art density estimators.
 \end{chapter_outline}
 
 \section{Prologue}
@@ -31,9 +29,12 @@ The reader can skip section~3.1 and 3.2, which describe autoregressive normalizi
 \includepdf[pages=-]{papers/GNF_AISTATS.pdf}
 
 \section{Epilogue}
+\subsection{subsection name}
+
 
 \subsection{On the relationship between smoothness and independence}
 - Discuss Smooth normalizing flows, glow, NFs on sphere etc...
+- Convolutions are a special way of reproducing the same computation with different masks.
 
 \subsection{The relationship between causal and independence discovery.}
 
