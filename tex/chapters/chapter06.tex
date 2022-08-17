@@ -3,40 +3,39 @@
 \chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
 
 \begin{chapter_outline}
-  We introduce the graphical normalizing flow which unlock new inductive bias in normalizing flows. This new architecture unifies coupling and autoregressive layers under a simple layer built upon Bayesian networks dubed graphical conditioner. Graphical normalizing flows allows embedding domain knowledge in the form of independence assumptions into normalizing flows. They also preserve both the interpretability of Bayesian networks and the representation capacity of normalizing flows. In addition to the elegant embedding of prescribed independencies, graphical conditioners can also discover relevant independence from data only. We analyze the effect of l1-penalization on the recovered probabilistic model and show it unlocks new generalization potential. Finally, we also show that graphical conditioners are competitive with state-of-the-art density estimators.
+
+  This chapter introduces the graphical normalizing flow, a new type of normalizing flow with expressive inductive bias. This new model is based on a layer built upon Bayesian networks dubbed graphical conditioner, which unifies the coupling and autoregressive layers classically used in flows. Graphical normalizing flows embed domain knowledge in the form of independencies while preserving the interpretability of Bayesian networks and the representation capacity of normalizing flows. In addition to the elegant embedding of prescribed independencies, graphical conditioners can also discover relevant independence from data only. We analyse the effect of l1-penalization on the recovered probabilistic model and show it unlocks new generalisation potential. Finally, we also offer that graphical conditioners are competitive with state-of-the-art density estimators.
 \end{chapter_outline}
 
 \section{Prologue}
+In \Cref{ch:05}, we have introduced a universal approximator of continuous density functions called UMNN-MAF. Universality is a desirable property as it implies convergence of the MLE toward the correct model as the number of training points grows. However, in many practical settings, the number of points does not grow sufficiently fast to discriminate between all possible models. This is the curse of dimensionality, and universality becomes a weakness rather than an advantage.
 
-1. We need assumptions to learn probabilistic models from data in higher dimensions. A natural assumption is (conditional independence) which is what was classically done by BNs and naturally reduce the complexity of learning the joint distribution.
+One potential solution is to take a Bayesian prospect and bias the learning toward more plausible models. However, we need to express a prior distribution over the considered class of models to do this. It is unclear whether we could express such prior for normalizing flows. Instead, another solution is to remove irrelevant models to describe the phenomenon of interest explicitly. In particular, it is relatively common to make (conditional) independence assumptions between sub-parts of the phenomenon. This leads to a simplified factorisation of joint distributions. There, we can learn a probabilistic model, such as a normalizing flow, for each factor and potentially better results than if we learn a unique model that does not embed independence assumptions.
 
-2. At the same time, BNs have not been used as extensively for continuous data than for discrete because of the difficulty for parameterizing. Here we demonstrate that combining BNs with normalizing flows is beautiful as it naturally encode the product rule which as the basis for using autoregressive networks. Our view generalize both autoregressive and coupling layers into a unique framework that allows for any DAG.
+While the first solution is generic, it is also challenging to implement. In contrast, humans are reasonably good at drawing independence assumptions between small pieces of a larger system. Then, we can use Bayesian networks to help us understand the big picture produced by these low-level assumptions. The paper featured in this chapter introduces normalizing flows as a parameterisation of the conditional distributions of Bayesian networks for continuous variables. We show that, similarly to the autoregressive or coupling layers that lift invertible transformations from scalar to vector, the structure of any Bayesian network can be used as a valid transformer for normalizing flows. This unified framework reveals the potential of combining prescribed independencies within expressive bijective transformations.
 
-3. The problem with NFs is that they are harder to combine with classical inductive bias of neural networks. Here we introduce the most natural inductive bias for distributions into the language of flows.
+Unifying Bayesian networks and normalizing flows allows years of research from each domain to benefit the other. For example, recent advances in topology discovery allows us to introduce a new class of probabilistic models where both the conditional densities and the distribution factorisation are trainable components. This class of models is a universal density approximator provided the appropriate parameterisation. However, in contrast to UMNN-MAF, graphical normalizing flows with learnable structure can be elegantly regularised by penalising the absence of independence. In addition, the recovered structure provides interesting insights on independence properties observed in the data and hypothesised by the learnt model.
 
-4. We can try to learn the topology together with the cond distribitions which improve the interepratibility of the probabilistic model learnt by flows.
-
-5. Motivation in the context of the thesis. Combining models is good, it allows to learn more efficiently. To understand better the learnt models. Our model can be informed by expert about independence we should see in the data. Or at least the information that we must see some independence without explicitly stating which ones.
+This contribution is again about the interplay between seemingly distinct classes of probabilistic models. We show that unifying frameworks can create new models with unique properties. In this case, we gain interpretability, a new inductive bias for normalizing flows, and a unified vision of coupling and autoregressive layers that were historically seen as separate classes of models. This contribution is also well aligned with the notion that building effective models requires the correct assumptions. Indeed, in contrast to classical normalizing flows, our model naturally digests the prescribed knowledge we may have about the distribution we aim to learn.
 
 
 \section{The paper: Graphical Normalizing Flows}
 \subsection{Author contributions}
-Gilles Louppe and I co-authored the paper. Its core idea, enforcing monotonicity via constant-signed first-order derivative, came out during a discussion about monotonic transformations with Gilles and can be attributed to him. I had the original ideas of implicit differentiation via the Leibniz rule and the use of binary search for inverting the transformation. As the leading author, I wrote the code for the Clenshaw-Curtis quadrature and its implicit differentiation, together with the code for the autoregressive normalizing flows and corresponding experiments. This was my PhD's first paper, and Gilles gave me substantial help writing it.
+Gilles Louppe and I co-authored the paper. Gilles helped me throughout the project to shape the research idea. He also provided substantial help in writing the paper. I developed the connections between Bayesian networks and normalizing flows and the theory to combine graphical normalizing flows with the NOTEARS algorithm for topology discovery. I also wrote the code for all experiments.
 
 \subsection{Reading tips}
-The reader can skip section~3.1 and 3.2, which describe autoregressive normalizing and are very similar to the corresponding section in the background. The rest of the paper flows by itself.
+The reader should be able to skip section~3 as it describes the basics of normalizing flows and Bayesian network which were already described in details in the background.
 
 \includepdf[pages=-]{papers/GNF_AISTATS.pdf}
 
 \section{Epilogue}
-\subsection{subsection name}
+\subsection{Discussion}
 
-
-\subsection{On the relationship between smoothness and independence}
+\paragraph{On the relationship between smoothness and independence}
 - Discuss Smooth normalizing flows, glow, NFs on sphere etc...
 - Convolutions are a special way of reproducing the same computation with different masks.
 
-\subsection{The relationship between causal and independence discovery.}
+\paragraph{The relationship between causal and independence discovery.}
 
 \subsection{Scientific impact}
 
@@ -52,3 +51,5 @@ It has not been used to much by users of flows. Two reasons. independence is too
 
 It is also nicely showing the interest of embedding expert knowledge when possible. When not, the unification of BNet with flows allow to exploit the algorithms of structure learning for NFs. It allows more interpretability.
 But also more work is requireed to make these algorithms simpler to use and scale to higher dimensions. Also independence is not always the best way to express/enforce desirable/expected properties of the probabilistic model.
+
+Alternative ways of learning jointly the distribution and topology.
