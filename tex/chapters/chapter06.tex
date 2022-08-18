@@ -4,10 +4,11 @@
 
 \begin{chapter_outline}
 
-  This chapter introduces the graphical normalizing flow, a new type of normalizing flow with expressive inductive bias. This new model is based on a layer built upon Bayesian networks dubbed graphical conditioner, which unifies the coupling and autoregressive layers classically used in flows. Graphical normalizing flows embed domain knowledge in the form of independencies while preserving the interpretability of Bayesian networks and the representation capacity of normalizing flows. In addition to the elegant embedding of prescribed independencies, graphical conditioners can also discover relevant independence from data only. We analyse the effect of l1-penalization on the recovered probabilistic model and show it unlocks new generalisation potential. Finally, we also offer that graphical conditioners are competitive with state-of-the-art density estimators.
+  This chapter introduces the graphical normalizing flow, a new type of normalizing flow with expressive inductive bias. This new model is based on a layer built upon Bayesian networks dubbed graphical conditioner, which unifies the coupling and autoregressive layers classically used in flows. Graphical normalizing flows embed domain knowledge in the form of independencies while preserving the interpretability of Bayesian networks and the representation capacity of normalizing flows. In addition to the elegant embedding of prescribed independencies, graphical conditioners can also discover relevant independence from data only. We analyse the effect of l1-penalization on the recovered probabilistic model and show it unlocks new generalisation potential. Finally, we also observe that graphical conditioners are competitive with state-of-the-art density estimators.
 \end{chapter_outline}
 
 \section{Prologue}
+% Replace by something like: In this chapter, we argue that the universality of the UMNN-MAF introduced in the last chapter is a weakness if it does not come with good inductive bias. AKA MAKE IT DIRECT.
 In \Cref{ch:05}, we have introduced a universal approximator of continuous density functions called UMNN-MAF. Universality is a desirable property as it implies convergence of the MLE toward the correct model as the number of training points grows. However, in many practical settings, the number of points does not grow sufficiently fast to discriminate between all possible models. This is the curse of dimensionality, and universality becomes a weakness rather than an advantage.
 
 One potential solution is to take a Bayesian prospect and bias the learning toward more plausible models. However, we need to express a prior distribution over the considered class of models to do this. It is unclear whether we could express such prior for normalizing flows. Instead, another solution is to remove irrelevant models to describe the phenomenon of interest explicitly. In particular, it is relatively common to make (conditional) independence assumptions between sub-parts of the phenomenon. This leads to a simplified factorisation of joint distributions. There, we can learn a probabilistic model, such as a normalizing flow, for each factor and potentially better results than if we learn a unique model that does not embed independence assumptions.
@@ -31,19 +32,27 @@ The reader should be able to skip section~3 as it describes the basics of normal
 \section{Epilogue}
 \subsection{Discussion}
 
-\paragraph{On the relationship between smoothness and independence}
-- Discuss Smooth normalizing flows, glow, NFs on sphere etc...
-- Convolutions are a special way of reproducing the same computation with different masks.
+\paragraph{Inductive bias in normalizing flows.}
+Lipschitz continuity is a good summary of the complexity of a machine learning model. Hence we may prevent overfitting by choosing the model with the smallest Lipshitz constant between many fitting equally well the train set. Among the many regularisation schemes for neural networks, we usually control the Lipschitz constant of the model only implicitly, e.g. by penalising the norm of the weights or adding stochasticity in the learning algorithm. However, such strategies turn inefficient when the loss function favours too many models with larger Lipschitz constants. This is, for example, the case when we train normalizing flows. We optimise the likelihood of the model, which is directly related to the Lipschitz constant of the density model as it is a function of its first-order derivative with respect to the input - the Lipshitz constant bounds the likelihood. For small training sets, this can quickly happen as expressive models may discover spurious deterministic relationships between variables. Then the Jacobian of the inverse transform, which goes from latent variables to observations, is singular, and the likelihood is infinite. Thus by enforcing independencies, prescribed or discovered in the data, we can avoid such traps and learn models that overfit less. Meanwhile, the model will only discover simpler relationships between variables which shall generalise better.
+
+% - As any machine learning model - Strong Smoothness - that is Lipshitz continuity - is something we aim usually. Discuss it can be hard to achieve for degenrate cases such as deterministic relationship between variables which reduce the dimensionnality of the support - provide an example. In this case it produces an infinite Jacobian and the learnt model as seemingly an infinite likelihood. Explain why this artefact happen. The problem is that for finite number of samples we can more easily discover a spurious deterministic relationship between variables. This relationship would be complex but the model would be happy to find it as it would maximize the likelihood. In contrast, if we enforce a certain level of independence  then we will ignore such complex transformation andf we will tend to produce smoothness as a by product. Learning independence would naturally get closer to simpler solution with respect to the conditional densities and thus would prevent complex relationship that are incompatible with smoothness.
+There may also exist a genuine deterministic relationship between variables which implies that the data lie on a manifold - for example, predicting the distribution of birds on the world atlas. We must choose between a distribution over 3D real numbers or the 2D longitudinal and latitudinal coordinates. The former formalisation contains a non-spurious deterministic relationship caused by the atlas, and the latter does not work with the real numbers. In this context, graphical normalizing flows cannot help much. However, there is a rich litterature~\citep{kohler2021smooth, mathieu2020riemannian, gemici2016normalizing, kalatzis2021multi, rezende2020normalizing} about normalizing flows on manifolds, which can help prevent numerical instabilities and also provide a powerful inductive bias to ease the learning task.
+
+Finally, another solution is incorporating inductive bias by creating invertible layers that mimic efficient non-invertible architectures. This is not always straightforward, but it can be worth the time spent. Glow~\citep{kingma_glow_2018} is a perfect example; they borrow ideas from convolutions, pooling, and hierarchical VAEs to achieve state-of-the-art image synthesis at the time.  
+
 
 \paragraph{The relationship between causal and independence discovery.}
 
 \subsection{Scientific impact}
 
+- Unify autoregressive and coupling layers. The implementation is simple. Also a straightforward implementation for the inversion.
+
+- Show that inductive bias is an important in NFs.
+
 - Used to discover causal models
 
-- Unify
-
 \subsection{Conclusion and opportunities}
+Mention weaknesses!!!
 
 Limitations regarding the intractability of optimizing structure. Our optimization problem is very hard to solve. Further work on the optimization landscape is needed. Limitations regarding the point estimate we provide of the independence in the end whereas - complete posterior is better and might help smoothing the loss. For causal discovery this is very limiting as we might have many graphs with alsmot the same independence but that corresponds to very different causal models. Proiding the complete distribution over DAG would be awesome for causal discovery.
 
