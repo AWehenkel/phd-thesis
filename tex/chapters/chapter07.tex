@@ -16,13 +16,32 @@
 
 \begin{chapter_outline}
 
-Hybrid modelling reduces the misspecification of expert models by combining them with machine learning (ML) components learned from data. Like for many ML algorithms, hybrid model performance guarantees are limited to the training distribution. Leveraging the insight that the expert model is usually valid even outside the training domain, we overcome this limitation by introducing a hybrid data augmentation strategy termed \textit{expert augmentation}. Based on a probabilistic formalization of hybrid modelling, we show why expert augmentation improves generalization. Finally, we validate the practical benefits of augmented hybrid models on a set of controlled experiments, modelling dynamical systems described by ordinary and partial differential equations.
+  We formalise hybrid learning within the probabilistic modelling framework and demonstrate that hybrid models exhibit greater generalisation capabilities than classical machine learning models.
+  Hybrid models reduce the misspecification of expert models with a machine learning (ML) component learned from data. We leverage the insight that the expert model is usually valid even outside the training domain to introduce a hybrid data augmentation strategy termed \textit{expert augmentation}. In contrast to many ML algorithms, the performance guarantees of hybrid models trained with expert augmentation are not limited to the training distribution. We validate the practical benefits of augmented hybrid models on a set of controlled experiments and reflect on the broader impact that hybrid learning may have shortly.
 
 \end{chapter_outline}
 
 \section{Prologue}
+- Limitation of classical machine learning algorithms is to be limited to the data they see. Inductive bias help going a bit beyond but is usually a weak form of prior knowledge that does not help much. In some setting it feels inneficient to try to learn everything from data. This is especially true in domains for which physics playa an important role.
+
+- A particular problem is the one of OOD data. That is if one of the marginal distribution is different. Explain why this may be a problem for general probabilistic models. In this case we need more than inductive bias. We need to understand what is the impact of distribution shift and to be able to make the model performance insensitive to it.
+
+- In the context of this thesis we have seen how relevant it can be to combine models. Now we push this even further by combining physics equations to depends on few parameters that provide a good high level explanation of  phenomenon but misses some lower effects and thus are innefective at doing a great prediction job in some setting. We combine with machine learning models to improve they predicition capabilities. We finally show that such hybrid models exhibits strong generalization performance outside from the training data with respects to shift that can be modeled accuratly by the physical equation.
 
 \section{Robust Hybrid Learning With Expert Augmentation}
 \includepdf[pages=-]{papers/Hybrid_learning_preprint.pdf}
 
 \section{Epilogue}
+
+\paragraph{Model discovery}
+- Symbolic regressions
+- Importance of inductive bias
+- Not clear how to reach the best results - this is fundamentally problem dependent.
+\paragraph{Inference under misspecification}
+ - SBI
+ - A question is whether we need to define explictly the generative model or not. It can help for sanity check but it forces us to use models that are more complex and may be more sensitive to overfitting.
+\subsection{Scientific and industrial impact}
+ - Too soon to say much.
+ - But it is clear that combining existing models that are well validated for explaining some phenomenon shall have impact.
+ - This is especially relevant for industries where devices are developed blabla...
+\subsection{Conclusion and opportunities}
