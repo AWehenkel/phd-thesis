@@ -43,21 +43,28 @@ In line with this argument, we propose an augmentation strategy based on the exp
 I co-authored this paper during an internship at Apple within the Health AI team led by Guillermo Sapiro. Hsu Hiang initially explored the idea of combining expert models with machine learning under the advisory of Jens Behrmann and J{\"o}rn-Henrik Jacobsen. I took over Hsu's work and, together with Jens and J{\"o}rn, we explored a probabilistic formulation of hybrid modelling and out-of-distribution robustness. We designed the experiments together, and I wrote the code corresponding to the two hybrid modelling frameworks (APHYNITY and the hybrid-VAE) used in this project. Gilles helped write the paper and design additional experiments to check the robustness of the expert augmentation in different settings. Guillermo gave feedback on the manuscript. Finally, Gilles, Jens, and J{\"o}rn gave feedback on the manuscript and helped me improve its writing.
 
 \subsection{Reading tips}
-The methods explored in the paper are recent and have not been described in the background. Thus we encourage the reader to carefuly review the complete paper.
+The methods explored in the paper are specific to hybrid learning and have not been described in the background. Thus we encourage the reader to carefuly review the complete paper.
 
 \includepdf[pages=-]{papers/Hybrid_learning_preprint.pdf}
 
 \section{Epilogue}
-
+\section{Beyon hybrid learning}
 \paragraph{Model discovery}
 - Symbolic regressions
 - Importance of inductive bias
 - Not clear how to reach the best results - this is fundamentally problem dependent.
+
+\paragraph{Non-differentiable expert models}
+
 \paragraph{Inference under misspecification}
- - SBI
+ - SBI and robust SBI
  - A question is whether we need to define explictly the generative model or not. It can help for sanity check but it forces us to use models that are more complex and may be more sensitive to overfitting.
+ -
 \subsection{Scientific and industrial impact}
  - Too soon to say much.
  - But it is clear that combining existing models that are well validated for explaining some phenomenon shall have impact.
  - This is especially relevant for industries where devices are developed blabla...
 \subsection{Conclusion and opportunities}
+- hybrid moodels are suitable for OOD as they allow to pose rigourously the learning probleme and to express generalization in concrete terms and with respect to concrete shifts.
+
+- 
