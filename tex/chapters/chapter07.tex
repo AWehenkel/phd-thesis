@@ -16,12 +16,17 @@
 
 \begin{chapter_outline}
 
-  We formalise hybrid learning within the probabilistic modelling framework and demonstrate that hybrid models exhibit greater generalisation capabilities than classical machine learning models.
-  Hybrid models reduce the misspecification of expert models with a machine learning (ML) component learned from data. We leverage the insight that the expert model is usually valid even outside the training domain to introduce a hybrid data augmentation strategy termed \textit{expert augmentation}. In contrast to many ML algorithms, the performance guarantees of hybrid models trained with expert augmentation are not limited to the training distribution. We validate the practical benefits of augmented hybrid models on a set of controlled experiments and reflect on the broader impact that hybrid learning may have shortly.
+We formalise hybrid learning within the probabilistic modelling framework and demonstrate that hybrid models exhibit greater generalisation capabilities than classical machine learning models.
+Hybrid models reduce the misspecification of expert models with a machine learning (ML) component learned from data. We leverage the insight that the expert model is usually valid even outside the training domain to introduce a hybrid data augmentation strategy termed \textit{expert augmentation}. In contrast to many ML algorithms, the performance guarantees of hybrid models trained with expert augmentation are not limited to the training distribution. We validate the practical benefits of augmented hybrid models on a set of controlled experiments and reflect on the broader impact that hybrid learning may have shortly.
 
 \end{chapter_outline}
 
 \section{Prologue}
+In this thesis, we have presented various algorithms to help practitioners build models from data. The last chapter has shown that effective inductive bias is necessary to learn models from medium- or high-dimensional data. Provided the growing application of ML in the real world and the related demand for performance guarantees throughout the lifetime of the deployed models, our research community has gained interest in out-of-distribution robustness. Machine learning algorithms are not anymore judged only on their ability to produce faithful models inside the training distribution but also on the behaviour of these models in out-of-distributions scenarios.
+
+Althought the concept of out-of-distributions robustness seems an appealing one, it does not say clearly what we are looking for. To use this concept rigourosly, we argue that we shall first answer to the following related question: $\bullet$ \textit{What is in-distribution?} $\bullet$  \textit{What is out-of-distribution?}  $\bullet$ \textit{What is the measure of robustness?} It is important to notice the difference between what we consider in-distribution, out-of-distribution and not in-distribution. While what is out-of-distribution is a subset of what is not in-distribution, we argue that restraining ourselves to limited ga
+
+Nevertheless, recent results in image-to-text have defied this statement by combining large amounts of data with the effective inductive bias of modern deep learning techniques.
 - Limitation of classical machine learning algorithms is to be limited to the data they see. Inductive bias help going a bit beyond but is usually a weak form of prior knowledge that does not help much. In some setting it feels inneficient to try to learn everything from data. This is especially true in domains for which physics playa an important role.
 
 - A particular problem is the one of OOD data. That is if one of the marginal distribution is different. Explain why this may be a problem for general probabilistic models. In this case we need more than inductive bias. We need to understand what is the impact of distribution shift and to be able to make the model performance insensitive to it.
