@@ -48,23 +48,32 @@ The methods explored in the paper are specific to hybrid learning and have not b
 \includepdf[pages=-]{papers/Hybrid_learning_preprint.pdf}
 
 \section{Epilogue}
-\section{Beyon hybrid learning}
+\subsection{Contribution}
+The paper demonstrates that existing hybrid learning algorithms are sensitive to distribution shifts, even when they only concern the parameters of the expert model. Expert augmentation addresses this issue when the interaction model is identifiable from data and shows hybrid learning may construct more robust predictive models than uninformed machine learning. The main contributions are 1) to provide a simplified description of two hybrid learning algorithms within a common probabilistic modelling framework; 2) to describe a class of out-of-distribution settings for which hybrid learning is relevant; 3) to introduce a simple strategy that enforces robustness in these settings.
+
+When the hybrid model is an auto-encoder, expert augmentation is a simple yet effective strategy to improve the model's performance in unseen scenarios. We did not observe a negative impact of expert augmentation in our experiments. The ML practitioner should know that it is possible to guarantee robustness to specific out-of-distribution scenarios only with an expert model that describes the gap between these scenarios and the training data. This is different from describing the out-of-distribution data themselves as it only requires understanding the sub-part of the process, which concerns a potential distribution shift rather than the complete complexity of the entire generative process.
+
+We believe that hybrid learning can change the way measurement devices work. When engineers design a new measurement device, they first start by modelling how the signal of interest relates to first-principles physical effects for which efficient measurement tools exist, such as temperature, light, or audio. For example, a speed camera sends light at a particular frequency against cars. The reflected light undergoes a frequency shift which can be accurately measured with an appropriate photosensor. Then the device estimates the vehicle's speed with the Doppler effect that relates frequency change and speed to each other. This is only a simplified description; in reality, engineers have developed many strategies to improve the robustness and accuracy of speed cameras. They use multiple light frequencies and elaborate signal processing methods and must be calibrated cautiously. It is why these are expensive devices; they rely on costly sensors and necessitate many engineering efforts.
+
+Soon, hybrid learning might unlock the development of new measurement devices. In particular, many practical settings exist for which we know a model of how the signal of interest and the sensor relate to each other. However, in most cases, the model considers an ideal setting which is free from the aggressors that exist in the real world. For example, engineers had either to develop signal processing strategies or elaborate sensors to ensure speed cameras are insensitive to other lights than the one sent by the speed camera itself. Developing better sensors often requires years of research and development in contrast to signal processing, for which hybrid learning may be helpful.
+
+\subsection{Beyond hybrid learning}
 \paragraph{Model discovery}
 - Symbolic regressions
 - Importance of inductive bias
-- Not clear how to reach the best results - this is fundamentally problem dependent.
-
-\paragraph{Non-differentiable expert models}
 
 \paragraph{Inference under misspecification}
  - SBI and robust SBI
  - A question is whether we need to define explictly the generative model or not. It can help for sanity check but it forces us to use models that are more complex and may be more sensitive to overfitting.
- -
-\subsection{Scientific and industrial impact}
- - Too soon to say much.
- - But it is clear that combining existing models that are well validated for explaining some phenomenon shall have impact.
- - This is especially relevant for industries where devices are developed blabla...
-\subsection{Conclusion and opportunities}
-- hybrid moodels are suitable for OOD as they allow to pose rigourously the learning probleme and to express generalization in concrete terms and with respect to concrete shifts.
+ - Non-differentiable simulators
 
-- 
+\subsection{Conclusion and opportunities}
+- hybrid models are suitable for OOD as they allow to pose rigourously the learning probleme and to express generalization in concrete terms and with respect to concrete shifts.
+
+- We could imagine going further and combine models with multiple levels of faithfulness.
+
+- It is not clear how to reach the best results - this is fundamentally problem dependent.
+
+- Faster simulation.
+
+- How do we control the balance between a correct model, a partially correct model and a model that is wrong.
