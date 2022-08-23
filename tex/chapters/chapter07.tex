@@ -61,15 +61,11 @@ Soon, hybrid learning might unlock the development of new measurement devices at
 \paragraph{Symbolic model discovery}
 % - Symbolic regr
 % For hundread of years, we have described complex phenomenon with simple mathematical formulas and managed to achieve astonishing tasks.
-Most modern prediction or measurement tools are still free of machine learnin solutions. They are rather based on a profound understanding of the underlying processes described with simple mathematical formulas. On the other side, we cannot deny the increasing impact machine learning is getting on the world. In some sense, symbolic model discovery (SMD) reconciliates these two observations. It aims at discovering simple mathematical rules that accurately describe data.
+Most modern prediction or measurement tools are still free of machine learning solutions. They are based on a profound understanding of the underlying processes described with simple mathematical formulas. On the other side, we cannot deny the increasing impact of machine learning on the world. In some sense, symbolic model discovery (SMD) reconciles these two observations. It aims at discovering simple mathematical rules that accurately describe data.
 
-Modern SMD techniques first learn a deep probabilistic model from a large amount of data and then fit a simple mathematical formulas to the learnt model via classical symbolic regression tools. This two-step strategy benefits from the effective inductive bias of modern deep learning architectures to generalise better than techniques that directly fit a symbolic model to the data. \citet{cranmer2020discovering} demonstrated that this strategy is effective for retrieving non-trivial cosmology and might be relevant for interpreting neural networks and discovering novel physics. In addition to their interepretability, symbolic models usually exhibits better generalisation than the neural network they approximate as they usually correspond to simpler models that are less prone to overfitting.
+Recent SMD techniques first learn a deep probabilistic model from a large amount of data and then fit a simple mathematical formula to the learnt model via classical symbolic regression tools. This two-step strategy benefits from the effective inductive bias of modern deep learning architectures to generalise better than techniques that directly fit a symbolic model to the data. \citet{cranmer2020discovering} demonstrated that this strategy is effective for retrieving non-trivial cosmology and might be relevant for interpreting neural networks and discovering novel physics. In addition to their interpretability, symbolic models usually exhibit better generalisation than the neural network they approximate as they typically correspond to simpler models that are less prone to overfitting.
 
-We believe that progress in symbolic model discovery will eventually reach hybrid learning algorithms. 
-
-Machine learning
-- Symbolic regressions
-- Importance of inductive bias
+We believe that progress in symbolic model discovery might eventually improve hybrid learning algorithms. Applying SMD to extract a short mathematical description of the interaction model might unlock efficient model discovery grounded on the partial understanding of the phenomenon described by the expert model. In some cases, simple formulas would not be expressive enough to describe the gap between the expert model and reality accurately. We imagine a hybrid model of three components: the expert model, a minimal length formula describing the most important part of the misspecification, and a deep learning model accounting for the remaining gap.
 
 \paragraph{Inference under misspecification}
  - SBI and robust SBI
