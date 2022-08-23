@@ -9,9 +9,12 @@
 \vfill
 
 {
+\textit{\justify
    First, we guess a law. Then we compute the consequences of the guess and then we compare the computation results to nature to see if it works.
+  If it disagrees with experiment, it's wrong. In that simple statement is the key to science.
+   It doesn't make any difference how beautiful your guess is, it doesn't matter how smart you are who made the guess. If it disagrees with experiment, it's wrong. That's all there is to it.}
 
-  If it disagrees with experiment, it's wrong. In that simple statement is the key to science. It doesn't make any difference how beautiful your guess is, it doesn't matter how smart you are who made the guess. If it disagrees with experiment, it's wrong. That's all there is to it.\par\bigskip
+  \par\bigskip
   \raggedleft\MakeUppercase{Richard Feynman}\par%
 }
 
@@ -42,25 +45,27 @@
 
 
 \chapter{Introduction}\label{ch:introduction}
-Ever since the beginning of their existence, humans have always been curious to understand the world's complexity. This is not only true at the individual level, as we keep building and improving our knowledge over our lifespan, but also at the level of humankind, where knowledge has never really stopped rising since the beginning of civilisation. As an objectification of our curiosity, science aims to ground the construction of this common knowledge on rationality. In particular, the modern scientific method arguably relies on five pillars, as depicted in \Cref{fig:ch01:scientific_method}, which ensure discoveries are made out of rigour and on the basis of current scientific knowledge. Although the scientific method can answer questions in the context of a specified model of the world as stated by the hypotheses, the more fundamental goal of science is to refine these models by criticising their ability to predict the real world. In this context, this thesis aims to explore and contribute to modern techniques for building or refining models of the world.
-
-\begin{figure}[h!]
+\begin{figure}[!h]
   \centering
-  \includegraphics[width=.8\textwidth]{figures/chapter01/trapist_disco.png}
+  \includegraphics[width=.75\textwidth]{figures/chapter01/trapist_disco.png}
   \caption{
-  Illustration of the scientific inquiry as a simplified 5-steps process. The pictograms sketch a cartoon of the TRAPPIST-1 planetary system discovery made by astronomers from Li{\`e}ge University in 2016 \citep{gillon2017seven}.  Scientists first formulate a \textit{research question} and a set of reasonable \textit{hypotheses}, together they define a class of hypothetical models of the world. In order to answer their question, scientists gather data from \textit{experiments} and analyze them in the context of their modelling assumptions. Checking the consistency of different hypothetical models allows them \textit{to provide an answer} to their initial question up to a certain degree of certainty.}
+  Illustration of the scientific inquiry as a simplified 5-step process. The pictograms sketch a cartoon of the TRAPPIST-1 planetary system discovery made by astronomers from Li{\`e}ge University in 2016 \citep{gillon2017seven}. Scientists shall first formulate a \textit{research question} and a set of reasonable \textit{hypotheses}, together they define a class of hypothetical models of the world. In order to answer their question, scientists gather data from \textit{experiments} and analyze them in the context of their modelling assumptions. Checking the consistency of different hypothetical models allows them \textit{to provide an answer} to their initial question up to a certain degree of certainty.}
   \label{fig:ch01:scientific_method}
 \end{figure}
 
+Ever since the beginning of their existence, humans have always been curious to understand the world's complexity. This is not only true at the individual level, as we keep building and improving our knowledge over our lifespan, but also at the level of humankind, where knowledge has never really stopped rising since the beginning of civilisation. As an objectification of our curiosity, science aims to ground the construction of this common knowledge on rationality. In particular, the modern scientific method arguably relies on five pillars, as depicted in \Cref{fig:ch01:scientific_method}, which ensure discoveries are made out of rigour and based on current scientific knowledge. Although the scientific method can answer questions in the context of a specified model of the world as stated by the hypotheses, the more fundamental goal of science is to refine these models by criticising their ability to predict the real world. In this context, this thesis aims to explore and contribute to modern techniques for building or refining models of the world.
+
 Classically, scientists or engineers use their domain expertise to build incrementally complex models and improve their faithfulness to reality. The scientific method is then applied to validate or reject the new class of models. This strategy has not only led to today's state of science but also to the uttermost engineering accomplishments of modern times. In engineering, these successes impact our daily life, such as by enabling nuclear electricity - as predicted by special relativity - or allowing one to read this manuscript on a smart tablet - thanks to Maxwell equations' implications on the design of modern computers. More abstract but arguably as impactful on our vision of the universe, the classical model refinement strategy led to all modern scientific breakthroughs. As an example, these models allow astronomers to observe the furthest human-known objects, thanks to general relativity and gravitational lensing and enable the indirect observations of black holes thanks to gravitational waves theory.
 
-Despite these numerous achievements, machine learning has recently challenged the classical modelling approach. Where humans fall short of finding patterns in a large amount of data and build arbitrarily complex models by themselves, machines can automatically perform these tasks day and night. The paradigm shift from hand-crafted to automated modelling happens in a world where the most ambitious scientific experiments generate petabytes ($10^{15}$) of data per second \citep{noauthor_cern_nodate}. On the one hand, while the computing capacity continuously increases, the human brain is not better wired to apprehend vast amounts of data than it was when Galileo Galilei set the basis of modern science 400 years ago. On the other hand, deep learning has recently proven its ability to build accurate generative models that outperform the ones designed out of human expertise. This is, for example, true in the context of voice synthesis \citep{van_den_oord_wavenet_2016}, text-translation \citep{brown2020language, devlin2018bert}, chatbots \citep{alayrac2022flamingo}, or even text-to-image synthesis \citep{ramesh2022hierarchical, saharia2022photorealistic}, to cite a few. These models generate very diverse examples that challenge human made paintings as can be seen in \Cref{fig:dalle-mini} which shows synthesis achieved with a small version of $\text{DALL}\cdot\text{E}$ 2, a machine learning models capable of generating images from text desscriptions. Under these circumstances, the paradigm shift seems natural, even in a scientific context.
+Despite these numerous achievements, machine learning has recently challenged the classical modelling approach. Where humans fall short of finding patterns in a large amount of data and build arbitrarily complex models by themselves, machines can automatically perform these tasks day and night. The paradigm shift from hand-crafted to automated modelling happens in a world where the most ambitious scientific experiments generate petabytes ($10^{15}$) of data per second \citep{noauthor_cern_nodate}. On the one hand, while the computing capacity continuously increases, the human brain is not better wired to apprehend vast amounts of data than it was when Galileo Galilei set the basis of modern science 400 years ago. On the other hand, deep learning has recently proven its ability to build accurate generative models that outperform the ones designed out of human expertise. This is, for example, true in the context of voice synthesis \citep{van_den_oord_wavenet_2016}, text-translation \citep{brown2020language, devlin2018bert}, chatbots \citep{alayrac2022flamingo}, or even text-to-image synthesis \citep{ramesh2022hierarchical, saharia2022photorealistic}, to cite a few. These models generate very diverse examples that challenge human-made paintings, as can be seen in \Cref{fig:dalle-mini} which shows synthesis achieved with a small version of $\text{DALL}\cdot\text{E}$ 2, a machine learning model capable of generating images from text descriptions. Under these circumstances, the paradigm shift seems natural, even in a scientific context.
 
 
-\begin{side_note}{Explicit vs. implicit models}
-  In general, accurate modelling requires accounting for uncertainty. This is important as, by definition, models are simplified representations of reality and so cannot explicitly represent all possible sources of perturbations deterministically. As an example, the precision of any sensor is determined by fitting a model that accounts stochastically for internal and external perturbations that may arise in practical settings such as temperature, humidity or pressure. This is true for small models that are usually simplistic and larger models that build on top of smaller stochastic models. These models define stochastic generative processes that synthesise observations $\mathbf{x}$ conditionally on the models' parameters $\mathbf{\theta}$. When it comes to the classical approach, the complexity of the models depends on the granularity of the different effects taken into account. And while small models correspond to simple statistical assumptions and provide access to the likelihood function $p(\mathbf{x}|\mathbf{\theta})$, larger models are computer programs for which the likelihood is usually intractable because of the multiple sources of randomness. We use the terms \textit{explicit} and \textit{implicit} to distinguish between models that provide direct access to the likelihood function and those that do not. The same distinction goes for deep probabilistic models that provide access to the likelihood or solely to the generative process.
-\end{side_note}
-
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/chapter01/dog_phd_thesis.jpeg}
+  \caption{\textit{A dog writing a PhD thesis}, generated by $\text{DALL}\cdot\text{E}$ mini~\citep{Dayma_DALL_E_Mini_2021}.}
+  \label{fig:dalle-mini}
+\end{figure}
 
 % Of particular interest to this thesis are probabilistic models that account for the uncertainty going with modelling assumptions and the partial observability of model's variables.
 Machine learning has revolutionised the way we build models over the past decades. Yet, modelling \textit{uncertainty} with machine learning models is still a very active research field. Models that account for uncertainty are called \textit{probabilistic models} and describe stochastic relationships between the quantities of interest. When it comes to machine learning, these descriptions often take the form of a \textit{generative model} that synthesise realisations of the phenomenon of interest. For example, $\text{DALL}\cdot\text{E}$ 2 is a \textit{deep generative model}; it parameterises a generative process from textual description to plausible images with deep neural networks.
@@ -75,20 +80,14 @@ Despite some great successes, there remain many open issues in automatic probabi
 % % A partial solution to this problem would be to allow these models to use efficiently the prior knowledge we can have of the modeled process, this is maybe fine when the goal is to do image synthesis but is not when we need a model that satisfies the laws of physics.
 % Paragraph on the challenges faced by deep generative models: Trainign difficulty, generalization, consistency with law of physics, interpretability.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=.8\textwidth]{figures/chapter01/dog_phd_thesis.jpeg}
-  \caption{\textit{A dog writing a PhD thesis}, generated by $\text{DALL}\cdot\text{E}$ mini~\citep{Dayma_DALL_E_Mini_2021}.}
-  \label{fig:dalle-mini}
-\end{figure}
-
+\begin{side_note}{Explicit vs. implicit models}
+  In general, accurate modelling requires accounting for uncertainty. This is important as, by definition, models are simplified representations of reality and so cannot explicitly represent all possible sources of perturbations deterministically. As an example, the precision of any sensor is determined by fitting a model that accounts stochastically for internal and external perturbations that may arise in practical settings such as temperature, humidity or pressure. This is true for small models that are usually simplistic and larger models that build on top of smaller stochastic models. These models define stochastic generative processes that synthesise observations $\mathbf{x}$ conditionally on the models' parameters $\mathbf{\theta}$. When it comes to the classical approach, the complexity of the models depends on the granularity of the different effects taken into account. And while small models correspond to simple statistical assumptions and provide access to the likelihood function $p(\mathbf{x}|\mathbf{\theta})$, larger models are computer programs for which the likelihood is usually intractable because of the multiple sources of randomness. We use the terms \textit{explicit} and \textit{implicit} to distinguish between models that provide direct access to the likelihood function and those that do not. The same distinction goes for deep probabilistic models that provide access to the likelihood or solely to the generative process.
+\end{side_note}
 \section{Research question}
 
-Motivated by this paradigm shift and the remaining challenges in deep probabilistic modelling, this thesis contributes to answering the following research question:
-\begin{center}
-  \textit{How can we improve the automatic discovery of probabilistic models with deep learning algorithms?}
-\end{center}
-In pursuing this objective, we explore several directions that study and improve different aspects of deep probabilistic models. In particular, we distinguish between data-driven models that only rely on the inductive bias of the learning algorithm and the availability of representative data and hybrid models that embed solid prior knowledge (e.g. independence assumptions or partial understanding of the underlying physics) into deep probabilistic models. We argue that contributions to both aspects are complementary and will improve the range of application of deep probabilistic models. On the one hand, data-driven algorithms are well suited to modelling tasks for which we do not have strong domain knowledge but access to a lot of representative data. On the other hand, hybrid modelling allows the combination of domain knowledge with data and is thus better equipped against small or poorly representative datasets.
+Motivated by this paradigm shift and the remaining challenges in deep probabilistic modelling, this thesis contributes to answering the following research question: \textbf{how can we improve the automatic discovery of probabilistic models with deep learning algorithms?}
+
+In pursuing this objective, we explore several directions that study and improve upon various aspects of deep probabilistic models. In particular, we distinguish between data-driven models that only rely on the inductive bias of the learning algorithm and the availability of representative data and hybrid models that embed solid prior knowledge (e.g. independence assumptions or partial understanding of the underlying physics) into deep probabilistic models. We argue that contributions to both aspects are complementary and will improve the range of application of deep probabilistic models. On the one hand, data-driven algorithms are well suited to modelling tasks for which we do not have strong domain knowledge but access to a lot of representative data. On the other hand, hybrid modelling allows the combination of domain knowledge with data and is thus better equipped against small or poorly representative datasets.
 % A word somewhere that scientific models are usually probabilistic generative models because good models require modelling uncertainty coming from unmodeled phenomenon or phenomenon
 % that are only modeled up to a certain level of stochasticity. Introduced the concept of explicit generative vs implicit generative models
 
@@ -121,18 +120,12 @@ Before diving into the core contributions of this thesis, a review of probabilis
 % Both aspects are as important as on the one hand the availability of data increases for many problems which opens the path to breakthrough in the modelling of complex phenomenon.
 % On the second hand, data are usually biased in some sense and generalization outside of this can only happen by enforcing invariance or equivariance with respect to spme aspects of the problems or real world.
 
-\newpage
+% \newpage
 \section{Publications}
 Setting aside this introduction, an original primer on probabilistic modelling in \chapref{02} and the conclusion,
 the scientific content of this manuscript is exclusively borrowed from original contributions made to deep probabilistic modelling over the last 4 years.
 Each selected contribution sets its own chapter complemented with a prologue and an epilogue.
 The manuscript builds upon the following list of publications:
-
-  \begin{tcolorbox}[breakable,width=\textwidth,title={List of publications}
-      ,enhanced jigsaw, pad at break*=1mm, breakable,
-      left=2mm, right=2mm, top=3mm, bottom=3mm,
-      colback=LightBlue, boxrule=0pt, frame hidden,
-      borderline ={0.5mm}{0mm}{Maroon}, arc=.5mm, coltitle=white, colbacktitle=Maroon]
   \begin{itemize}
   \item[] \citep{wehenkel_unconstrained_2019} \textit{Unconstrained monotonic neural networks},
   \textbf{Wehenkel Antoine} and Louppe Gilles.\\
@@ -160,19 +153,12 @@ The manuscript builds upon the following list of publications:
   $\quad \rightarrow$ \chapref{07}.
 
   \end{itemize}
-\end{tcolorbox}
+% \end{tcolorbox}
 
 \section{Additional publications}
 
 Along the pursuit of my PhD degree, I had the chance to take part in fruitful collaborations not directly related to the scope of this thesis.
 The following list of co-authored publications stemmed from these collaborations:
-
-\begin{tcolorbox}[breakable,width=\textwidth,title={Extra contributions}
-    ,enhanced jigsaw, pad at break*=1mm, breakable,
-    left=4mm, right=4mm, top=5mm, bottom=5mm,
-    colback=LightBlue, boxrule=0pt, frame hidden,
-    borderline ={0.5mm}{0mm}{Maroon}, arc=.5mm, coltitle=white, colbacktitle=Maroon]
-
 \begin{itemize}
 \item[] \citep{pesah2018recurrent} \textit{Recurrent Machines For Likelihood-free Inference},
 Arthur Pesah, \textbf{Wehenkel Antoine} and Louppe Gilles.\\
@@ -207,4 +193,4 @@ Dumas Jonathan, \textbf{Wehenkel Antoine}, Lanaspeze Damien, Corn{\'e}lusse Bert
 Applied Energy, 2022.
 
 \end{itemize}
-\end{tcolorbox}
+% \end{tcolorbox}
