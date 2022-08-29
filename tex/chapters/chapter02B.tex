@@ -1,11 +1,11 @@
-
-
+\thispagestyle{empty}
+\section*{Preambule}
 
 \begin{figure}[h]
   \centering
 
   % \caption{An old painting of Isaac Newton writing the theory of gravity in the language of probability and questioning the role of models in the world. Made by $\text{DALL}\cdot\text{E }2$.}
-  \includegraphics[width=.95\textwidth]{figures/chapter02/DALLE_2_Newton.png}
+  \includegraphics[width=.95\textwidth]{/Users/awehenkel/Documents/Ecole/2021-2022/phd-thesis/tex/figures/chapter02/3150669925_A_painting_by_Kandinsky_of_a_mathematician_writing_formulas_and_graphs_on_a_blackboard_.png}
   \label{}
 \end{figure}
 
@@ -26,6 +26,7 @@
 
 \begin{chapter_outline}
 
+This chapter introduces the class of probabilistic graphical models. We motivate graphs as effective representations of probabilistic independence assumptions. We distinguish between directed -- a.k.a. Bayesian networks -- and undirected -- a.k.a. Markov networks -- models. We discuss each representation's qualities and limitations and present concrete inference and learning algorithms. The reader shall acquire all notions necessary for the practical and theoretical understanding of probabilistic graphical models in the context of this thesis.
 \end{chapter_outline}
 
 \section{A graphical model is worth a thousand words}
@@ -153,10 +154,10 @@ We finally introduce variational inference (VI) as a third alternative for infer
 \begin{align}
   \bm{\theta}^\star = \argmin_{\bm{\theta}} \mathbb{D}\left[Q_{\bm{\theta}}(Y)\Vert P(Y\mid E=\bm{e}) \right], \label{eq:obj_VI}
 \end{align}
-where $\mathbb{D}$ is an appropriate divergence between distributions. For the rest of this discussion, let us fix $\mathbb{D}$ to the Kullback-Leibler ($\mathbb{KL}$) divergence which is an appropriate choice as it is only minimized when $Q = P$. As of now, we also restrain our discussion to the case of continuous variables. Formally, the $\mathbb{KL}$ compares two distributions $P(X)$ and $Q(X)$ as $$\mathbb{KL}\left[P\Vert Q\right] \triangleq \int_{\bm{x} \in \mathcal{X}} P(\bm{x}) \log \frac{P(\bm{x})}{Q(\bm{x})} \text{d}\bm{x}.$$ The integral can be replaced by a sum for discrete random variables. The $\mathbb{KL}$ is not a proper distance as it is not symmetric.
+where $\mathbb{D}$ is an appropriate divergence between distributions. For the rest of this discussion, let us fix $\mathbb{D}$ to the Kullback-Leibler ($\mathbb{KL}$) divergence which is an appropriate choice as it is only minimized when $Q = P$. As of now, we also restrain our discussion to the case of continuous variables. Formally, the $\mathbb{KL}$ compares two distributions $P(X)$ and $Q(X)$ as $$\mathbb{KL}\left[P\Vert Q\right] \triangleq \int_{\bm{x} \in \mathcal{X}} P(\bm{x}) \log \frac{P(\bm{x})}{Q(\bm{x})} \text{d}\bm{x}.$$ The integral can be replaced by a sum for discrete random variables. The $\mathbb{KL}$ is not a proper distance as it is not symmetric. Depending on the context, we will switch the two arguments $P$ and $Q$, which is fine as in both cases \Cref{eq:obj_VI} is minimized iff the two arguments are equal.
 
 Solving $\Cref{eq:obj_VI}$ is possible if we have a parametric family of distributions for which density evaluation and sampling are differentiable functions of the parameters. This family could be another BN or a Normalizing flow, a deep probabilistic model we describe in the next section. Let us denote by $Q_{\bm{\theta}}$ the probability density function and the procedure to generate samples as $$ y := f_{\bm{\theta}}(z) \quad\text{where}\quad z\sim \mathcal{N}(0, I),$$
-where $\mathcal{N}(0, I)$ denotes a normal distribution. \textcolor{red}{Explain why KL in this direction.}
+where $\mathcal{N}(0, I)$ denotes a normal distribution.
 In this ideal case, the optimization problem becomes:
 \begin{align}
   \bm{\theta}^\star &= \argmin_{\bm{\theta}} \mathbb{KL}\left[Q_{\bm{\theta}}(Y)\Vert P(Y\mid E=\bm{e}) \right]\\ \label{eq:VI_optim}
@@ -229,9 +230,9 @@ In parallel to this, there exist specialized algorithms for learning BNs' struct
 
 \subsection{Duality between directed graphs and distributions}
 \textcolor{red}{Improve with an example.}
-If a distribution $P$ factorises over a Bayesian network with graph $G$, we can check whether some conditional independence holds with d-separation. In this case, we say that the Bayesian network is an \textit{I-map} of the independence in $P$ - any independence expressed by the BN is present in $P$. However, we have also observed that any distribution factorises over the complete graph. Complete Bayesian networks are unsatisfactory as they do not reflect any independence assumptions necessary for manipulating the distribution efficiently.
+If a distribution $P$ factorises over a Bayesian network with graph $G$, we can check whether some conditional independence holds with d-separation. In this case, we say that the Bayesian network is an \textit{I-map} of the independence in $P$ - any independence expressed by the BN is present in $P$. However, we have also observed that any distribution factorises over the complete graph. Complete Bayesian networks are unsatisfactory as they do not reflect any independence assumptions necessary for manipulating the distribution efficiently. For example, \Cref{fig:BN-fig-a} depicts a BN that is an I-map for any distribution over the four variables $X_1, X_2, X_3, X_4$. In contrast, \Cref{fig:BN-fig-b} is an I-map over a distribution over these variables only if it can be factorized following the ancestral ordering of the network, which implies some independencies such as $X_1 \mid X_2$.
 
-Our goal is thus to find a sparse graph that only represent independence present in the distribution we aim to model. In particular, we say that a graph $G$ is a \textit{minimal I-map} for a set of independencies if it is an I-map and if the removal of even a single edge breaks the I-map property. We are generally only interested in BNs that are an I-map of the modelled distribution. However, \textit{minimal I-map} are not perfect because they can miss some independencies in $P$. A graph $G$ is a \textit{P-map} for a set of independencies $\mathcal{I}$ if the independence modelled by the graphs $\mathcal{I}_G$ are equal to $\mathcal{I}$ - that is, any independence modelled by $G$ is in $\mathcal{I}$, and all independencies in $\mathcal{I}$ are modelled by  $G$.
+Our goal is thus to find a sparse graph that only represent independence present in the distribution we aim to model. In particular, we say that a graph $G$ is a \textit{minimal I-map} for a set of independencies if it is an I-map and if the removal of even a single edge breaks the I-map property. We are generally only interested in BNs that are an I-map of the modelled distribution. For example, if the independencies modeled by \Cref{fig:BN-fig-b} holds in the distribution, we will prefer it over  \Cref{fig:BN-fig-a}. However, \textit{minimal I-map} are not perfect because they can miss some independencies in $P$. As we will see, Bayesian networks are sometimes unable to represent all (conditional) independencies present in a distribution faithfully. However, when it is posssible, we aim to find a graph $G$ that is a \textit{P-map} for a set of independencies $\mathcal{I}$ present in the distribution we aim to model. This is the case if the independence modelled by the graphs $\mathcal{I}_G$ are equal to $\mathcal{I}$ - that is, any independence modelled by $G$ is in $\mathcal{I}$, and all independencies in $\mathcal{I}$ are modelled by $G$.
 
 Clearly, any P-map is a minimal I-map, and the best BNs are the one that are P-maps of the distribution of interest. Unfortunately, Bayesian networks are not universal P-maps. Some sets of independencies $\mathcal{I}$ are impossible to express faithfully with directed graphs. In such a case, either the graph misses some independence or expresses false independence. We will see that undirected graphs can represent faithfully such independencies but have other limitations and are not universal P-maps either.
 \subsection{Causality}
@@ -245,7 +246,7 @@ We have shown with Bayesian networks that graph structures can represent importa
 
 This example is even more straightforward if we take a concrete example where such assumptions would be reasonable and observe that it contradicts the causal interpretation of BNs. Let us consider that the four random variables correspond to the opinion of four wine amateurs about a \textit{C{\^o}tes de Provence ros{\'e}}. Each amateur tastes the wine twice, on two different days, with two distinct amateurs. As they discuss together, the opinion of each amateur is influenced by the view of the others and vice versa. Because we expect each pair to reach some consensus, all opinions should influence each other, sometimes indirectly.  Each amateur will have a final opinion about the wine eventually. This contradicts a causal interpretation in which one of the variables, the root, should not be influenced by another.
 
-It sounds more natural to express similar configurations with an undirected graph. Undirected graphical models can indeed represent such conditional independence faithfully. However undirected graphs are not universal P-maps either as they cannot represent independence assumptions rooted in causal interpretation. For example, it is impossible to express that two independent variables can become dependent when conditioned on a third variable (V-structure in BNs) which naturally arises when the two independent variables cause the third. We briefly introduce these models, united under the term Markov networks. Our goal is only to provide some intuition about this class of models, as these graphical models are not directly related to any of the contributions in this thesis.
+It sounds more natural to express similar configurations with an undirected graph. Undirected graphical models can indeed represent such conditional independence faithfully. However, undirected graphs are not universal P-maps either, as they cannot represent independence assumptions rooted in causal interpretation. For example, it is impossible to express that two independent variables can become dependent when conditioned on a third variable (V-structure in BNs) which naturally arises when the two independent variables cause the third. Nevertheless, undirected representations sometimes handle non-causal assumptions more naturally than Bayesian networks. We briefly introduce these models, united under the term Markov networks. Our discussion is intentionally more superficial than for directed representations, as Markov networks are not directly related to any of the contributions in this thesis.
 \subsection{Markov networks}
 \begin{figure}
     \centering
@@ -289,7 +290,7 @@ It sounds more natural to express similar configurations with an undirected grap
     \end{subfigure}
     \caption{Two Markov networks of a $4$D variable. (\textbf{a}) No independence. (\textbf{b}) Cycle dependencies. A Bayesian network cannot represent all implied independencies but a Markov network can.} \label{fig:MN-fig}
 \end{figure}
-A Markov network (MN), also called Markov Random Field, is an undirected graph that describes \textit{Markov properties} between random variables. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a vector collecting the random variables, the global Markov property states that any two subsets of variables are conditionally independent given a separating subset $X_A \indep X_B \mid X_S$, where the subset of variables $X_S$ separates the subsets $X_A$ and $X_B$ - $X_S$ blocks all path from $X_A$ to $X_B$ in the graph. For example, the Markov network in \Cref{fig:MN-fig-a} does not impose any independence whereas the one in \Cref{fig:MN-fig-b} implies the following independence: $\{ X_1 \indep X_3 \mid (X_2, X_4), X_2 \indep X_4 \mid (X_1, X_3)\}$.
+A Markov network (MN), also called Markov Random Field, is an undirected graph that describes \textit{Markov properties} between random variables. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a vector collecting the random variables, the global Markov property states that any two subsets of variables are conditionally independent given a separating subset $X_A \indep X_B \mid X_S$, where the subset of variables $X_S$ separates the subsets $X_A$ and $X_B$ -- $X_S$ blocks all path from $X_A$ to $X_B$ in the graph. For example, the Markov network in \Cref{fig:MN-fig-a} does not impose any independence whereas the one in \Cref{fig:MN-fig-b} implies the following independence: $\{ X_1 \indep X_3 \mid (X_2, X_4), X_2 \indep X_4 \mid (X_1, X_3)\}$.
 
 \begin{table}[h]
 
@@ -323,17 +324,36 @@ $1$ & $0.5$ & $0.1$    \\\hline
 \caption{The numerical values associated with a two nodes ($X_1$ and $X_2$) Markov network. (\textbf{a}) The unnormalised factor. (\textbf{b}) The factor normalised corresponds to the joint distribution.}
 \end{table}
 \subsection{Parameterisation.}
-Similar to BNs, the graphical structure of a Markov network describes independencies but does not explicit the exact distribution. For this, Markov networks use factors, which are functions describing the interactions between connected variables. Unlike BNs, factors are unormalized and do not directly correspond to conditional distributions. Instead, they reflect the absolute strength of interaction between the variables. For example, let $X_1$ and $X_2$ be two binary random variables, \Cref{tab:MN_simple_factor} reports possible values for the factor $\phi(X_1, X_2): \{ 0, 1\} \times \{ 0, 1\} \rightarrow \mathbb{R}$. We can compute the corresponding joint distribution by summing and normalizing factors as
-$$ P(X_1, X_2) = \frac{\phi(X_1, X_2)}{\sum_{(x_1, x_2) \in \{ 0, 1 \} \times \{ 0, 1\} } \phi(X_1=x_1, X_2=x_2)}. $$
+The unidirectionality of Markov networks imposes some symmetry in their parameterisation. In contrast to BNs, the numerical values cannot represent conditional distributions which would break the symmetry of the undirected relationship between two nodes ($P(A \mid B) \neq P(B \mid A)$). An alternative parameterisation could be to encode all the 2D joint distributions. Unfortunately, this would be impractical. For example, let us suppose we parameterise the wine-amateurs Markov network in \Cref{fig:MN-fig-b} with the corresponding 2D joint distributions ($P(X_1, X_2), P(X_2, X_3), P(X_3, X_4), P(X_1, X_4)$). Satisfying the Kolmogorov's axioms with such a parameterisation is a real challenge; e.g., it would imply that $P(X_1) = \sum_{x_2}P(X_1, X_2=x_2)$ must be equal to $P(X_1) = \sum_{x_4}P(X_1, X_4=x_4)$. It is unclear how we could practically ensure this equality in practice.
+% This parameterisation would create interacting constraints between the different factor which is impractical.
+%
+% nIt is clear that the lack of directionality in Markov networks implies that the numerical relationships between two variables shall not be expressed by  prevents us to use 1D (conditional) probabilistic distributions to parameterise the joint distribution. Conditioning would break the symmetry which is expected from an undirectional representation. Let us consider again our example with the four wine amateurs as depicted by \Cref{fig:MN-fig-b}. We know the amateur $1$ and $4$ interacts with $2$ and $3$ but $X_3 \indep X_1$ and $X_2 \indep X_4$. We aim to associate numerical values with different configurations, eventually we would like to evaluate $P(X_1, X_2, X_3, X_4)$
 
-We extend interactions between more than two variables with factors that parameterize the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ as a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$ that defines an unormalised distribution as
-$$ \tilde{P}_{\bm{\phi}(X)} = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
-% A markov network factorizes such distribution if there is one factor for each group of variables that defines a complete subgraph. These subgraphs are called cliques.
-The corresponding distribution is
+% Similar to BNs, the graphical structure of a Markov network describes independencies but does not explicit distributions numerically.
+
+
+It is why instead Markov networks rely on \textbf{unormalised} functions called \textit{factors} for their parameterisation. A factor is a real-valued function $\phi(\cdot): \mathcal{X} \rightarrow \mathbb{R}$ that describe the interactions between a set of random variables $X$. We can combine multiple factors to create a joint distribution. This parameterisation is called a Gibbs distribution. It parameterises the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ with a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$. Each $D_i$ is a different subset of variables. The Gibbs distribution is defined as follows:
 $$P_{\bm{\phi}(X)} = \frac{1}{Z}\tilde{P}_{\bm{\phi}(X)},$$
-where the normalising factor is $Z=\sum_{\bm{x} \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}$ if the random vector is discrete or $Z=\int_{x \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}\text{d}\bm{x}$ if it is continuous. Markov networks define a joint distribution with an unnormalised function that scores the plausibility of each possible realisation.
+where
+$$ \tilde{P}_{\bm{\phi}(X)} = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
+The normalising factor is $Z=\sum_{\bm{x} \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}$ if the random vector is discrete or $Z=\int_{x \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}\text{d}\bm{x}$ if it is continuous.
 
-When the factors are stricly positive, the unnormalised distribution can be written as $$ \tilde{P}_{\bm{\phi}(X=\bm{x})} = e^{-E(\bm{x})}, $$ and E is dubbed the energy function. This family of distributions is called Gibbs distributions. Such a distribution factorises over a Markov network if each factor takes as input a clique, which is a complete subgraph of the network. Parameterising Markov networks can be cumbersome as the number of cliques grows with the complexity of the graph. Hence we usually try to minimize the number of edges in the graph and to only parameterise 1D and 2D factors.
+In BNs, the ancestral factorisation ensures that the parameterisation respects the independencies modelled by the graph structure. Similarly, a Gibbs distribution respects the independence of a Markov network if the factors only take a subset of variables that are complete network subgraphs. For example, we can parameterise the wine-amateur joint distribution with four 2D factors $\{\phi_k(\cdot,\cdot): \{ 0, 1\} \times \{ 0, 1\} \rightarrow \mathbb{R}\}_{k=1}^4$ that encode the interactions between the four amateurs, e.g. as the one in \Cref{tab:MN_simple_factor}. In addition, we could also use 1D factors. However, the parameterisation with maximal complete subgraphs, also called maximal clique potentials, is sufficiently expressive to encode the marginals over subsets. Thus we can stick to the 2D factors in this example and, in general, parameterise the maximal clique potentials only.
+
+Parameterising Markov networks with factors over maximal clique potentials may obscure the structure in the lower-dimensional original set of factors. As the number of nodes grows, the graph's complexity and the maximal clique's size grow. For discrete variables, the number of entries in the table representing the factor grows exponentially with the dimensionality of the input vector. Hence we usually try to minimise the number of edges in the graph, or we only parameterise 2D factors and ignore higher-order interactions.
+% As factors are unormalised they do not explicitly provide access to the joint distribution over the variables of the Markov network
+%
+% A factor is a function that attributes an absolute number to the joint observation of connected variables. For example, let $X_1$ and $X_2$ be two potentially dependent binary random variables. We can use a fully connected Markov network to represent their joint distribution. It is an implementation choice but we can chose to not use 1D factors, or equivalently to suppose they are constant and equal to $1$ everywhere. We can specify the joint distribution implicitly via the 2D factor $\phi(X_1, X_2): \{ 0, 1\} \times \{ 0, 1\} \rightarrow \mathbb{R}$, e.g. as the one in \Cref{tab:MN_simple_factor}. In order to explictly evaluate the joint distribution we need to normalise the factor(s) as
+% $$ P(X_1, X_2) = \frac{\phi(X_1, X_2)}{\sum_{(x_1, x_2) \in \{ 0, 1 \} \times \{ 0, 1\} } \phi(X_1=x_1, X_2=x_2)}. $$
+%
+% We extend interactions between more than two variables with factors that parameterize the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ as a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$ that defines an unormalised distribution as
+% $$ \tilde{P}_{\bm{\phi}(X)} = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
+% % A markov network factorizes such distribution if there is one factor for each group of variables that defines a complete subgraph. These subgraphs are called cliques.
+% The corresponding distribution is
+% $$P_{\bm{\phi}(X)} = \frac{1}{Z}\tilde{P}_{\bm{\phi}(X)},$$
+% where the normalising factor is $Z=\sum_{\bm{x} \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}$ if the random vector is discrete or $Z=\int_{x \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}\text{d}\bm{x}$ if it is continuous. Markov networks define a joint distribution with an unnormalised function that scores the plausibility of each possible realisation.
+%
+% When the factors are stricly positive, the unnormalised distribution can be written as $$ \tilde{P}_{\bm{\phi}(X=\bm{x})} = e^{-E(\bm{x})}, $$ and E is dubbed the energy function. This family of distributions is called Gibbs distributions. Such a distribution factorises over a Markov network if each factor takes as input a clique, which is a complete subgraph of the network. Parameterising Markov networks can be cumbersome as the number of cliques grows with the complexity of the graph. Hence we usually try to minimize the number of edges in the graph and to only parameterise 1D and 2D factors.
 
 \begin{figure}
     \centering
@@ -363,7 +383,7 @@ When the factors are stricly positive, the unnormalised distribution can be writ
     \end{tikzpicture}
     \caption{A Restricted Boltzmann machines compose of $n$ hidden units $H_i$ and $m$ visible units $V_j$. The Markov network is a bipartite graph separating hidden and visible units into two groups fully connected to each other.}\label{fig:RBM}
 \end{figure}
-
+\subsection{Toward neural networks}
 Provided the graph structure and factors, we can use sampling algorithms, such as MCMC, to generate realisations that follow the distribution modelled by the network. But without additional constraints on the structure manipulating these models is difficult.
 Restricted Boltzmann machines (RBMs) are a popular class of Markov networks where binary variables are split into visible units, denoted $V \in \{0, 1\}^m$, and hidden units, $H \in \{0, 1\}^n$, with a bipartite graph as depicted in \Cref{fig:RBM}. This restriction allows efficient learning algorithms inspired by the Hebbian plasticity of the brain. The parameterisation of RBMs is a matrix of weights $W \in \mathbb{R}^{m\times n}$ that describes the interactions between visible and hidden units and two vectors of offset $\bm{b}_H$ and $\bm{b}_V$ respectively for hidden and visible units. The joint distribution between visible and hidden units is computed as
 $$ P(V=\bm{v}, H=\bm{h}) = \frac{1}{Z} \phi(V=\bm{v}, H=\bm{h}), $$

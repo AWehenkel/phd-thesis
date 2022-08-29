@@ -1,5 +1,5 @@
-
-
+\thispagestyle{empty}
+\section*{Preambule}
 
 \begin{figure}[h]
   \centering
@@ -30,7 +30,7 @@
 \end{chapter_outline}
 
 \section{Introduction}
-RBMs are arguably one of the first generative models built upon neural networks. This section discusses other successful approaches for parameterising probabilistic models with neural networks. While graphical models describe probabilistic models with graphs and are appealing for understanding and prescribing modelling assumptions, they do not rigorously describe efficient parameterisations of the conditional probability distributions in the continuous setting. Deep probabilistic models encompass methods for parameterising these probability distributions with neural networks. Some of these models are particularly well suited for sample generation and are called \textit{deep generative models}. We will highlight the correspondence of some of these models within the probabilistic graphical models when possible.
+Restricted Botzmann Models are arguably one of the first generative models built upon neural networks. This chapter discusses other successful approaches for parameterising probabilistic models with neural networks. While graphical models describe probabilistic models with graphs and are appealing for understanding and prescribing modelling assumptions, they do not rigorously describe efficient parameterisations of the conditional probability distributions in the continuous setting. Deep probabilistic models encompass methods for parameterising these probability distributions with neural networks. Some of these models are particularly well suited for sample generation and are called \textit{deep generative models}. We will highlight the correspondence of some of these models within the probabilistic graphical models when possible.
 
 \section{Why neural networks?}
 We abstract neural networks as parametric functions that map an input space $\mathcal{X}$ to an output space $\mathcal{Y}$ and are differentiable functions $f_{\bm{\theta}}: \mathcal{X} \rightarrow \mathcal{Y}$ of their parameters $\bm{\theta}$. Although neural networks are universal function approximators, the parameterisation of a probability distribution is challenging and requires the right architectural choices. We often present neural networks as deterministic models; however, many strategies exist to parameterise probability distributions, as we will see in the next sections.
