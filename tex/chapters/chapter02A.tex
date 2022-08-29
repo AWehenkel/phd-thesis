@@ -1,4 +1,5 @@
-
+\thispagestyle{empty}
+\section*{Preambule}
 
 
 \begin{figure}[h]
@@ -11,8 +12,6 @@
 
 \vfill
 
-\vspace{5em}
-
 {
 \textit{\justify
    [We must avoid] false confidence bred from an ignorance of the probabilistic nature of the world, from a desire to see black and white where we should rightly see gray.}
@@ -23,22 +22,14 @@
   \par%
 }
 
-\vspace{4em}
 
 \chapter{Introduction to probabilistic modelling}\label{ch:02}
 
 \begin{chapter_outline}
 
-  % The previous chapter established that modelling has played a major role in the progress of science and engineering.
-  In this chapter, we argue that accounting for uncertainty is crucial for building useful models, and we present a background on the \textit{probabilistic modelling} framework.
-  More precisely, this chapter shall answer the following questions:
-  \begin{enumerate}
-    \item What is a probabilistic model?
-    \item How do we build a probabilistic model?
-    \item How can we use a probabilistic model?
-    \item What are the technical challenges considered in this thesis?
-  \end{enumerate}
-    For this purpose, we start by abstracting the main concepts orbiting around probabilistic modelling. We motivate the relevance of developing powerful tools in this context and we provide an overview of two classes of models relevant to this thesis, probabilistic graphical models and deep probabilistic models.
+  This chapter shall motivate probabilistic modelling in the context of artificial intelligence. We argue that accounting for uncertainty is crucial for building useful models. Our aim is to vulgarise the \textit{probabilistic modelling} framework. We shall convince the reader that this framework enables effective abstract reasoning, and also solve real-world problems.
+  The reader shall eventually agree that developments within this framework is a relevant research goal.
+    % For this purpose, we start by abstracting the main concepts orbiting around probabilistic modelling. We motivate the relevance of developing powerful tools in this context and we provide an overview of two classes of models relevant to this thesis, probabilistic graphical models and deep probabilistic models.
 % This chapter concerns the definition of unsupervised learning with a brief review of classical methods.
 % Graphical models (in particular B-net are introduced here.)
 % It continues with a review of deep generative modelling, with a discussion between explicit and implicit generative modelling.
@@ -49,13 +40,16 @@
 % \textcolor{red}{Clearly mention that deep generative models is a class of probabilistic model and so it is important to first clarify what are probabilistic models; why they are useful and why this is still q very qctive reserch area. (it might be simple to add this in the outline.)}
 
 \section{Introduction}
-\textcolor{red}{Define stochasticity vs randomness vs uncertainty?}
 The invention of computers has enabled the automatisation of many tasks historically accomplished by humans. One key ingredient of this revolution is making computers \textit{reason} -- to make an informed judgment based on logical arguments and observations. The set of hypotheses on which this logic builds is a \textit{model}. Both humans and machines rely on reasoning to perform tasks. As an example, let us consider that we want to choose a bottle of wine at the restaurant. We first need some hypotheses, e.g., $\bullet$ What kind of wine do people like at the table? Red or white? Strong or delicate? $\bullet$ What is the budget? $\bullet$ What do we have on the menu? $\bullet$ What is the wine list? Etc. Provided with this model, we can make an informed choice: remove the wines that are too expensive or would unplease someone at the table, and pick one of the remaining that goes well with tonight's dinner? Other examples include a scientist who needs a model of the earth and its atmosphere to explain climate change; or streaming platforms which use a model that represents users' tastes to make video recommendations.
 
 In these contexts and many others, the model plays a central part. In practice, we aim for \textbf{faithful models} -- models for which reasoning leads to a proper judgment. In the examples mentioned above, we strive for models that help us choose the right wine; that explain the climate over the last centuries; that keep the user longer on the platform. The exact definition of the model's quality depends on the targetted application. However, certain classes of models are usually strictly better than others.
-In particular, a model that embeds notions of uncertainty is more expressive than the deterministic as the latter models cannot accurately represent phenomena that exhibit randomness. Although it is unknown whether the laws that rule our reality are deterministic or stochastic, modelling requires simplifying assumptions which induce stochasticity. For example, a model that acknowledges partial observability of a sytem needs to express its uncertainty about the state of these unobserved variables. Uncertainty may also arise from the finite precision of measurement devices or from simplifying approximations that cannot make perfect predictions.
+In particular, a model that embeds notions of uncertainty is more expressive than the deterministic as the latter models cannot accurately represent phenomena that exhibit randomness. Although it is unknown whether the laws that rule our reality are deterministic or stochastic, modelling requires simplifying assumptions which mean stochasticity. For example, a model that acknowledges partial observability of a sytem needs to express its uncertainty about the state of these unobserved variables. Uncertainty may also arise from the finite precision of measurement devices or from simplifying approximations that cannot make perfect predictions.
 
 We thus need a language to formally express this stochasticity. The language of \textit{probability} is the one to make statements about uncertain events. It allows contrast between what is \textit{possible} and what is \textit{plausible}. The distinction is essential as it will enable us to eventually make deterministic decisions by focusing on the most plausible events and discarding other events which are unlikely. For example, wine amateurs know that an old bottle has a higher chance of being corked than a recent one but might also taste better. We can use probability to express this fact and select a bottle to our taste with high probability.
+
+\begin{side_note}{Stochasticity, randomness, or uncertainty?}
+we use these terms as follows. \textit{Stochasticity} refers to the property of being well-described by the probabilistic language. It is a statement about a model. In contrast, \textit{randomness} refers to the phenomenon itself, not to a model. \textit{Uncertainty} is the result of randomness or stochasticity. It is our way of acknowledging that we do not know things perfectly. It is equally the nature itself than our modelling assumptions that cause uncertainty.
+\end{side_note}
 
 \section{Probabilistic model}
 A probabilistic model is a model that describes a phenomenon of interest in probabilistic terms. Practically, it defines a probability distribution over the set of variables considered valuable to describe the phenomenon (e.g., $X, Y, Z$). When it models the joint observations, the distribution can be the joint between all variables (e.g., $P(X, Y, Z)$). It can also be a conditional distribution  (e.g., $P(X \mid Y, Z)$) if some of the variables are known when using the model. We mostly limit our discussion to the former case for simplicity but with no loss of generality.
@@ -75,8 +69,7 @@ In this manuscript, we argue on multiple occasions that we shall not make a rigi
 
 
 \begin{side_note}{Bayesian vs frequentist interpretation}
-  \textcolor{red}{Be clear that we do not oppose them.}
-  Two interpretations of probabilities compete with each other. In the above discussion, we brought probabilities as a language to express our uncertainty about the truth of facts. We took the \textit{Bayesian} interpretation of probabilities. The reference to sir Bayes comes from the application of Bayes' rule to update our prior belief in the presence of new evidence. In this context, the prior is part of the model and affects its quality. The main drawback of the Bayesian interpretation is the potential complexity of defining the prior appropriately. The other view, referred to as \textit{frequentist}, interprets a probability as a frequency of events. With this perspective, probability does not quantify uncertainty; it expresses intrinsic randomness. Frequentists reject the notion of prior belief, which has pros and cons. In general, there is no interpretation better than the other. However, the Bayesian interpretation provides motivations for many popular algorithms in machine learning and is the one we will often implicitly use in our discussions. At the same time, we do not strictly reject the frequentist point of view. For example, we discuss the maximum likelihood principle, a frequentist concept.
+  Two interpretations of probabilities live along each other. In the above discussion, we brought probabilities as a language to express our uncertainty about the truth of facts. We took the \textit{Bayesian} interpretation of probabilities. The reference to sir Bayes comes from the application of Bayes' rule to update our prior belief in the presence of new evidence. In this context, the prior is part of the model and affects its quality. The main drawback of the Bayesian interpretation is the potential complexity of defining the prior appropriately. The other view, referred to as \textit{frequentist}, interprets a probability as a frequency of events. With this perspective, probability does not quantify uncertainty; it expresses intrinsic randomness. Frequentists reject the notion of prior belief, which has pros and cons. In general, there is no interpretation better than the other. However, the Bayesian interpretation provides motivations for many popular algorithms in machine learning and is the one we will often implicitly use in our discussions. At the same time, we do not strictly reject the frequentist point of view. For example, we discuss the maximum likelihood principle, a frequentist concept.
 \end{side_note}
 % Now contrast between discriminative versus descriptive models.
 %
@@ -92,7 +85,7 @@ The class of possible models can be finite, e.g. the class contains two models -
 \subsection{Maximum likelihood estimation}
 A learning strategy is a set of rules that produces a model from data. When we only consider a finite number of models, a simple strategy exists. We test the predictive performance of each model and select the one that is the most consistent with our data. If the models describe the phenomenon with discrete events, we maximise the probability. If it considers a continuous set of events, we maximise the density. In the case where one of the models is \textit{correct} -- it is the one that generates the data -- this selection algorithm will eventually select the right model as the number of independently and identically distributed (iid) data points tends to $\infty$. This selection technique is said \textit{consistent}.
 
-We can use a similar approach when the models are parameterized by a real vector $\bm{\theta} \in \mathbb{R}^d$. In this case, our goal is to estimate a good value for $\bm{\theta}$. One approach, denoted maximum likelihood estimation (MLE), is to select the model's parameter $\bm{\theta}$ that maximizes the  joint distribution (density or probability) of the data $\mathcal{D}$. This quantity is called the likelihood function of the parameter $\bm{\theta}$, denoted $\mathcal{L}(\bm{\theta}) \triangleq P(\mathcal{D}\mid\bm{\theta})$. Hence the MLE estimator is formally defined as
+We can use a similar approach when the models are parameterized by a real vector $\bm{\theta} \in \mathbb{R}^d$. In this case, our goal is to estimate a good value for $\bm{\theta}$. One approach, denoted maximum likelihood estimation (MLE), is to select the model's parameter $\bm{\theta}$ that maximizes the joint distribution (density or probability) of a dataset $\mathcal{D}:=\{\mathbf{x}_i\}_{i=1}^N$ of points $\bm{x}_i \in \mathcal{X}$. This quantity is called the likelihood function of the parameter $\bm{\theta}$, denoted $\mathcal{L}(\bm{\theta}) \triangleq P(\mathcal{D}\mid\bm{\theta})$. Hence the MLE estimator is formally defined as
 \begin{align}
    \bm{\theta}_{\text{MLE}} = \argmax_{\bm{\theta}} P(\mathcal{D}\mid\bm{\theta}). \label{eq:chap02:MLE}
 \end{align}
@@ -104,10 +97,11 @@ The consistency of the MLE is an appealing property. However, we must consider t
 \subsection{Learning as inference}
 The strict delimitation between possible and impossible models is another limitation of the MLE approach. Instead of interpreting learning as model selection, we can reformulate learning as an inference task to alleviate this limitation. In this context, the model is a generic description of the phenomenon parameterised by some explanatory variables. For example, the model can be a parametric function, exactly as when we define a class of models in the MLE approach. The distinction between learning as inference and MLE lies in our interpretation of the parameters. In the former, we consider the parameter $\bm \theta$ as part of the model rather than defining a class of models. The MLE is usually associated with a frequentist interpretation of probability, whereas learning as inference is Bayesian.
 
-Let us say we want to learn a model that can predict the conditional distribution $P(Y=y\mid X=\bm{ x})$ that I like a wine with features $\bm{ x} \in \mathbb{R}^d$, where $y \in \mathbb{R}$ is a value that represents my affinity with the wine. Learning aims at summarising the information in the data to perform the task of interest, that is, to predict $P(Y \mid X, \mathcal{D})$.
+Let us say we want to learn a model that can predict the conditional distribution $P(Y=y\mid X=\bm{x})$ that I like a wine with features $\bm{x} \in \mathbb{R}^d$, where $y \in \mathbb{R}$ is a value that represents my affinity with the wine. Learning aims at summarising the information in the data to perform the task of interest. Thus, learning aims to predict the output $P(Y \mid X=\mathbf{x}, \mathcal{D})$, the conditional distribution over the output space given any features $X=\bm{x}$ and the set of observations $\mathcal{D}$, which is often a set of input-output pairs  $\mathcal{D}:= \{(\mathbf{x}_i, y_i)\}_{i=1}^N$.
 
-\textcolor{red}{define $P(Y \mid X, \mathcal{D})$ -- clarify abuse of notation with $P(Y \mid X, \bm{\theta})$ -- True distribution should be explained, it corresponds to a distribution that is assumed to have generated the data.}
-For example, we can parameterise the class of models with a neural network $f_{\bm \theta}(\cdot; \bm{ x}): \mathbb{R} \times \mathbb{R}^{d} \rightarrow \mathbb{R}^+$, parameterised by $\bm{\theta}$, and which defines a parametric density function over $\mathbb{R}$ conditioned on an input $\bm{x}$. Said otherwise, $f_{\bm{\theta}}$ represents the conditional distribution $P(Y \mid X, \bm{\theta})$. We assume the parameters $\bm{\theta}$ are expressive enough to summarize all information about the ``true'' distribution $P(Y\mid X)$ contained in the data $\mathcal{D}$, that is $ Y \indep \mathcal{D} \mid X, \bm \theta$. Then learning requires i) to condition our predictions on the data $\mathcal{D}$ and; ii) to marginalize with respect to the unknown value of parameters $\bm \theta$. Taking advantage of the conditional independence $ Y \indep \mathcal{D} \mid X, \bm \theta$, the model for making new predictions is expressed as
+% \textcolor{red}{define $P(Y \mid X, \mathcal{D})$ -- clarify abuse of notation with $P(Y \mid \bm{x}, \bm{\theta})$ -- True distribution should be explained, it corresponds to a distribution that is assumed to have generated the data.}
+For example, we can parameterise the class of models with a neural network $f_{\bm \theta}(\cdot; \bm{ x}): \mathbb{R} \times \mathbb{R}^{d} \rightarrow \mathbb{R}^+$, parameterised by $\bm{\theta}$, and which defines a parametric density function over $\mathbb{R}$ conditioned on an input $\bm{x}$. Said otherwise, $f_{\bm{\theta}}$ represents the conditional distribution $P(Y \mid \bm{x}, \bm{\theta})$. We denote with $P(Y\mid X)$ the unknown ``true'' data distribution, that is the conditional distribution that has generated the data we observe.
+We assume the parameters $\bm{\theta}$ are expressive enough to summarize all information about the ``true'' distribution contained in the data $\mathcal{D}$. This assumption is equivalent to the conditional independence $ Y \indep \mathcal{D} \mid X, \bm \theta$. Then learning requires i) to condition our predictions on the data $\mathcal{D}$ and; ii) to marginalize with respect to the unknown value of parameters $\bm \theta$. Taking advantage of the conditional independence $ Y \indep \mathcal{D} \mid X, \bm \theta$, the model for making new predictions is expressed as
 \begin{align}
   P(Y=y\mid X=\bm x, \mathcal{D}) &= \int P(Y=y\mid X=\bm x, \bm \theta) P(\bm \theta \mid \mathcal{D}) \text{d}\bm{\theta}\\
   &=\int f_{\bm \theta}(y; \bm x) P(\bm \theta \mid  \mathcal{D}) \text{d}\bm{\theta}.
