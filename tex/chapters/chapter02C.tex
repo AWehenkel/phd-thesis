@@ -200,8 +200,8 @@ Formally we aim to recover the Bayes optimal classifier, that is for all $\mathb
   \bm{\theta}^\star &= \argmin_{\bm{\theta}} \mathbb{KL}\left[ P(C \mid \mathbf{y}) \Vert P_{\bm{\theta}}(C \mid \mathbf{y}) \right] \quad \forall \mathbf{y} \in \mathcal{Y}\\
   &\argmin_{\bm{\theta}} \mathbb{E}_{P(\mathbf{y})}\mathbb{KL}\left[ P(C \mid \mathbf{y}) \Vert P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
   &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(\mathbf{y})}\mathbb{E}_{P(C \mid \mathbf{y})}\left[ \log P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
-  &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(C)}\mathbb{E}_{\mathbf{y} \mid P(C)}\left[ \log P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
-  &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(C)}\mathbb{E}_{\mathbf{y} \mid P(C)}\left[ \log \left( \frac{P_n(\mathbf{y})}{P_n(\mathbf{y}) + P_{\bm{\theta}}(\mathbf{y})} \right) \right],
+  &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(C)}\mathbb{E}_{P(\mathbf{y} \mid C)}\left[ \log P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
+  &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(\mathbf{y} \mid C=0)}\left[ \log \left( \frac{P_n(\mathbf{y})}{P_n(\mathbf{y}) + P_{\bm{\theta}}(\mathbf{y})} \right)  \right] -\mathbb{E}_{P(\mathbf{y} \mid C=1)}\left[ \log \left( \frac{P_{\bm{\theta}}(\mathbf{y})}{P_n(\mathbf{y}) + P_{\bm{\theta}}(\mathbf{y})} \right) \right],
 \end{align}
 which is the standartd cross-entropy loss applied to a classifier that resembles to \Cref{eq:CL} parameterised by an EBM.
 
