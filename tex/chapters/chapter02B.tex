@@ -11,22 +11,21 @@
 
 \vfill
 
-{\centering
-\parbox{\textwidth}{%
-  \raggedright{
+{
+\textit{\justify
+   You can't do inference without making assumptions.}
 
-  You can't do inference without making assumptions.\par\bigskip
-  }
-  \raggedleft\MakeUppercase{A Bayesian friend}\par%
-}}
-
+  \par\bigskip
+  \raggedleft\MakeUppercase{A Bayesian friend}\\
+  \par%
+}
 
 
 \chapter{Probabilistic graphical models}\label{ch:02}
 
 \begin{chapter_outline}
 
-This chapter introduces the class of probabilistic graphical models. We motivate graphs as effective representations of probabilistic independence assumptions. We distinguish between directed -- a.k.a. Bayesian networks -- and undirected -- a.k.a. Markov networks -- models. We discuss each representation's qualities and limitations and present concrete inference and learning algorithms. The reader shall acquire all notions necessary for the practical and theoretical understanding of probabilistic graphical models in the context of this thesis.
+This chapter introduces the class of probabilistic graphical models. We motivate graphs as effective representations of probabilistic independence assumptions. We distinguish between directed models -- a.k.a. Bayesian networks -- and undirected models -- a.k.a. Markov networks. We discuss each representation's qualities and limitations and present concrete inference and learning algorithms. The reader shall acquire all notions necessary for the practical and theoretical understanding of probabilistic graphical models in the context of this thesis.
 \end{chapter_outline}
 
 \section{A graphical model is worth a thousand words}
@@ -332,10 +331,12 @@ The unidirectionality of Markov networks imposes some symmetry in their paramete
 
 
 It is why instead Markov networks rely on \textbf{unormalised} functions called \textit{factors} for their parameterisation. A factor is a real-valued function $\phi(\cdot): \mathcal{X} \rightarrow \mathbb{R}$ that describe the interactions between a set of random variables $X$. We can combine multiple factors to create a joint distribution. This parameterisation is called a Gibbs distribution. It parameterises the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ with a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$. Each $D_i$ is a different subset of variables. The Gibbs distribution is defined as follows:
-$$P_{\bm{\phi}(X)} = \frac{1}{Z}\tilde{P}_{\bm{\phi}(X)},$$
+$$P_{\bm{\phi}}(X) = \frac{1}{Z}\tilde{P}_{\bm{\phi}}(X),$$
 where
-$$ \tilde{P}_{\bm{\phi}(X)} = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
-The normalising factor is $Z=\sum_{\bm{x} \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}$ if the random vector is discrete or $Z=\int_{x \in \mathcal{X}}\tilde{P}_{\bm{\phi}(X=\bm{x})}\text{d}\bm{x}$ if it is continuous.
+$$ \tilde{P}_{\bm{\phi}}(X) = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
+The normalising factor is $Z=\sum_{\bm{x} \in \mathcal{X}}\tilde{P}_{\bm{\phi}}(X=\bm{x})$ if the random vector is discrete or $Z=\int_{x \in \mathcal{X}}\tilde{P}_{\bm{\phi}}(X=\bm{x})\text{d}\bm{x}$ if it is continuous.
+
+We sometimes write the unnormalized probability distribution as the negative exponential of an energy function $E(\cdot): \mathcal{X} \rightarrow \mathbb{R}$, $\tilde{P}_{\bm{\phi}}(X) = e^{-E_{\bm{\phi}}(X)}$. The denomination energy comes from physics which describes the probability of observing a system in a given state as a Gibbs distribution parameterised by the state's energy (and temperature).
 
 In BNs, the ancestral factorisation ensures that the parameterisation respects the independencies modelled by the graph structure. Similarly, a Gibbs distribution respects the independence of a Markov network if the factors only take a subset of variables that are complete network subgraphs. For example, we can parameterise the wine-amateur joint distribution with four 2D factors $\{\phi_k(\cdot,\cdot): \{ 0, 1\} \times \{ 0, 1\} \rightarrow \mathbb{R}\}_{k=1}^4$ that encode the interactions between the four amateurs, e.g. as the one in \Cref{tab:MN_simple_factor}. In addition, we could also use 1D factors. However, the parameterisation with maximal complete subgraphs, also called maximal clique potentials, is sufficiently expressive to encode the marginals over subsets. Thus we can stick to the 2D factors in this example and, in general, parameterise the maximal clique potentials only.
 

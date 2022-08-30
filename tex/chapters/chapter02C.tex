@@ -11,22 +11,22 @@
 
 \vfill
 
-{\centering
-\parbox{\textwidth}{%
-  \raggedright{
+{
+\textit{\justify
+   The basic laws of the universe are simple, but because our senses are limited, we can't grasp them. There is a pattern in creation.}
 
-  The basic laws of the universe are simple, but because our senses are limited, we can't grasp them. There is a pattern in creation.\par\bigskip
-  }
-  \raggedleft\MakeUppercase{Albert Einstein}\par%
-}}
-
-
+  \par\bigskip
+  \raggedleft\MakeUppercase{Albert Einstein}\\
+  \par%
+}
 
 \chapter{Deep probabilistic models}\label{ch:02}
 
 \begin{chapter_outline}
 
-This chapter comprehensively reviews various strategies to parameterise probabilistic models with neural networks. We aim to show how different classes of deep probabilistic models relate to each other. We shall convince the reader of the effectiveness and flexibility of deep probabilistic models. We also provide the primary motivations for the contributions presented in this thesis.
+This chapter comprehensively reviews various strategies to parameterise probabilistic models with neural networks. We present the main algorithms used in practice, and we discuss the pros and cons of each class of models.
+Clearly, the distinction between two models is sometimes artificial. It is why, we try to draw relevant connections between these strategies when possible.
+Our aim is to convince the reader of the effectiveness and flexibility of deep probabilistic models. Finally, we provide the primary motivations for the contributions presented in this thesis.
 \end{chapter_outline}
 
 \section{Introduction}
@@ -41,13 +41,90 @@ Neural networks are better suited to parameterise distributions than other machi
 
 In the following we will mostly ignore the conditioning variable $X$ as challenges in modelling distributions with neural networks is usually orthogonal to handling conditioning variables. Instead we focus on the modelling of the joint distributions of a $d$-dimensional random vector $Y = \left[Y_1, \dots, Y_d  \right]$ that takes value in $\mathcal{Y} = \mathcal{Y}_1 \times \dots \times \mathcal{Y}_d$. For simplicity, we consider that $\mathcal{Y}_1 = \dots = \mathcal{Y}_d$ and the domains are either discrete classes (e.g. a pixel value in $\{0, \dots, 255\}^3$) or real numbers $\mathbb{R}$.
 \section{Autoregressive models} \label{subsec:AM}
-\textcolor{red}{rephrase 1st sentence. Cite mixture density network in this text.}
-If Bayes' rule were a deep probabilistic model, it would be an autoregressive model. These models decompose the joint distribution as
+\begin{figure}
+
+\centering
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,453); %set diagram left start at 0, and has height of 453
+
+%Shape: Circle [id:dp6693448840170049]
+\draw   (24,394) .. controls (24,380.19) and (35.19,369) .. (49,369) .. controls (62.81,369) and (74,380.19) .. (74,394) .. controls (74,407.81) and (62.81,419) .. (49,419) .. controls (35.19,419) and (24,407.81) .. (24,394) -- cycle ;
+%Shape: Circle [id:dp9581265567241148]
+\draw   (131,395) .. controls (131,381.19) and (142.19,370) .. (156,370) .. controls (169.81,370) and (181,381.19) .. (181,395) .. controls (181,408.81) and (169.81,420) .. (156,420) .. controls (142.19,420) and (131,408.81) .. (131,395) -- cycle ;
+%Straight Lines [id:da9687497897729951]
+\draw [line width=2.25]  [dash pattern={on 2.53pt off 3.02pt}]  (211,395) -- (290,395) ;
+%Straight Lines [id:da4419677445778909]
+% \draw [line width=2.25]  [dash pattern={on 2.53pt off 3.02pt}]  (211,55) -- (290,55) ;
+%Rounded Rect [id:dp7960962003110323]
+\draw  [shift={(0,250)}] (2,42) .. controls (2,37.58) and (5.58,34) .. (10,34) -- (88,34) .. controls (92.42,34) and (96,37.58) .. (96,42) -- (96,66) .. controls (96,70.42) and (92.42,74) .. (88,74) -- (10,74) .. controls (5.58,74) and (2,70.42) .. (2,66) -- cycle ;
+%Rounded Rect [id:dp544597590880084]
+\draw  [shift={(0,150)}] (112,42) .. controls (112,37.58) and (115.58,34) .. (120,34) -- (198,34) .. controls (202.42,34) and (206,37.58) .. (206,42) -- (206,66) .. controls (206,70.42) and (202.42,74) .. (198,74) -- (120,74) .. controls (115.58,74) and (112,70.42) .. (112,66) -- cycle ;
+%Rounded Rect [id:dp9375363954367466]
+\draw   (297,44) .. controls (297,39.58) and (300.58,36) .. (305,36) -- (383,36) .. controls (387.42,36) and (391,39.58) .. (391,44) -- (391,68) .. controls (391,72.42) and (387.42,76) .. (383,76) -- (305,76) .. controls (300.58,76) and (297,72.42) .. (297,68) -- cycle ;
+%Shape: Circle [id:dp9573206034482791]
+\draw   (131,305) .. controls (131,291.19) and (142.19,280) .. (156,280) .. controls (169.81,280) and (181,291.19) .. (181,305) .. controls (181,318.81) and (169.81,330) .. (156,330) .. controls (142.19,330) and (131,318.81) .. (131,305) -- cycle ;
+%Straight Lines [id:da8567301316866047]
+\draw [line width=2.25]  [dash pattern={on 2.53pt off 3.02pt}]  (211,305) -- (290,305) ;
+%Straight Lines [id:da48825283468137703]
+\draw [line width=2.25]  [dash pattern={on 2.53pt off 3.02pt}]  (252,198) -- (252,270) ;
+%Straight Lines [id:da4548829701939858]
+\draw    (65,373) -- (129.66,320.88) ;
+\draw [shift={(132,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da49081615287245617]
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (175,373) -- (239.66,320.88) ;
+\draw [shift={(242,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da9305605534968759]
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (173,285) -- (237.66,232.88) ;
+\draw [shift={(240,231)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Shape: Circle [id:dp9092410420976149]
+\draw   (319,396) .. controls (319,382.19) and (330.19,371) .. (344,371) .. controls (357.81,371) and (369,382.19) .. (369,396) .. controls (369,409.81) and (357.81,421) .. (344,421) .. controls (330.19,421) and (319,409.81) .. (319,396) -- cycle ;
+%Shape: Circle [id:dp20606971755388614]
+\draw   (319,306) .. controls (319,292.19) and (330.19,281) .. (344,281) .. controls (357.81,281) and (369,292.19) .. (369,306) .. controls (369,319.81) and (357.81,331) .. (344,331) .. controls (330.19,331) and (319,319.81) .. (319,306) -- cycle ;
+%Straight Lines [id:da8117853843319638]
+\draw [line width=2.25]  [dash pattern={on 2.53pt off 3.02pt}]  (341,196) -- (341,268) ;
+%Straight Lines [id:da9043715008310824]
+\draw    (157,280) -- (157,228) ;
+\draw [shift={(157,225)}, rotate = 90.28] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da6288348052624073]
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (263,215) -- (318.69,168.91) ;
+\draw [shift={(321,167)}, rotate = 140.39] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Shape: Circle [id:dp08259847117385988]
+\draw   (319,156) .. controls (319,142.19) and (330.19,131) .. (344,131) .. controls (357.81,131) and (369,142.19) .. (369,156) .. controls (369,169.81) and (357.81,181) .. (344,181) .. controls (330.19,181) and (319,169.81) .. (319,156) -- cycle ;
+%Straight Lines [id:da7091929499334224]
+\draw    (344,131) -- (344.95,79) ;
+\draw [shift={(345,76)}, rotate = 91.04] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da5760019375125367]
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (255,373) -- (319.66,320.88) ;
+\draw [shift={(322,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+%Straight Lines [id:da731846091518092]
+\draw  [dash pattern={on 0.84pt off 2.51pt}]  (255,293) -- (319.66,240.88) ;
+\draw [shift={(322,239)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
+
+% Text Node
+\draw (29,295) node [anchor=north west][inner sep=0.75pt][align=left] {$\displaystyle P( Y_{1})$};
+% Text Node
+\draw (126,195) node [anchor=north west][inner sep=0.75pt][align=left] {$\displaystyle P( Y_{2} \mid y_{1})$};
+% Text Node
+\draw (42,390) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle y_{1}$};
+% Text Node
+\draw (148,390) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle y_{2}$};
+% Text Node
+\draw (308,49) node [anchor=north west][inner sep=0.75pt] [align=left] {$\displaystyle P( Y_{d} \mid \bm{y}_{< d})$};
+% Text Node
+\draw (336,390) node [anchor=north west][inner sep=0.75pt]   [align=left] {$\displaystyle y_{d}$};
+
+
+\end{tikzpicture}
+\caption{The forward computation of an autoregressive model. Each 1D distribution is conditioned autoregressively on the input vector.}
+\end{figure}
+Autoregressive models reduce the modelling of $d$-dimensional distributions into $d$ distributions via the product rule ($P(A, B) = P(A) P(B\mid A)$). The autoregressive structure is there to account for the piling-up conditioning factors. These models can represent all kinds of dependencies between the components of the random vector modelled.
+Formally, autoregressive models decompose the joint distribution as
 \begin{align}
   P(Y) = P(Y_1) \Pi^d_{i=2} P(Y_i|Y_{<i}), \quad \text{where} \quad Y_{<i} \triangleq \left[ Y_1, \dots, Y_{i-1}\right].
 \end{align}
-When the domain is discrete, we can parameterise each $1$D factor with a classifier. If the domain is continuous, the common practice is to parameterise a $1$D Gaussian distribution with a neural network that predicts the mean and log-variance given the conditioning vector.
-This naturally leads to the parameterization of $d$ functions with different input dimensionalities which might be very inefficient if $d$ is large (e.g. $2^{16}$ for $256\times256$ images).
+When the domain is discrete, we can parameterise each $1$D factor with a classifier. If the domain is continuous, the common practice is to parameterise a $1$D Gaussian distribution with a neural network that predicts the mean and log-variance given the conditioning vector. Mixture density networks~\citep[][MDNs]{bishop1994mixture} are an effective alternative that easily accounts for multimodality. MDNs parameterise a mixture of $m$ $1D$ distributions (e.g., Gaussian distributions) with a neural network that assigns a normalised weight to each mixture component, in addition to their parameters (e.g. the mean and log-variance).
+An autoregressive model naturally leads to the parameterization of $d$ functions with different input dimensionalities which might be very inefficient if $d$ is large (e.g. $2^{16}$ for $256\times256$ images).
 
 Sharing parameterisation between factors is an important aspect of autoregressive models. One strategy is to use recurrent neural networks where the hidden vector carries and updates the information of the successive conditioning variables\citep{van2016pixel}. However, this strategy is slow because it processes the input vector sequentially. Moreover, the inductive bias of recurrent neural networks is not ideal for signals with long-range or spatial dependencies such as audio or images. A better solution is to use causal convolutional neural networks (CNNs), which process the complete vector simultaneously and enforce the autoregressive structure in the outputs. Causal CNNs have achieved great success in modelling audio \citep{van_den_oord_wavenet_2016, van_den_oord_parallel_2018}. The PixelCNN autoregressive model generalises this architecture to 2D signals and has shown great modelling capabilities\citep{oord_conditional_2016}.
 
@@ -71,15 +148,41 @@ We can train autoregressive models efficiently by maximising their likelihood gi
   \end{subfigure}
   \caption{The energy landscape of a 2D bi-modal distribution (\textbf{a}) and the corresponding probability density function (\textbf{b}).}
 \end{figure*}
-We have already encountered the term \textit{energy} in the context of our brief introduction to Markov networks. There, and in the context of energy-based models (EBM), the energy relates to the definition of a Gibbs distribution, taking the form
+We have already encountered the term \textit{energy} when discussing the parameterisation of Markov networks. There, and in the context of energy-based models (EBM), the energy relates to the definition of a Gibbs distribution, taking the form
 \begin{align}
   P_{\bm{\theta}}(Y=\bm{y}) = \frac{1}{Z(\bm{\theta})} e^{-E_{\bm{\theta}}(\bm{y})},
 \end{align}
 where $E_{\bm{\theta}}(\cdot): \mathcal{Y}\rightarrow \mathbb{R}$ is the energy function and $Z(\bm{\theta})$ is called the partition function. \Cref{fig:Energy} shows the energy function of a 2D distribution with two modes, the integral over the support is not equal to $1$, but the energy is proportional to the logarithm of the probability density function.
 
-EBMs parameterise probability distributions with free-form real functions such as neural networks. This property is particularly appealing as it allows combining the flexibility and efficient inductive bias of neural networks, which was fundamental reasons for the greatest successes of deep learning. Unfortunately, this flexible parameterisation prevents direct access to the likelihood function, which requires the intractable computation of the partition function. This forces us to find alternatives to the classical MLE learning strategy. We now review three methods for learning EBMs for continuous variables.
+The interest of EBMs is to parameterise probability distributions with free-form real functions. For instance, any neural network can potentially parameterise an EBM. This property is particularly appealing as it allows combining the flexibility and efficient inductive bias of neural networks, which was fundamental reasons for the greatest successes of deep learning. Unfortunately, this flexible parameterisation prevents direct access to the likelihood function, which requires the intractable computation of the partition function. This prevents the direct application of the classical MLE learning strategy. We now review the main approaches for learning EBMs for continuous variables.
 
-A simple strategy is to approximate the normalising factor (and its first order derivative) with Monte Carlo estimation to perform MLE by gradient descent. However, this requires samples from the energy-based model, which is not immediate either. A solution is to resort to sampling strategies that work with unnormalised distributions, such as MCMC techniques. In practice, this strategy may work but requires tuning many hyperparameters.
+\subsection{Markov chain Monte Carlo}
+In order to find the best set of parameters $\bm{\theta}$, we need to evaluate $P_{\bm{\theta}}$ and potentially its derivative, not only the energy function.
+A natural strategy would be to compute the integral $\int_{y\in \mathcal{Y}}e^{-E_{\bm{\theta}}(\bm{y})} \text{d}y$. However, as soon as the energy function is non-trivial, this integral becomes intractable. Thus, we need to find a better strategy. We see below how sampling from the EBM can save us the pain to explicitly compute $Z(\bm{\theta})$.
+
+Let us formalise the learning problem for a given dataset $\mathcal{D} := \{\bm{y}_i\}_{i=1}^N$ of $N$ iid samples. A reasonable strategy is to find the MLE,
+\begin{align}
+  \theta^\star &= \argmax_\theta P_{\bm{\theta}}(\mathcal{D})\\
+  &= \argmax_\theta \log P_{\bm{\theta}}(\mathcal{D})\\
+  &= \argmax_\theta \frac{1}{N} \sum^N_{i=1} \log P_{\bm{\theta}}(Y=\bm{y}_i).
+\end{align}
+In practice we cannot solve this last equation directly and we would like to use standard optimization techniques such as (stochastic) gradient ascent. In this case, learning the EBMs eventually reduces to being able to evaluate $\nabla_{\bm{\theta}} \log P_{\bm{\theta}}(Y=\bm{y}_i)$ for any $\bm{y}_i \in \mathcal{D}$. Unfortunately, this gradient explicitly depends on the parition function,
+\begin{align}
+  \nabla_{\bm{\theta}} \log P_{\bm{\theta}}(\bm{y}) = \nabla_{\bm{\theta}} \log Z(\bm{\theta}) -\nabla_{\bm{\theta}} E_{\bm{\theta}}(\bm{y}).
+\end{align}
+
+However, we can rewrite the problematic term as an expectation over samples from the EBMs:
+\begin{align}
+\nabla_{\bm{\theta}} \log Z(\bm{\theta}) &= \nabla_{\bm{\theta}} \log \int_{\bm{y}\in \mathcal{Y}}e^{-E_{\bm{\theta}}(\bm{y})} \text{d}\bm{y}\\
+&= \left( \int_{\bm{y}\in \mathcal{Y}}e^{-E_{\bm{\theta}}(\bm{y})} \text{d}\bm{y} \right)^{-1} \int_{\bm{y}\in \mathcal{Y}}
+\nabla_{\bm{\theta}}\left( e^{-E_{\bm{\theta}}(\bm{y})}  \right) \text{d}\bm{y}\\
+&= \int_{\bm{y}\in \mathcal{Y}} \underbrace{\left( \int_{\bm{y}\in \mathcal{Y}}e^{-E_{\bm{\theta}}(\bm{y})} \text{d}\bm{y} \right)^{-1}
+e^{-E_{\bm{\theta}}(\bm{y})}}_{=P_{\bm{\theta}}(\bm{y})} \nabla_{\bm{\theta}}\left(-E_{\bm{\theta}}(\bm{y})\right) \text{d}\bm{y}\\
+&= -\mathbb{E}_{P_{\bm{\theta}}(\bm{y})}\left[ \nabla_{\bm{\theta}}E_{\bm{\theta}}(\bm{y}) \right].
+\end{align}
+Then, we can use MCMC to sample from the EBM and estimate the gradient of the log-likelihood function. There exist MCMC algorithms, such as Langevin MCMC~\citep{parisi1981correlation, grenander1994representations} or Hamiltonian Monte Carlo~\citep{duane1987hybrid, neal2011mcmc}, that are specifically designed to exploit the fact that the score function $\nabla_{\bm{y}} \log P_{\bm{\theta}}(\bm{y}) = -\nabla_{\bm{y}} E_{\bm{\theta}}(\bm{y})$ is directtly accessible. These algorithms are usually more efficient than Metropolis-Hastings MCMC~\citep{hastings1970monte}.
+%
+% A simple strategy is to approximate the normalising factor (and its first order derivative) with Monte Carlo estimation to perform MLE by gradient descent. However, this requires samples from the energy-based model, which is not immediate either. A solution is to resort to sampling strategies that work with unnormalised distributions, such as MCMC techniques. In practice, this strategy may work but requires tuning many hyperparameters.
 
 \subsection{Contrastive learning}
 Strategies that avoid resorting to sampling exist. In particular, \citet{gutmann2012noise} proposed contrastive learning which estimate the partition and energy functions jointly. This algorithm relies on the observation that if the energy function models correctly the training distribution, it enables discriminating between noise and samples from the distribution. Indeed, let us consider a balanced binary classification problem where samples from class $0$ follow a known noise distribution $P_n$, and class $1$ is the training set. As long as the supports of the noise and the training distributions match, we can learn a Bayes optimal classifier as a function of the ratio between the two densities. Then learning corresponds to minimising a cross-entropy loss of a classifier expressed as a function of the EBM. This strategy is sensitive to the distribution of the noise. In particular, it often leads to inaccurate estimation of the energy landscape in low-density regions of the noise distribution. \textcolor{red}{explain why in one sentence.}

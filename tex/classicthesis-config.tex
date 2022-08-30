@@ -381,17 +381,19 @@
 \definecolor{chapter_outlinebackgroundcolor}{RGB}{248, 241, 234}
 \definecolor{LightMaroon_dark}{HTML}{0C5D6B}
 \colorlet{LightMaroon}{White!57!LightMaroon_dark}
-\colorlet{LightBlue}{White!99!Maroon}
+\colorlet{LightBlue}{White!98!Maroon}
+\colorlet{LightBluebis}{White!100!Maroon}
 
 \newenvironment{side_note}[1]
 {\centering
-	\begin{tcolorbox}[float,width=.9\textwidth,title={#1}
+	\begin{tcolorbox}[float,width=.9\textwidth,title={\underline{#1}}
 	    ,enhanced jigsaw, pad at break*=1mm, breakable,
 	    left=3mm, right=5mm, top=1mm, bottom=1mm,
 	    colback=LightBlue, boxrule=0pt, frame hidden,
-	    borderline west={0.1mm}{0mm}{Maroon},
-	    borderline east={0.1mm}{0mm}{Maroon},
-	    borderline south={0.1mm}{0mm}{Maroon}, arc=.0mm, coltitle=white, colbacktitle=Maroon]
+	    borderline west={0.5mm}{0mm}{Maroon},
+	    % borderline east={0.1mm}{0mm}{Maroon},
+	    % borderline south={0.1mm}{0mm}{Maroon},
+			arc=0.mm, coltitle=Maroon, colbacktitle=LightBlue]
 	\small
 }
 {
@@ -401,13 +403,17 @@
 
 \newenvironment{chapter_outline}[1]
 {
-\begin{tcolorbox}[breakable,width=\textwidth,title={\large Outline}
+\begin{tcolorbox}[breakable,width=.9\textwidth
 		,enhanced jigsaw, pad at break*=1mm, breakable,
-    left=4mm, right=4mm, top=1mm, bottom=1mm,
-    colback=LightBlue, boxrule=0pt, frame hidden,
-		borderline south={0.5mm}{0mm}{Maroon},
-		borderline east={0.5mm}{0mm}{Maroon},
-    borderline west={0.5mm}{0mm}{Maroon}, arc=.5mm, title={\large Outline}, coltitle=white, colbacktitle=Maroon]
+    left=4mm, right=4mm, top=4mm, bottom=1mm, boxrule=0pt, frame hidden,
+		% borderline south={0.5mm}{0mm}{Maroon},
+		% borderline east={0.5mm}{0mm}{Maroon},
+    borderline west={0.5mm}{0mm}{Maroon},
+		arc=.5mm,
+		title={\Large \textbf{Outline}}, coltitle=Maroon,
+		colback=LightBluebis, colbacktitle=LightBluebis
+		% colbacktitle=Maroon
+		]
 }
 {
 \end{tcolorbox}
