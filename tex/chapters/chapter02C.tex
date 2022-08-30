@@ -131,7 +131,7 @@ Sharing parameterisation between factors is an important aspect of autoregressiv
 We can train autoregressive models efficiently by maximising their likelihood given data. Evaluating the likelihood only requires passing the data once in the network and computing the product of the $d$ conditional distribution evaluated at the input vectors. Unfortunately, sampling is a sequential process as each variable is sampled according to the preceding. This is particularly slow for images or long time series and is one of the main drawbacks of autoregressive models. The lack of independence assumptions and poor inductive bias are additional limitations of these models. This is especially true with images for which the enforced causality between successive pixels and sampling algorithm is ineffective. We rarely use autoregressive models alone but in combination with other models, such as variational auto-encoders.
 
 % \textcolor{red}{Add an image that describes the sampling procedure of autoregressive nets.}
-\section{Energy based models} \textcolor{red}{upgrade with info in Kingma's paper and explicitly say that we are strongly inspired by them.}
+\section{Energy based models}
 \begin{figure*}
   \centering
   \begin{subfigure}{.48\textwidth}
@@ -154,7 +154,7 @@ We have already encountered the term \textit{energy} when discussing the paramet
 \end{align}
 where $E_{\bm{\theta}}(\cdot): \mathcal{Y}\rightarrow \mathbb{R}$ is the energy function and $Z(\bm{\theta})$ is called the partition function. \Cref{fig:Energy} shows the energy function of a 2D distribution with two modes, the integral over the support is not equal to $1$, but the energy is proportional to the logarithm of the probability density function.
 
-The interest of EBMs is to parameterise probability distributions with free-form real functions. For instance, any neural network can potentially parameterise an EBM. This property is particularly appealing as it allows combining the flexibility and efficient inductive bias of neural networks, which was fundamental reasons for the greatest successes of deep learning. Unfortunately, this flexible parameterisation prevents direct access to the likelihood function, which requires the intractable computation of the partition function. This prevents the direct application of the classical MLE learning strategy. We now review the main approaches for learning EBMs for continuous variables.
+The interest of EBMs is to parameterise probability distributions with free-form real functions. For instance, any neural network can potentially parameterise an EBM. This property is particularly appealing as it allows combining the flexibility and efficient inductive bias of neural networks, which was fundamental reasons for the greatest successes of deep learning. Unfortunately, this flexible parameterisation prevents direct access to the likelihood function, which requires the intractable computation of the partition function. This prevents the direct application of the classical MLE learning strategy. We now review the main approaches for learning EBMs for continuous variables. Our discussion was inspired by the recent review paper on EBMs by \citet{song2021train}.
 
 \subsection{Markov chain Monte Carlo}
 In order to find the best set of parameters $\bm{\theta}$, we need to evaluate $P_{\bm{\theta}}$ and potentially its derivative, not only the energy function.
