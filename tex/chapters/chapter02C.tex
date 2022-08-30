@@ -116,9 +116,9 @@ In the following we will mostly ignore the conditioning variable $X$ as challeng
 
 
 \end{tikzpicture}
-\caption{The forward computation of an autoregressive model. Each 1D distribution is conditioned autoregressively on the input vector.}
+\caption{The forward computation of an autoregressive model. Each 1D distribution is conditioned autoregressively on the input vector.} \label{fig:AM}
 \end{figure}
-Autoregressive models reduce the modelling of $d$-dimensional distributions into $d$ distributions via the product rule ($P(A, B) = P(A) P(B\mid A)$). The autoregressive structure is there to account for the piling-up conditioning factors. These models can represent all kinds of dependencies between the components of the random vector modelled.
+Autoregressive models reduce the modelling of $d$-dimensional distributions into $d$ distributions via the product rule ($P(A, B) = P(A) P(B\mid A)$) as shown in \Cref{fig:AM}. The autoregressive structure is there to account for the piling-up conditioning factors. These models can represent all kinds of dependencies between the components of the random vector modelled.
 Formally, autoregressive models decompose the joint distribution as
 \begin{align}
   P(Y) = P(Y_1) \Pi^d_{i=2} P(Y_i|Y_{<i}), \quad \text{where} \quad Y_{<i} \triangleq \left[ Y_1, \dots, Y_{i-1}\right].

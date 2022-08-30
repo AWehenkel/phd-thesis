@@ -32,30 +32,54 @@ Our idea was to use a VAE formulation to bypass the closed-form gaussian kernel 
 
 Unfortunately, I did not figure out a good training algorithm for these models. However, \citet{rissanen2022generative} had a similar idea and achieved state-of-the-art image synthesis with a diffusion model based on the heat equation. This hints that combining heat diffusion with VAEs to compress data into human-interpretable latent variables representing high and low-level features might still be a valuable research direction.
 
+\subsection{Diffusion in the latent space}
+Say why it can be interesting and mention the two papers (stable and continuous time ). Expain the advantages of working in the latent space.
+- leaving the high-dimensional image space, we obtain DMs that are more computationally efficient. synthesis speed
+- We can rely on the spatial structure thanks to diffusion models and thus keep a latent space which is highly structured (this is to be opposed to disentanglement)
+- We could do both as well.
+- Always good to let the model be lossy, at least not bijective over the real numbers, and chose what is important. It is very different to be bijective with respect to a finite set of data points than to real numbers.
+- More straightforward to apply for non-continuous data.
+
+Explain stable diffusion. In what it is different from our approach. Explain why this might also motivate n-steps approaches. But in this case we might need a more efficient training stratefy
+- Perceptual loss + patch based adversarial objective + variance regularisation of the latent space.
+- Explain that losses are important to allow for the invertibility to make more sense.
+
+Score-based generative modeling in latent space.
+- Explain they make the same development with CE.
+- Difficulty is in evaluating this CE.
+- They show how to do this when one of the two distrib in a score based model.
+- Draw the connection with out equation.
+
+\subsection{Departing from the Gaussian prior}
+- VQ-VAE = VAE + autoregressive model
+
+- Normalizing flows, it is good because it is easy to evaluate. But it is bad for spatially structured data because normalizing flows do not handle structure well.
 \subsection{Scientific impact}
 
-According to Google Scholar, our article has received five citations between its publication in June 2021 and August 2022. It is interesting to contrast this number with the 48 citations received by \citet{vahdat2021score}, which was published in December 2021 at NeurIPS 2021 and was first released as a preprint on arXiv in June 2021. Although the ideas expressed in the two papers are similar, our work did not gain as much visibility as the continuous diffusion in latent space of VAEs they propose. We acknowledge at least three \textbf{fair} reasons to explain this. First, publishing at NeurIPS brings much more visibility than at a workshop at ICML. This is natural as the reviewing process of NeurIPS is much stronger. Second, \citet{vahdat2021score} achieve state-of-the-art image synthesis by combining their idea with the proper neural architectures, training tricks and computation power.
-In contrast to theirs, our work is more preliminary as it does not achieve state-of-the-art performance. Finally, advertising science is arguably nowadays as important as the science itself in machine learning.\citet{vahdat2021score} made an excellent job, as can be seen by one tweet from the first author who advertised their paper in \Cref{fig:cont_tweet} and had $6\times$ higher reach than a similar advertisement by Gilles Louppe in \Cref{fig:discrete_tweet}.
+According to Google Scholar, our article has received five citations between its publication in June 2021 and August 2022.
+- reflect on the broader impact of diffusion models in the latent space.
+% It is interesting to contrast this number with the 48 citations received by \citet{vahdat2021score}, which was published in December 2021 at NeurIPS 2021 and was first released as a preprint on arXiv in June 2021. Although the ideas expressed in the two papers are similar, our work did not gain as much visibility as the continuous diffusion in latent space of VAEs they propose. We acknowledge at least three \textbf{fair} reasons to explain this. First, publishing at NeurIPS brings much more visibility than at a workshop at ICML. This is natural as the reviewing process of NeurIPS is much stronger. Second, \citet{vahdat2021score} achieve state-of-the-art image synthesis by combining their idea with the proper neural architectures, training tricks and computation power.
+% In contrast to theirs, our work is more preliminary as it does not achieve state-of-the-art performance. Finally, advertising science is arguably nowadays as important as the science itself in machine learning.\citet{vahdat2021score} made an excellent job, as can be seen by one tweet from the first author who advertised their paper in \Cref{fig:cont_tweet} and had $6\times$ higher reach than a similar advertisement by Gilles Louppe in \Cref{fig:discrete_tweet}.
 
 \subsection{Conclusion and opportunities}
 Since the publication of this article, diffusion models have become very popular, owing part of their success to the astonishing results achieved by large text-to-images models created by OpenAI~\citep[$\text{DALL}\cdot\text{E } 2$][]{ramesh2022hierarchical} and Google~\citep[Imagen][]{saharia2022photorealistic}. Diffusion models have also percolated in audio modelling \citep{kong2020diffwave}. Close to our work, \citet{yu2022latent} recently proposed to use energy-based models trained with denoising score matching to model the prior distribution of VAEs for interpretable text modelling.
 
 Shortly, the attractivity of diffusion models for modelling distributions over images, and other data modalities, should stay high. However, diffusion models also have some limitations, and many interesting questions remain. \textit{Why do diffusion models represent high dimensional data such as images so well?} \textit{Can we fasten the sampling process of diffusion models?}
  An answer to the former question relies upon the inductive bias of diffusion models; however, which part exactly is an open question. Related to the latter question, pushing further the connections between diffusion models and other probabilistic models such as normalizing flows and VAEs might help reduce the sample synthesis's complexity.
-
-\begin{figure*}[h]
-  \centering
-  \begin{subfigure}[b]{.48\textwidth}
-    \centering
-    \includegraphics[width=.85\textwidth]{figures/impact_scholar/cont_diff_tweet.png}
-    \caption{}
-    \label{fig:cont_tweet}
-  \end{subfigure}
-  \begin{subfigure}[b]{.48\textwidth}
-    \centering
-    \includegraphics[width=.9\textwidth]{figures/impact_scholar/discret_diff_tweet.png}
-    \caption{}
-    \label{fig:discrete_tweet}
-  \end{subfigure}
-  \caption{Tweets advertising (\textbf{a}) continuous-time diffusion models in the latent space from \citet{vahdat2021score} (\textbf{b}) discrete-time diffusion models in the latent space.}
-\end{figure*}
+%
+% \begin{figure*}[h]
+%   \centering
+%   \begin{subfigure}[b]{.48\textwidth}
+%     \centering
+%     \includegraphics[width=.85\textwidth]{figures/impact_scholar/cont_diff_tweet.png}
+%     \caption{}
+%     \label{fig:cont_tweet}
+%   \end{subfigure}
+%   \begin{subfigure}[b]{.48\textwidth}
+%     \centering
+%     \includegraphics[width=.9\textwidth]{figures/impact_scholar/discret_diff_tweet.png}
+%     \caption{}
+%     \label{fig:discrete_tweet}
+%   \end{subfigure}
+%   \caption{Tweets advertising (\textbf{a}) continuous-time diffusion models in the latent space from \citet{vahdat2021score} (\textbf{b}) discrete-time diffusion models in the latent space.}
+% \end{figure*}
