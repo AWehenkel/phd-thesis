@@ -193,14 +193,17 @@ Let us consider a balanced binary classification problem where samples from clas
 \begin{align}
   P(C=0 \mid \mathbf{y}) = \frac{P_n(\mathbf{y})}{P_n(\mathbf{y}) + P(\mathbf{y})}. \label{eq:CL}
 \end{align}
-We can replace $P(\mathbf{y})$ by the EBM $P_{\bm{\theta}}(\bm{y})$ and solve the corresponding classification problem as a function of the EBM's parameters $\bm{\theta}$ and of the normalizing constant $\alpha \triangleq Z(\bm{\theta})$. This gives the following optimisation problem:
+We can replace $P(\mathbf{y})$ by the EBM $P_{\bm{\theta}}(\bm{y})$ and solve the corresponding classification problem as a function of the EBM's parameters $\bm{\theta}$ and of the normalizing constant $\alpha \triangleq Z(\bm{\theta})$.
+
+Formally we aim to recover the Bayes optimal classifier, that is for all $\mathbf{y})$ to be able to return the posterior distribution $P(C \mid \mathbf{y})$. This gives the following optimisation problem:
 \begin{align}
-  \bm{\theta}^\star &= \argmin_{\bm{\theta}} \mathbb{E}_{P(\mathbf{y})}\mathbb{KL}\left[ P(C \mid \mathbf{y}) \Vert P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
+  \bm{\theta}^\star &= \argmin_{\bm{\theta}} \mathbb{KL}\left[ P(C \mid \mathbf{y}) \Vert P_{\bm{\theta}}(C \mid \mathbf{y}) \right] \quad \forall \mathbf{y} \in \mathcal{Y}\\
+  &\argmin_{\bm{\theta}} \mathbb{E}_{P(\mathbf{y})}\mathbb{KL}\left[ P(C \mid \mathbf{y}) \Vert P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
   &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(\mathbf{y})}\mathbb{E}_{P(C \mid \mathbf{y})}\left[ \log P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
   &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(C)}\mathbb{E}_{\mathbf{y} \mid P(C)}\left[ \log P_{\bm{\theta}}(C \mid \mathbf{y}) \right]\\
   &= \argmin_{\bm{\theta}} -\mathbb{E}_{P(C)}\mathbb{E}_{\mathbf{y} \mid P(C)}\left[ \log \left( \frac{P_n(\mathbf{y})}{P_n(\mathbf{y}) + P_{\bm{\theta}}(\mathbf{y})} \right) \right],
 \end{align}
-which is the standartd cross-entropy loss applied to a classifier that resembles to \Cref{eq:CL} and is parameterised by an EBM.
+which is the standartd cross-entropy loss applied to a classifier that resembles to \Cref{eq:CL} parameterised by an EBM.
 
 Then learning corresponds to minimising a cross-entropy loss of a classifier expressed as a function of the EBM. In practice, this strategy is sensitive to the distribution of the noise. Indeed, the cross-entropy loss is more sensitive to errors on $P_{\bm{\theta}}(\bm{y})$ in regions where the data and the noise distributions overlap. Intuitively, in low-density region of the noise, the classification is simple because $P_n(\mathbf{y})$ is very small. Hence the sensitivity of \Cref{eq:CL} to $P_{\bm{\theta}}(\bm{y})$ is small. In contrast, in high-density regions of both the noise and data distributions, the discriminator is very sensitive to errors in $P_{\bm{\theta}}(\bm{y})$.
 
