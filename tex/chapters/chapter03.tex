@@ -25,14 +25,21 @@ $$\mathcal{L}(\mathbf{x}; \phi, \theta, \psi) := -\mathbb{E}_{q_{\psi}}\left[\lo
 \includepdf[pages=-]{papers/innf_latent_diffusion.pdf}
 
 \section{Epilogue}
-\subsection{Behind the scenes}
-Our initial motivation for combining diffusion models and VAEs was not to improve VAEs. Instead, we wanted to enable new types of noise for training diffusion models. As with any other component of the DDPM learning algorithm, the noise model is part of the inductive bias. Adapting the noise to the data modality might thus help to learn better models. In particular, we thought heat equations would make an excellent inductive bias for image synthesis. Heat equation blurs the image through time, which amounts to first discarding information about the details of the image and removing the semantic content only later in the noising process.
-
-Our idea was to use a VAE formulation to bypass the closed-form gaussian kernel required for obtaining a tractable training objective. In addition, we thought using distinct diffusion speeds inside the latent variables of the VAE would eventually encourage disentanglement and allow extracting high and low-level semantic information from images.
-
-Unfortunately, I did not figure out a good training algorithm for these models. However, \citet{rissanen2022generative} had a similar idea and achieved state-of-the-art image synthesis with a diffusion model based on the heat equation. This hints that combining heat diffusion with VAEs to compress data into human-interpretable latent variables representing high and low-level features might still be a valuable research direction.
-
 \subsection{Diffusion in the latent space}
+One of the main limitations of diffusion models is their computational inneficiency both at training and synthesis time. Indeed, diffusion models use a one-to-one function and thus works directly in the data space. Training the largest models costs millions of euros, and this is without accounting for the cost of architecture search and hyperparameter optimization. Synthesis is not better, as it requires the successive application of the same U-Net hundreds of time and can take up to few minutes on a modern hardware. Leaving the data for a lower-dimensional latent space alleviate this limitation but necessitates the development of new algorithms. In addition to the paper presented in this chapter, we now discuss three alternative strategies respectively dubed \textit{Score-based generative modeling in latent space}~\citep{vahdat2021score}, \textit{Diffusion-Decoding Models}~\citep{sinha2021d2c}, and Stable diffusion~\citep{rombach2022high}.
+%
+% Concurrently to our work, \citet{vahdat2021score} proposed to train a score-based model, i.e., a continuous-time diffusion model, for modelling the latent space of variational auto-encoder. Similar to us, \citet{vahdat2021score} decompose the ELBO of the VAE into three components,
+% \begin{align}
+%   \operatorname{ELBO}(\mathbf{x}; \phi, \psi) =
+%   \underbrace{\mathbb{E}_{q_\psi}\left[ \log p_\mathbf{\theta}(\mathbf{x}|\mathbf{z}_0)\right]}_{\text{\footnotestyle reconstruction term}} - \underbrace{\mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right]}_{\text{\footnotestyle encoder entropy}} +
+%   \underbrace{\mathbb{E}_{q_\psi}\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right]}_{\text{\footnotestyle cross entropy}}.
+% \end{align}
+% In our case, we lower bounded the cross entropy (CE) term to get a proper ELBO that we use to train jointly the encoder, the decoder, and the diffusion model. However this approach does not directly work for continuous-time models which are trained via denoising score matching at multiple noise levels. Instead, \citet{vahdat2021score} show that the cross entropy term can be expressed as
+% \begin{align}
+%   \mathbb{E}_{q_\psi}\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right] &= \mathbb{E}_{t \sim \mathcal{U}\left[0, 1\right]}\left[ \frac{g(t)^2}{2} \mathbb{E}_{q(\bm{z}_t, \bm{z_0} \mid \bm{x})}\left[ \lvert \nabla_{\bm{z}_t} \log q(\bm{z}_t \mid \bm{z}_0) - \log p(\bm{z}_t) \rvert_2^2 \right] \right] + C, \label{eq:CE_continuous_diffusion}
+% \end{align}
+% under mild conditions. The symbols $t$ denotes the time starts from $0$ with structured data, here latent variables, and ends in $1$ with noise. We can optimize jointly this term with the encoder entropy and reconstruction with stochastic gradient descent. In order to evaluate \Cref{eq:CE_continuous_diffusion}, we first encode the sample ($q(\bm{z}_0 \mid \bm{x})$), draw $t\sim \mathcal{U}\left[0, 1\right]$ and the corresponding $\bm{z_t} \sim q(\bm{z}_t \mid \bm{z}_0)$ that follows a known Normal transition kernel $\mathcal{N}\left( \bm{\mu}_t(\bm{z}_0), \sigma_t^2 I \right)$. For more details about continuous-time diffusion we refer the reader to \Cref{ch2C:Sec:continuous_diffusion}. \label{eq:CE_continuous_diffusion} is a score matching loss, it resembles the ELBO objective used to train discrete-time models which is what we use to replace the CE. There remain a surprising difference between the two equations that we do not explain. In our case, each term is weighted by the inverse of the variance $\frac{1}{\sigma_t^2}$ while \Cref{eq:CE_continuous_diffusion} weights each term in the opposite direction with $g(t)^2$ which is suppose to have a similar meaning to $\sigma_t^2$ in the discrete case. \citet{vahdat2021score} suggest to move away from this weighting in order to obtain better results in practice, we wonder if there is a deeper explanation.
+
 Say why it can be interesting and mention the two papers (stable and continuous time ). Expain the advantages of working in the latent space.
 - leaving the high-dimensional image space, we obtain DMs that are more computationally efficient. synthesis speed
 - We can rely on the spatial structure thanks to diffusion models and thus keep a latent space which is highly structured (this is to be opposed to disentanglement)
@@ -49,6 +56,13 @@ Score-based generative modeling in latent space.
 - Difficulty is in evaluating this CE.
 - They show how to do this when one of the two distrib in a score based model.
 - Draw the connection with out equation.
+
+\subsection{Behind the scenes}
+Our initial motivation for combining diffusion models and VAEs was not to improve VAEs, nor to speed-up diffusion models. Instead, our broader objective was to enable new types of noise for training diffusion models. As with any other component of the DDPM learning algorithm, the noise model is part of the inductive bias. Adapting the noise to the data modality might thus help to learn better models. In particular, we thought heat equations would make an excellent inductive bias for image synthesis. Heat equation blurs the image through time, which amounts to first discarding information about the details of the image and removing the semantic content only later in the noising process.
+
+Our idea was to use a VAE formulation to bypass the closed-form gaussian kernel required for obtaining a tractable training objective. In addition, we thought using distinct diffusion speeds inside the latent variables of the VAE would eventually encourage disentanglement and allow extracting high and low-level semantic information from images.
+
+Unfortunately, I did not figure out a good training algorithm for these models. However, \citet{rissanen2022generative} had a similar idea and achieved state-of-the-art image synthesis with a diffusion model based on the heat equation. This hints that combining heat diffusion with VAEs to compress data into human-interpretable latent variables representing high and low-level features might still be a valuable research direction.
 
 \subsection{Departing from the Gaussian prior}
 - VQ-VAE = VAE + autoregressive model
