@@ -31,9 +31,9 @@ One of the main limitations of diffusion models is their computational inneficie
 Concurrently to our work, \citet{vahdat2021score} proposed to train a score-based model, i.e., a continuous-time diffusion model, for modelling the latent space of variational auto-encoder. Similar to us, \citet{vahdat2021score} decompose the ELBO of the VAE into three components,
 \begin{align}
   \operatorname{ELBO}(\mathbf{x}; \phi, \psi) =
-  \underbrace{\mathbb{E}_{q_\psi}\left[ \log p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0)\right]}_{a}%{\text{\footnotestyle{reconstruction term}}} -
-  % \underbrace{\mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right]}_{\text{\footnotestyle{encoder entropy}}} +
-  % \underbrace{\mathbb{E}_{q_\psi}\left[\log p_\mathbf{\phi}(\mathbf{z}_0)\right]}_{\text{\footnotestyle{cross entropy}}}.
+  \underbrace{\mathbb{E}_{q_\psi}\left[ \log p_{\mathbf{\theta}}(\mathbf{x}|\mathbf{z}_0)\right]}_{\text{\footnotesize reconstruction term }} -
+  \underbrace{\mathbb{E}_{q_\psi}\left[\log q(\mathbf{z}_0|\mathbf{x})\right]}_{\text{\footnotesize{encoder entropy}}} +
+  \underbrace{\mathbb{E}_{q_\psi}\left[\log p_{\mathbf{\phi}}(\mathbf{z}_0)\right]}_{\text{\footnotesize{cross entropy}}}.
 \end{align}
 
 % In our case, we lower bounded the cross entropy (CE) term to get a proper ELBO that we use to train jointly the encoder, the decoder, and the diffusion model. However this approach does not directly work for continuous-time models which are trained via denoising score matching at multiple noise levels. Instead, \citet{vahdat2021score} show that the cross entropy term can be expressed as
