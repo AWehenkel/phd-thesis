@@ -44,6 +44,9 @@ under mild conditions. The symbol $t$ denotes the time; it starts from $0$ with 
 
 Diffusion-Decoder models~\citep[][D2C]{sinha2021d2c} is another architecture that combines classical VAEs with discrete-time diffusion models. They combine a loss similar to the ELBO we derive in our paper with a self-supervised loss that encourages meaningful latent representations via data augmentation. They also conclude that replacing the CE with a diffusion loss leads to a proper ELBO. In addition, they discuss the ability of latent diffusion models to close prior holes that create a mismatch between the aggregated posteriors and the prior classical VAEs with Normal priors. Finally, they also show that the representations learned by D2C allow performing few-shot conditional generation.
 
+Stable diffusion~\citep{rombach2022high} is arguably one of the most prohiminant contributions to openly accessible machine learning models over the last decades. \citet{rombach2022high} combines an auto-encoder architecture with a discrete-time diffusion model to reduce the computing cost associated with pure diffusion models. Large pretrained stable diffusion models have been publicly released, and are already a large impact. In a few weeks only, many tools that exploit the computational efficiency and impressive synthesis results of Stable diffusion have been released. For example, \url{Dream studio}{https://stabilityai.us.auth0.com/u/login?state=hKFo2SBYSU9Ta0VxdGJ0TnZlLWEzSDNlZDV5STk0M0loaThvQ6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDBzSHR3djZMeFdCRjlRVFhwQjVfaWtmNHVBNzlMaHNMo2NpZNkgS3ZZWkpLU2htVW9PalhwY2xRbEtZVXh1Y0FWZXNsSE4} is website that allows to interactively synthesise images from text.
+
+In contrast to our work, Stable diffusion does not train the auto-encoder and the diffusion model synchronously. Instead, they first train a classical auto-encoder with the combination of a perceptual loss~\citep{zhang2018unreasonable} and a patch-based adversarial objective~\citep{dosovitskiy2016generating, esser2021taming, yu2021vector}. Only then, they train a diffusion models on the latent representations. Clearly, the diffusion model should eventually learn the distribution over the latent space and allows synthesis. However, this would never happen in practice without additional care. First, \citet{rombach2022high} also regularize the entropy of the latent space to avoid high-variances latent spaces which would be hard to learn. In addition, they rely on a strong architectural inductive bias that conserves the spatial structure of images but allows perceptual compression. In contrast, the diffusion model is charged to perform the semantic compression.
 
 
 % Say why it can be interesting and mention the two papers (stable and continuous time ). Expain the advantages of working in the latent space.
@@ -52,7 +55,7 @@ Diffusion-Decoder models~\citep[][D2C]{sinha2021d2c} is another architecture tha
 % - We could do both as well.
 % - Always good to let the model be lossy, at least not bijective over the real numbers, and chose what is important. It is very different to be bijective with respect to a finite set of data points than to real numbers.
 % - More straightforward to apply for non-continuous data.
-% 
+%
 % Explain stable diffusion. In what it is different from our approach. Explain why this might also motivate n-steps approaches. But in this case we might need a more efficient training stratefy
 % - Perceptual loss + patch based adversarial objective + variance regularisation of the latent space.
 % - Explain that losses are important to allow for the invertibility to make more sense.
@@ -63,6 +66,11 @@ Diffusion-Decoder models~\citep[][D2C]{sinha2021d2c} is another architecture tha
 % - They show how to do this when one of the two distrib in a score based model.
 % - Draw the connection with out equation.
 
+\subsection{Departing from the Gaussian prior}
+- VQ-VAE = VAE + autoregressive model
+
+- Normalizing flows, it is good because it is easy to evaluate. But it is bad for spatially structured data because normalizing flows do not handle structure well.
+
 \subsection{Behind the scenes}
 Our initial motivation for combining diffusion models and VAEs was not to improve VAEs, nor to speed-up diffusion models. Instead, our broader objective was to enable new types of noise for training diffusion models. As with any other component of the DDPM learning algorithm, the noise model is part of the inductive bias. Adapting the noise to the data modality might thus help to learn better models. In particular, we thought heat equations would make an excellent inductive bias for image synthesis. Heat equation blurs the image through time, which amounts to first discarding information about the details of the image and removing the semantic content only later in the noising process.
 
@@ -70,10 +78,6 @@ Our idea was to use a VAE formulation to bypass the closed-form gaussian kernel 
 
 Unfortunately, I did not figure out a good training algorithm for these models. However, \citet{rissanen2022generative} had a similar idea and achieved state-of-the-art image synthesis with a diffusion model based on the heat equation. This hints that combining heat diffusion with VAEs to compress data into human-interpretable latent variables representing high and low-level features might still be a valuable research direction.
 
-\subsection{Departing from the Gaussian prior}
-- VQ-VAE = VAE + autoregressive model
-
-- Normalizing flows, it is good because it is easy to evaluate. But it is bad for spatially structured data because normalizing flows do not handle structure well.
 \subsection{Scientific impact}
 
 According to Google Scholar, our article has received five citations between its publication in June 2021 and August 2022.
