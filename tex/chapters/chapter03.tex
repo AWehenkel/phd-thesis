@@ -67,6 +67,8 @@ In contrast to our work, Stable diffusion does not train the auto-encoder and th
 % - Draw the connection with out equation.
 
 \subsection{Departing from the Gaussian prior}
+Combining auto-encoders and other probabilistic models has not waited diffusion models to appear. In particular, similarly to Stable diffusion, VQ-VAE~\citep{razavi2019generating, razavi2019generating2} achieved state-of-the-art image synthesis by combining a classical auto-encoder with an autogressive model to encode the latent variables distribution.
+
 - VQ-VAE = VAE + autoregressive model
 
 - Normalizing flows, it is good because it is easy to evaluate. But it is bad for spatially structured data because normalizing flows do not handle structure well.
