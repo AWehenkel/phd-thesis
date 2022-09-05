@@ -150,13 +150,13 @@ Importance sampling does not provide iid samples from the posterior distribution
 % \textcolor{red}{Mention that we do not pretend to be complete as there exist many many algorithms and we only focus on generic algorihm that showcase some of the classical issuing when sampling from these models. I have to help the reader to understand better why he it is important that he reads this sections. For the one about sampling it shows that inference is really hard but adding strucure helps producing specialized algorithms. For the inference as optimization it must mainly motivates to create parametric models that are efficiently trainable. Also mention that although we try to keep the discussion generic, our interest is really for continuous variables in this thesis. Find a place to mention the Expectation–maximization algorithm.}
 
 \subsubsection{Inference as optimization}
-We finally introduce variational inference~\citep[][VI]{blei2017variational} as a third option for inference. VI formulates inference as an optimisation problem in which we look for a distribution $Q(Y)$ that is as close as possible to the posterior of interest $P(Y\mid E=\bm{e})$. For this purpose, we consider a parametric family of distributions $Q_{\bm{\theta}}(Y)$, such as a BN with a prescribed structure but parametric distributions. Our goal is to optimise for the best set of parameters $\bm{\theta}^\star$:
+We finally introduce variational inference~\citep[][VI]{blei2017variational} as a third option for inference. VI formulates inference as an optimisation problem in which we look for a distribution $Q(Y)$ that is as close as possible to the posterior of interest $P(Y\mid E=\bm{e})$. For this purpose, we consider a parametric family of distributions $Q_{\bm{\theta}}(Y)$, e.g., a BN with a prescribed structure but parametric distributions. Our goal is to optimise for the set of parameters  $\bm{\theta}^\star$ that minimise the discrepancy between the targetted and learnt distributions,
 \begin{align}
   \bm{\theta}^\star = \argmin_{\bm{\theta}} \mathbb{D}\left[Q_{\bm{\theta}}(Y)\Vert P(Y\mid E=\bm{e}) \right], \label{eq:obj_VI}
 \end{align}
 where $\mathbb{D}$ is an appropriate divergence between distributions. For the rest of this discussion, let us fix $\mathbb{D}$ to the Kullback-Leibler ($\mathbb{KL}$) divergence which is an appropriate choice as it is only minimized when $Q = P$. As of now, we also restrain our discussion to the case of continuous variables. Formally, the $\mathbb{KL}$ compares two distributions $P(X)$ and $Q(X)$ as $$\mathbb{KL}\left[P\Vert Q\right] \triangleq \int_{\bm{x} \in \mathcal{X}} P(\bm{x}) \log \frac{P(\bm{x})}{Q(\bm{x})} \text{d}\bm{x}.$$ The integral can be replaced by a sum for discrete random variables. The $\mathbb{KL}$ is not a proper distance as it is not symmetric. Depending on the context, we will switch the two arguments $P$ and $Q$, which is fine as in both cases \Cref{eq:obj_VI} is minimized iff the two arguments are equal.
 
-Solving $\Cref{eq:obj_VI}$ is possible if we have a parametric family of distributions for which density evaluation and sampling are differentiable functions of the parameters. This family could be another BN or a Normalizing flow, a deep probabilistic model we describe in the next section. Let us denote by $Q_{\bm{\theta}}$ the probability density function and the procedure to generate samples as $$ y := f_{\bm{\theta}}(z) \quad\text{where}\quad z\sim \mathcal{N}(0, I),$$
+Solving $\Cref{eq:obj_VI}$ is possible if we have a parametric family of distributions for which density evaluation and sampling are differentiable functions of the parameters. This family could be another BN but also a normalizing flow, a deep probabilistic model we describe in the next chapter. Let us denote by $Q_{\bm{\theta}}$ the probability density function and the procedure to generate samples as $$ y := f_{\bm{\theta}}(z) \quad\text{where}\quad z\sim \mathcal{N}(0, I),$$
 where $\mathcal{N}(0, I)$ denotes a normal distribution.
 In this ideal case, the optimization problem becomes:
 \begin{align}
@@ -177,7 +177,7 @@ We can also optimize this equation with SGD and Monte Carlo samples as it only r
   &=\argmin_Q \mathbb{E}_{P(Y) P(M\mid Y)}\left[\log P(Y) + \log P(M\mid Y) - \log Q(Y)\right]\\
   &=\argmin_Q \mathbb{E}_{P(Y) P(M\mid Y)}\left[\log P(Y) - \log Q(Y)\right]\\
   &= \argmin_Q \mathbb{E}_{P(Y)}\left[\log P(Y) - \log Q(Y)\right]\\
-  &= \argmin_Q \mathbb{KL}\left[P\Vert Q \right].
+  &= \argmin_Q \mathbb{KL}\left[P(Y)\Vert Q(Y) \right].
 \end{align}
 
 We observe that VI can only achieve good results if the family of distributions contain instances close to the true posterior. In addition, solving the optimisation can be complicated even if provided with a parametric universal density approximator. However, VI is often preferable to sampling strategies for multiple reasons. It eventually becomes faster than sampling because \Cref{eq:obj_VI} returns a model from which we can generate as many samples as we want. This approach also automatically provides a surrogate of the posterior density. Finally, we can apply this approach to learning a parametric posterior distribution that approximates $P(Y\mid E=\bm{e})$ for any value of $e$.
@@ -189,8 +189,8 @@ Another interesting application of VI is for estimating a bound on the log-margi
   \mathbb{E}_{\bm y \sim Q_{\bm{\theta}}(Y=\bm{y})}\left[ \log \frac{P(E=\bm{e}\mid Y=\bm{y}) P(Y=\bm{y})}{Q_{\bm{\theta}}(Y=\bm{y})} \right] &\leq \log P(E=\bm{e})\\
   \underbrace{\mathbb{E}_{\bm y \sim Q_{\bm{\theta}}(Y=\bm{y})}\left[ \log P(E=\bm{e}\mid Y=\bm{y})\right] - \mathbb{KL}\left[Q_{\bm{\theta}}(Y)\Vert P(Y)\right]}_{\operatorname{ELBO}} &\leq \log P(E=\bm{e}) \label{eq:elbo}
 \end{align}
-This estimated lower bound on the evidence ($\operatorname{ELBO}$) is useful to approximate the log-likelihood of a parametric model $P_{\bm \psi}(E)$ defined as the marginal of a larger model $P_{\bm \psi}(Y, E)$.
-We will see how VI allows learning deep probabilistic models that formulates the generative process as a stochastic map from latent variables to observations.
+This estimated lower bound on the evidence ($\operatorname{ELBO}$) is useful to approximate the log-likelihood of a parametric model $P_{\bm \psi}(E)$ defined as the marginal of a larger model $P_{\bm \psi}(Y, E)$ parameterised by $P_{\bm \psi}(Y \mid E)$ and $P_{\bm \psi}(E)$.
+VI allows learning deep probabilistic models that formulates the generative process as a stochastic map from latent variables to observations, as we will see in the next chapter.
 % \textcolor{red}{Discuss the case of exact inference in continuous is maybe hopeless.}
 \subsection{Learning}
 With VI, we have seen for the second time that inference and learning are two faces of the same coin. We now describe learning strategies to fit the parameters of a BN given data.
@@ -202,10 +202,10 @@ Assuming iid data, we can express the learning task as a generic optimisation pr
 \end{align}
 where $\mathcal{B} = \mathcal{G} \times \mathcal{F}$ denotes the set of possible BNs and $R(\cdot): \mathcal{G} \times \mathcal{F} \rightarrow \mathbb{R}$ is a regularisation term which can be interpreted as the prior over plausible BNs and is constant if we do MLE. We insist on the importance of $R(B)$ for obtaining a good model. Although BNs with complete DAGs are strictly more expressive than sparse structures, we prefer the latter as they explicit independence assumptions and lead to simpler conditional distributions.
 
-The formulation in \ref{eq:learn_BN} does not say much about concrete strategies to fit the parameters of a BN. In practice, we often separate structure learning from distribution fitting. Structure learning is a combinatorial problem, whereas fitting the parameters of conditional distributions is a continuous optimisation problem; solving both issues jointly is an open problem. In \Cref{ch:06}, we will see one strategy to formulate the combinatorial problem into a continuous one; these are advanced concepts beyond this background's scope. Now, we focus on the two sub-problems independently.
+The formulation in \Cref{eq:learn_BN} does not say much about concrete strategies to fit the parameters of a BN. In practice, we often separate structure learning from distribution fitting. Structure learning is a combinatorial problem, whereas fitting the parameters of conditional distributions is a continuous optimisation problem; solving both issues jointly remains difficult. In \Cref{ch:06}, we will see one strategy to formulate the combinatorial topology learning problem into a continuous one; these are advanced concepts beyond this background's scope. Now, we focus on the two sub-problems independently.
 
 \subsubsection{Distribution learning}
-We suppose a prescribed topology and only focus on learning the best factors in \Cref{eq:BN-fact}. For this purpose we can parameterize the factors with a vector $\bm \theta := \left[\bm{\theta}_1, \cdots, \bm{\theta}_d\right]$ and update \Cref{eq:learn_BN} into
+We suppose a prescribed topology and only focus on learning the best factors in \Cref{eq:BN-fact}. For this purpose we can parameterize the factors with a vector $\bm \theta := \{\bm{\theta}_1, \cdots, \bm{\theta}_d\}$ and update \Cref{eq:learn_BN} into
 \begin{align}
   {\bm \theta}^\star  = \argmax_{\bm \theta} \sum_{i=1}^N \log \prod^d_{j=1}P_{\bm \theta}(X_j^i\mid \mathcal{P}_j) + \log \pi(\bm \theta).
  \label{eq:learn_factors}
