@@ -25,21 +25,22 @@
 \begin{chapter_outline}
 
 This chapter comprehensively reviews various strategies to parameterise probabilistic models with neural networks. We present the main algorithms used in practice, and we discuss the pros and cons of each class of models.
-Clearly, the distinction between two models is sometimes artificial. It is why, we try to draw relevant connections between these strategies when possible.
+The distinction between two models is sometimes artificial. It is why, we highlight relevant connections between these strategies when possible.
 Our aim is to convince the reader of the effectiveness and flexibility of deep probabilistic models. Finally, we provide the primary motivations for the contributions presented in this thesis.
 \end{chapter_outline}
 
 \section{Introduction}
-Restricted Botzmann Models are arguably one of the first generative models built upon neural networks. This chapter discusses other successful approaches for parameterising probabilistic models with neural networks. While graphical models describe probabilistic models with graphs and are appealing for understanding and prescribing modelling assumptions, they do not rigorously describe efficient parameterisations of the conditional probability distributions in the continuous setting. Deep probabilistic models encompass methods for parameterising these probability distributions with neural networks. Some of these models are particularly well suited for sample generation and are called \textit{deep generative models}. We will highlight the correspondence of some of these models within the probabilistic graphical models when possible.
+Restricted Botzmann Models~\citep{hinton2002training} are arguably one of the first generative models built upon neural networks. This chapter discusses other successful approaches for parameterising probabilistic models with neural networks. While graphical models describe probabilistic models with graphs and are appealing for understanding and prescribing modelling assumptions, they do not rigorously describe efficient parameterisations of the conditional probability distributions in the continuous setting. Deep probabilistic models encompass methods for parameterising these probability distributions with neural networks. Some of these models are particularly well suited for sample generation and are called \textit{deep generative models}. We will highlight the correspondence of some of these models within the probabilistic graphical models when possible.
 
 \section{Why neural networks?}
-We abstract neural networks as parametric functions that map an input space $\mathcal{X}$ to an output space $\mathcal{Y}$ and are differentiable functions $f_{\bm{\theta}}: \mathcal{X} \rightarrow \mathcal{Y}$ of their parameters $\bm{\theta}$. Although neural networks are universal function approximators, the parameterisation of a probability distribution is challenging and requires the right architectural choices. We often present neural networks as deterministic models; however, many strategies exist to parameterise probability distributions, as we will see in the next sections.
+We abstract neural networks as parametric functions that map an input space $\mathcal{X}$ to an output space $\mathcal{Y}$ and are differentiable functions $f_{\bm{\theta}}: \mathcal{X} \rightarrow \mathcal{Y}$ of their parameters $\bm{\theta}$. Moreover, backpropagation allows computating of the first-order derivative $\nabla_{\bm{\theta}}f_{\bm{\theta}}$ of neural networks automatically. Although neural networks are universal function approximators, the parameterisation of a probability distribution is challenging and requires the right architectural choices. We often present neural networks as deterministic models; however, many strategies exist to parameterise probability distributions, as we will see in the next sections.
 
-For example, Normalizing flows are neural networks that directly parameterise the probability distribution but require strong architectural constraints, as we will see later. This is particularly inconvenient when working with structured data (e.g. images, sound, graphs, etc.) because specialised architectures (e.g. convolutions) do not directly satisfy the architectural constraints. Another possibility is to use a neural network to parameterise a known distribution such as a Gaussian. For example, we can model $P(Y|X)$ as a multivariate Gaussian $\mathcal{N}(\bm{\mu}, \Sigma)$ where a free-form neural network computes the mean vector and covariance matrix as a parametric function of the input $X$. This strategy makes a strong assumption in the form of $P(Y\mid X)$, which may be inaccurate, e.g. if $X$ is a piece of text describing the image $Y$. An alternative is to see the neural networks as a generator of samples similar to the training set, mapping a noise vector to realisations. These deep generative models define the probability distribution implicitly and allow us to use complex architectures well suited to the modelling task but require specialised training algorithms, as we will see in details soon.
+For example, normalizing flows are neural networks that directly parameterise the probability distribution but require strong architectural constraints, as we will see later. This is particularly inconvenient when working with structured data (e.g. images, sound, graphs, etc.) because specialised architectures (e.g. convolutional networks~\citep{lecun1995convolutional}) do not directly satisfy the architectural constraints. Another possibility is to use a neural network to parameterise a known distribution such as a Gaussian. For example, we can model $P(Y|X)$ as a multivariate Gaussian $\mathcal{N}(\bm{\mu}, \Sigma)$ where a free-form neural network computes the mean vector and covariance matrix as a parametric function of the input $X$. This strategy makes a strong assumption on the form of $P(Y\mid X)$, which may be inaccurate, e.g. if $X$ is a piece of text describing the image $Y$. An alternative is to see the neural network as a generator of samples similar to the training set, mapping a noise vector to realisations~\citep{goodfellow2020generative}. These deep generative models define the probability distribution implicitly and allow us to use complex architectures well suited to the modelling task. However, they also require specialised training algorithms.
 
-Neural networks are better suited to parameterise distributions than other machine learning models. In particular, their differentiability and training procedure based on stochastic gradient descent allows us to optimise objectives corresponding to the MLE or MAP directly. In parallel, considerable efforts have been made over the last year to create architectures with inductive biases adapted to different data types. The availability of large pre-trained models is another advantage of working with neural networks. For example, Dall-e 2~\citep{ramesh2022hierarchical} combines a large pre-trained language model with annotated images to train a text-to-image probabilistic model.
+Neural networks are better suited to parameterise distributions than other machine learning models. In particular, their differentiability and training procedure based on stochastic gradient descent allows us to optimise objectives corresponding to the MLE or MAP directly. In parallel, considerable efforts have been made over the last year to create architectures with inductive biases adapted to different data types, e.g. graph neural networks~\citep{xu2018powerful, satorras2021n} and recurrent neural networks~\citep{hochreiter1997long, cho2014properties}. The availability of large pre-trained models is another advantage of working with neural networks~\citep{bommasani2021opportunities}.
+% For example, Dall-e 2~\citep{ramesh2022hierarchical} combines a large pre-trained language model with annotated images to train a text-to-image probabilistic model.
 
-In the following we will mostly ignore the conditioning variable $X$ as challenges in modelling distributions with neural networks is usually orthogonal to handling conditioning variables. Instead we focus on the modelling of the joint distributions of a $d$-dimensional random vector $Y = \left[Y_1, \dots, Y_d  \right]$ that takes value in $\mathcal{Y} = \mathcal{Y}_1 \times \dots \times \mathcal{Y}_d$. For simplicity, we consider that $\mathcal{Y}_1 = \dots = \mathcal{Y}_d$ and the domains are either discrete classes (e.g. a pixel value in $\{0, \dots, 255\}^3$) or real numbers $\mathbb{R}$.
+In the following we ignore the conditioning variable $X$. Indeed, the main challenges in modelling distributions with neural networks is usually orthogonal to handling conditioning variables. Instead we focus on the modelling of the joint distributions of a $d$-dimensional random vector $Y = \left[Y_1, \dots, Y_d  \right]$ that takes value in $\mathcal{Y} = \mathcal{Y}_1 \times \dots \times \mathcal{Y}_d$. For simplicity, we consider that $\mathcal{Y}_1 = \dots = \mathcal{Y}_d$ and the domains are either discrete classes (e.g. a pixel value in $\{0, \dots, 255\}^3$) or real numbers $\mathbb{R}$.
 \section{Autoregressive models} \label{subsec:AM}
 \begin{figure}
 
@@ -72,10 +73,10 @@ In the following we will mostly ignore the conditioning variable $X$ as challeng
 \draw    (65,373) -- (129.66,320.88) ;
 \draw [shift={(132,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Straight Lines [id:da49081615287245617]
-\draw  [dash pattern={on 0.84pt off 2.51pt}]  (175,373) -- (239.66,320.88) ;
+\draw   (175,373) -- (239.66,320.88) ;
 \draw [shift={(242,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Straight Lines [id:da9305605534968759]
-\draw  [dash pattern={on 0.84pt off 2.51pt}]  (173,285) -- (237.66,232.88) ;
+\draw   (173,285) -- (237.66,232.88) ;
 \draw [shift={(240,231)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Shape: Circle [id:dp9092410420976149]
 \draw   (319,396) .. controls (319,382.19) and (330.19,371) .. (344,371) .. controls (357.81,371) and (369,382.19) .. (369,396) .. controls (369,409.81) and (357.81,421) .. (344,421) .. controls (330.19,421) and (319,409.81) .. (319,396) -- cycle ;
@@ -87,7 +88,7 @@ In the following we will mostly ignore the conditioning variable $X$ as challeng
 \draw    (157,280) -- (157,228) ;
 \draw [shift={(157,225)}, rotate = 90.28] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Straight Lines [id:da6288348052624073]
-\draw  [dash pattern={on 0.84pt off 2.51pt}]  (263,215) -- (318.69,168.91) ;
+\draw   (263,215) -- (318.69,168.91) ;
 \draw [shift={(321,167)}, rotate = 140.39] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Shape: Circle [id:dp08259847117385988]
 \draw   (319,156) .. controls (319,142.19) and (330.19,131) .. (344,131) .. controls (357.81,131) and (369,142.19) .. (369,156) .. controls (369,169.81) and (357.81,181) .. (344,181) .. controls (330.19,181) and (319,169.81) .. (319,156) -- cycle ;
@@ -95,10 +96,10 @@ In the following we will mostly ignore the conditioning variable $X$ as challeng
 \draw    (344,131) -- (344.95,79) ;
 \draw [shift={(345,76)}, rotate = 91.04] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Straight Lines [id:da5760019375125367]
-\draw  [dash pattern={on 0.84pt off 2.51pt}]  (255,373) -- (319.66,320.88) ;
+\draw  (255,373) -- (319.66,320.88) ;
 \draw [shift={(322,319)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 %Straight Lines [id:da731846091518092]
-\draw  [dash pattern={on 0.84pt off 2.51pt}]  (255,293) -- (319.66,240.88) ;
+\draw (255,293) -- (319.66,240.88) ;
 \draw [shift={(322,239)}, rotate = 141.13] [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.08]  [draw opacity=0] (8.93,-4.29) -- (0,0) -- (8.93,4.29) -- cycle    ;
 
 % Text Node
@@ -118,7 +119,7 @@ In the following we will mostly ignore the conditioning variable $X$ as challeng
 \end{tikzpicture}
 \caption{The forward computation of an autoregressive model. Each 1D distribution is conditioned autoregressively on the input vector.} \label{fig:AM}
 \end{figure}
-Autoregressive models reduce the modelling of $d$-dimensional distributions into $d$ distributions via the product rule ($P(A, B) = P(A) P(B\mid A)$) as shown in \Cref{fig:AM}. The autoregressive structure is there to account for the piling-up conditioning factors. These models can represent all kinds of dependencies between the components of the random vector modelled.
+Autoregressive models~\citep{van2016conditional, wong2000mixture} reduce the modelling of $d$-dimensional distributions into $d$ distributions via the product rule ($P(A, B) = P(A) P(B\mid A)$) as shown in \Cref{fig:AM}. The autoregressive structure is there to account for the piling-up conditioning factors. These models can represent all kinds of dependencies between the components of the random vector modelled.
 Formally, autoregressive models decompose the joint distribution as
 \begin{align}
   P(Y) = P(Y_1) \Pi^d_{i=2} P(Y_i|Y_{<i}), \quad \text{where} \quad Y_{<i} \triangleq \left[ Y_1, \dots, Y_{i-1}\right].
