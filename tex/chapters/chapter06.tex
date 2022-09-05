@@ -1,4 +1,22 @@
 
+\begin{figure}[h]
+  \centering
+
+  % \caption{An old painting of Isaac Newton writing the theory of gravity in the language of probability and questioning the role of models in the world. Made by $\text{DALL}\cdot\text{E }2$.}
+  \includegraphics[width=.95\textwidth]{figures/chapter02/DALLE_2_Newton.png}
+  \label{}
+\end{figure}
+
+\vfill
+
+{
+\textit{\justify
+   I prefer dangerous freedom over peaceful slavery.}
+
+  \par\bigskip
+  \raggedleft\MakeUppercase{Thomas Jefferson}
+  \par%
+}
 
 \chapter{Structured Density Estimation with Normalizing Flows}\label{ch:06}
 
@@ -67,7 +85,7 @@ A critical limitation of normalizing flows exists when there is no prescribed in
 
 A complete Bayesian treatment of normalizing flows is out-of-reach. They rely on neural networks, and Bayesian neural networks~\citep{mackay1995bayesian} are still an active research area. It is unclear whether one day we will be able to express effectively prior and posterior distributions over neural networks. Less ambitious but potentially worthy, expressing distributions over (conditional) independence might be an alternative that could provide valuable insights into the learnt models. In particular, we believe that graphical normalizing flows combined with an efficient sampling strategy that builds a valid Bayesian network structure from the posterior distribution over (conditional) independence might become an effective modelling strategy.
 
-To conclude, we have once again demonstrated the relevance of drawing connections between distinct classes of models. Here, we have argued that Bayesian networks and normalizing flows share in common the factorisation of a joint density via the Bayes' rule. This new perspective enables exploiting topology discovery algorithms within normalizing to improve the expressivity of their inductive bias. We have demonstrated the relevance of acknowledging independence assumptions when possible and discovering them to avoid overfitting and learn better models. 
+To conclude, we have once again demonstrated the relevance of drawing connections between distinct classes of models. Here, we have argued that Bayesian networks and normalizing flows share in common the factorisation of a joint density via the Bayes' rule. This new perspective enables exploiting topology discovery algorithms within normalizing to improve the expressivity of their inductive bias. We have demonstrated the relevance of acknowledging independence assumptions when possible and discovering them to avoid overfitting and learn better models.
 
 % Limitations regarding the intractability of optimizing structure. Our optimization problem is very hard to solve. Further work on the optimization landscape is needed. Limitations regarding the point estimate we provide of the independence in the end whereas - complete posterior is better and might help smoothing the loss. For causal discovery this is very limiting as we might have many graphs with alsmot the same independence but that corresponds to very different causal models. Proiding the complete distribution over DAG would be awesome for causal discovery.
 %
