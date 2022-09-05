@@ -3,7 +3,7 @@
 
 \begin{chapter_outline}
 
-  We show that drawing connections between different classes of models can help us understand existing classes of models.
+  We show that drawing connections between different classes of models can help us better understand existing classes of models.
   In particular, we use connections between normalizing flows and Bayesian networks to prove three essential properties of affine normalizing flows.
   First, we show that stacking multiple transformations in a normalizing flow relaxes independence assumptions and entangles the model distribution.
   Second, we show that a fundamental leap of capacity emerges when the depth of affine flows exceeds three transformation layers.
@@ -11,20 +11,19 @@
 \end{chapter_outline}
 
 \section{Prologue}
-This chapter further highlights the relevance of bridging distinct classes of probabilistic models. These connections provide new viewpoints that can help us focus on some models' components and abstract others less relevant to what we want to understand. In particular, we derive properties of affine normalizing flows relevant to practitioners. We show that stacking more than three steps of normalizing flows is poorly motivated. Adding more steps unnecessarily slows down the inversion of the flow for no gain in expressivity. We also reveal one failure mode of affine normalizing flows, which implies they are not universal density approximators.
+This chapter further highlights the relevance of connecting distinct classes of probabilistic models. These connections provide new viewpoints that can help us focus on some models' components and abstract others less relevant to what we want to understand. In particular, we derive properties of affine normalizing flows relevant to practitioners. We show that stacking more than three steps of normalizing flows is poorly motivated. Adding more steps unnecessarily slows down the inversion of the flow for no gain in expressivity. We also reveal one failure mode of affine normalizing flows, which implies they are not universal density approximators.
 
-This chapter shall convince the reader that gaining a theoretical understanding of probabilistic models is key to using these models appropriately. For this purpose, taking a new perspective by drawing connections between different types of models, here graphical and deep probabilistic models, is an efficient solution. We can then reason intuitively on the class of models with simple analogies.
+This chapter shall convince the reader that gaining a theoretical understanding of probabilistic models is key to using these models appropriately. For this purpose, taking a new perspective by drawing connections between different types of models, here graphical and deep probabilistic models, is a worthy effort. We can then reason intuitively on the class of models with simple analogies.
 
-Without further ado, we invite the reader to overview the next section and jump into the publication.
 \vfill
 
 \section{The paper: You say Normalizing Flows I see Bayesian Networks}
 
 \subsection{Author contributions}
-The paper is co-authored by me and Gilles Louppe. As the leading author, I developed the connections between normalizing flows and Bayesian networks, made the experiments, and wrote the paper. Gilles Louppe supervised me throughout this project, offered suggestions and helped in writing the paper.
+The paper is co-authored by Gilles Louppe and I. As the leading author, I developed the connections between normalizing flows and Bayesian networks, conducted experiments, and wrote the paper. Gilles helped me throughout this project, offered suggestions and actively participated in writing the paper.
 
 \subsection{Reading tips}
-The reader may skip section 2 which presents normalizing flows and Bayesian networks already introduced the background chapter. We also encourage the reader to first focus on understanding the relationship between Figure~1 and coupling layers presented in section~3.2. The reader can then focus on understanding section~3.3 which provides the ground for the rest of the paper.
+The reader may skip section 2 which presents normalizing flows and Bayesian networks already introduced in \Cref{part:0}. We encourage the reader to first focus on understanding the relationship between Figure~1 and coupling layers presented in section~3.2. The reader can then focus on understanding section~3.3 which provides the ground for the rest of the paper.
 % \subsection{Minor corrections}
 \includepdf[pages=-]{papers/innf.pdf}
 
