@@ -395,7 +395,10 @@ where the factor is $ \phi(V, H)=e^{-E(V, H)} $ and the energy function takes th
 $$ E(V=\bm{v}, H=\bm{h}) = -\bm{b}_H^T \bm{h} - \bm{b}_V^T \bm{v} - \bm{v}^T W \bm{h}.  $$
 We can train these networks on a dataset of visible variables with an algorithm that combines Gibbs sampling (on the hidden units) and gradient descent to update the weights. RBMs are among the first success of neural networks. They have been used for unsupervised learning problems such as dimensionality reduction, collaborative filtering, and others. RBMs naturally transition between PGMs and deep probabilistic models we will discuss in the next chapter.
 \section{Conclusion}
-\textcolor{red}{1) Presented models and algo 2) Avoided details for the parame of distribu which is not really specific to graphical models. For that modern tools such as NNs are particularly efficient.}
+In this chapter, we have discussed motivations for a graphical representation of probabilistic models.
+We have introduced Bayesian and Markov networks as the main classes of probabilistic graphical models. In addition, we have presented various inference algorithms. Some algorithms apply to all probabilistic models, while others exploit the graphical structure. Undoubtedly, this chapter has outlooked the parameterisation of continuous distributions, even when they are unidimensional. Our discussion ended with a preamble on neural networks. The next chapter goes further and details various strategies to parameterise probability distributions with neural networks.
+
+
 % \paragraph{Markov versus Bayes.}
 % Markov -> BN
 % BN -> Markov
