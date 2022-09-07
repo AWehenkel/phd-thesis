@@ -2,43 +2,14 @@
 
 \pdfbookmark[1]{Abstract}{Abstract}
 \chapter*{Abstract}
-One of the most notable distinctions between humans and other animals is our ability to grow collective intelligence along generations. This development appears exponential; we are witnessing an explosion of knowledge and technical capabilities. Artificial intelligence enables human-made objects to participate in this collective intelligence and to push its boundaries. In particular, machine learning is a sub-field of artificial intelligence that studies the creation of intelligence by computers. With the rapid progress of information technology and the profusion of data, machine learning is becoming crucial in collective intelligence growth.
+One of the most notable distinctions between humans and other animals is our ability to grow collective intelligence along generations. This development appears exponential; we are witnessing an explosion of knowledge and technical capabilities. Artificial intelligence enables human-made objects to push the boundaries of this collective intelligence. In particular, machine learning is a sub-field of artificial intelligence that studies the creation of intelligence by computers. With the rapid progress of information technology and the profusion of data, machine learning is becoming crucial in collective intelligence growth.
 
-By allowing the representation of randomness and uncertainty inherent to the world around us, probabilistic models are at the root of this revolution of intelligence. In this context, this thesis presents several contributions made to the development of modern approaches to probabilistic modelling between $2018$ to $2022$. In particular, our contributions improve probabilistic models that rely on deep learning algorithms. The first part of this work present an introduction to a modern approach of probabilistic modelling. The core contributions are separated into two parts which respectively informed and uninformed deep probabilistic models.
+Probabilistic models are at the root of this disruption of intelligence creation by allowing the representation of randomness and uncertainty inherent to the world around us. In this context, this thesis collects $5$ papers that contributed to developing modern approaches to probabilistic modelling between $2018$ to $2022$.
+%In particular, our contributions improve probabilistic models that rely on deep learning algorithms.
+Accordingly, this work first presents a background section on probabilistic modelling. We introduce the notions necessary to understand probabilistic models' why and how. In addition, we describe two important classes of models: \textit{probabilistic graphical models} and deep \textit{probabilistic models}.
 
-2) The role of deep learning is predominant in artificial intelligence.
+We contrast our contributions between improvements to \textit{uninformed} and \textit{informed} models. We use the former class of models when data contains enough information about the targetted model. These models' validity is tied to the data. In contrast, \textit{informed} models embed stronger prior knowledge of the phenomenon of interest. Data is only there to complement this knowledge. The quality of \textit{informed} models depends on the data and validity of the prior knowledge.
 
-2) The goal and contribution of the thesis.
+The second part of the thesis focuses on three distinct contributions to \textit{uninformed} probabilistic models. First, we demonstrate that combining models unlocks new modelling features. Second, we draw explicit connections between Bayesian networks and normalizing flows. We exploit this connection to study some representational aspects of normalizing flows. Finally, we present a new neural network architecture that enforces a monotonic response. We demonstrate the effectiveness of this representation in modelling continuous probability distributions.
 
-3) Why development in uninformed is important.
-
-4) Why develoment in informed is important.
-
-\clearpage
-Data analysis and machine learning have become an integrative part
-of the modern scientific methodology, offering automated procedures
-for the prediction of a phenomenon based on past observations, unraveling underlying patterns in data and providing insights about
-the problem. Yet, caution should avoid using machine learning as a
-black-box tool, but rather consider it as a methodology, with a rational thought process that is entirely dependent on the problem under
-study. In particular, the use of algorithms should ideally require a
-reasonable understanding of their mechanisms, properties and limitations, in order to better apprehend and interpret their results.
-Accordingly, the goal of this thesis is to provide an in-depth analysis of random forests, consistently calling into question each and
-every part of the algorithm, in order to shed new light on its learning capabilities, inner workings and interpretability. The first part of
-this work studies the induction of decision trees and the construction
-of ensembles of randomized trees, motivating their design and purpose whenever possible. Our contributions follow with an original
-complexity analysis of random forests, showing their good computational performance and scalability, along with an in-depth discussion
-of their implementation details, as contributed within Scikit-Learn.
-In the second part of this work, we analyze and discuss the interpretability of random forests in the eyes of variable importance
-measures. The core of our contributions rests in the theoretical characterization of the Mean Decrease of Impurity variable importance
-measure, from which we prove and derive some of its properties in
-the case of multiway totally randomized trees and in asymptotic conditions. In consequence of this work, our analysis demonstrates that
-variable importances as computed from non-totally randomized trees
-(e.g., standard Random Forest) suffer from a combination of defects,
-due to masking effects, misestimations of node impurity or due to
-the binary structure of decision trees.
-Finally, the last part of this dissertation addresses limitations of random forests in the context of large datasets. Through extensive experiments, we show that subsampling both samples and features simultaneously provides on par performance while lowering at the same
-time the memory requirements. Overall this paradigm highlights an
-intriguing practical fact: there is often no need to build single models over immensely large datasets. Good performance can often be
-achieved by building models on (very) small random parts of the
-data and then combining them all in an ensemble, thereby avoiding
-all practical burdens of making large data fit into memory.
+In the third part of the manuscript, we consider \textit{informed} probabilistic models. Our first contribution introduces the graphical normalizing flows, which empower normalizing flows with the ability indepence assumptions. Finally, our last contribution shows that informing deep probabilistic models with a partial physical understanding of the studied phenomenon unlocks the generalisation capabilities inaccessible to non-informed models.
