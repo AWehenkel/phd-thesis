@@ -34,15 +34,14 @@
 \section{Introduction}
 The invention of computers has enabled the automatisation of many tasks historically accomplished by humans. One key ingredient of this revolution is making computers \textit{reason} -- to make an informed judgment based on logical arguments and observations. The set of hypotheses on which this logic builds is a \textit{model}. Both humans and machines rely on reasoning to perform tasks. For instance, let us consider the problem of ordering a bottle of wine at a restaurant. We first need some hypotheses, e.g., $\bullet$ What kind of wine do people like at the table? Red or white? Strong or delicate? $\bullet$ What is the budget? $\bullet$ What do we have on the menu? $\bullet$ What is the wine list? Etc. Provided with this model, we can make an informed choice: remove the wines that are too expensive or would displease someone at the table and pick one of the remaining that goes well with tonight's dinner. More scientific examples include a climatologist who needs a model of the earth and its atmosphere to explain climate change; or streaming platforms which use a model that represents users' tastes to make video recommendations.
 
-In these contexts and many others, the model plays a central part. In practice, we aim for \textbf{faithful models} -- models for which reasoning leads to a proper judgment. In the examples mentioned above, we strive for models that help us choose the right wine; that explain the climate over the last centuries; that keep the user longer on the platform. The exact definition of the model's quality depends on the targetted application. However, certain classes of models are usually strictly better than others.
-In particular, a model that embeds notions of uncertainty is more expressive than a deterministic model; the latter models cannot accurately represent phenomena that exhibit randomness.
+In these contexts and many others, the model plays a central part. In practice, we aim for \textbf{faithful models} -- models for which reasoning leads to a proper judgment. In the examples mentioned above, we strive for models that help us choose the right wine; that explain the climate over the last centuries; that keep the user longer on the platform. The exact definition of the model's quality depends on the targetted application. However, certain classes of models are usually strictly better than others. A model that embeds notions of uncertainty is more expressive than a deterministic model; the latter models cannot accurately represent phenomena that exhibit randomness.
 
 It is unknown whether the laws that rule our reality are deterministic or stochastic. Nevertheless, modelling requires simplifying assumptions, which cause uncertainty. For instance, a model that acknowledges partial observability must express uncertainty about the system's state. Uncertainty also arises from the finite precision of measurement devices or from simplifying approximations that are not strictly correct, among other reasons.
 
 We thus need a formal language to express this stochasticity, the language of probability~\citep{kolmogorov2018foundations}. \textit{Probability} is the language that enables formal statements about uncertain events. It allows contrast between what is \textit{possible} and what is \textit{plausible}. This distinction is essential as it constructs deterministic decisions by focusing on the most plausible events and discarding unlikely events. For example, wine amateurs know that an old bottle has a higher chance of being corked than a recent one but might also taste better. Probability allows us to express this fact and consider it to select an appropriate bottle of wine.
 
 \begin{side_note}{Stochasticity, randomness, or uncertainty?}
-In our discussion, we use these terms as follows. \textit{Stochasticity} refers to the property of being well-described by the probabilistic language. It is a statement about a model. In contrast, \textit{randomness} refers to the phenomenon itself, not to a model. \textit{Uncertainty} is the result of randomness or stochasticity. It is our way of acknowledging that we do not know things perfectly. It is equally the nature itself than our modelling assumptions that cause uncertainty.
+In our discussion, we use these terms as follows. \textit{Stochasticity} refers to the property of being well-described by the probabilistic language. It is a statement about a model. In contrast, \textit{randomness} refers to the phenomenon itself, not to a model. \textit{Uncertainty} is the result of randomness or stochasticity. It is our way of acknowledging that we do not know things perfectly. It is equally Nature itself than our modelling assumptions that cause uncertainty.
 \end{side_note}
 
 \section{Probabilistic model}
@@ -113,13 +112,12 @@ The advantage of the Bayesian learning paradigm is to force the explicit formali
 \begin{figure}
   \centering
   \includegraphics[width=.5\textwidth]{figures/chapter02/ch2_train_test_error.pdf}
-  \caption{This plot is taken from \citet{louppe2014understanding}.
-  The light blue curves show the training error while the
+  \caption{The light blue curves show the training error while the
   light red curves show the estimated test error for 100
   pairs of training and test sets drawn at random
   from a known distribution. The thick blue curve is the average
   training error while the thick red curve is the average test error.
-  It shows the necessary trade-off between the model's complexity and generalisation performance. As the model gets too complex, it starts overfitting the training data, decreasing test performance.}
+  It shows the necessary trade-off between the model's complexity and generalisation performance. As the model gets too complex, it starts overfitting the training data, decreasing test performance. This plot is taken from \citet{louppe2014understanding}.}
   \label{fig:ch02:learning_curves}
 \end{figure}
 The attentive reader will notice that machine learning (ML) was only mentioned once until now, when discussing the Bayesian and frequentist interpretations of probability.

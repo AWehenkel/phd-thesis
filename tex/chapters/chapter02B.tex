@@ -11,14 +11,14 @@
 
 \vfill
 
-{
-\textit{\justify
-   You can't do inference without making assumptions.}
-
-  \par\bigskip
-  \raggedleft\MakeUppercase{A Bayesian friend}\\
-  \par%
-}
+% {
+% \textit{\justify
+%    You can't do inference without making assumptions.}
+%
+%   \par\bigskip
+%   \raggedleft\MakeUppercase{A Bayesian friend}\\
+%   \par%
+% }
 
 
 \chapter{Probabilistic graphical models}\label{ch:02B}
@@ -145,7 +145,7 @@ $$ \mathbb{E}_{P(Y\mid E=\bm{e})}\left[g(y)\right] \approx \frac{\sum_{i=1}^k g(
  $$P(Y=\bm{y}\mid E=\bm{e}) \approx \frac{\sum_{i=1}^k P(Y=\bm{1}\{y_i = y\}, M=\bm{m}_i, E=\bm{e})}{\sum_{i=1}^k P(Y=y_i, M=\bm{m}_i, E=\bm{e})}. $$
 Likelihood weighting is a special case of \textit{importance sampling} when the samples of the proposal distribution comes from ancestral sampling. Likelihood weighting is more efficient if the conditioning factors are close to the root of the BN.
 
-Importance sampling does not provide iid samples from the posterior distribution, but MCMC (with independent resampling) does. MCMC is a family of algorithms that samples from distributions known up to a normalising factors. Hence, MCMC algorithms are particularly interesting to sample from conditional distributions. These algorithms run a Markov chain whose stationary distribution follows the given distribution. Each MCMC algorithm defines its own transition probability $P(Y^k\mid Y^{k-1})$. Many instances exist, such as Metropolis-Hastings MCMC~\citep{hastings1970monte}, Hamiltonian MCMC~\citep{neal2011mcmc}, slice sampling~\citep{neal2003slice}, etc. Gibbs sampling~\citep{sorensen1995bayesian} is an instance that exploits the BN structure in the transition probability. Let us suppose that $M$ is empty, then at each transition step, Gibbs sampling only updates one component $Y_i$ of the vector $Y^k$. In particular, it samples $Y_i$ from the posterior $P(Y_i\mid Y_{-i}^{k-1})$ where $Y_{-i}^{k-1}$ contains the values of the evidence $E$ and the previous state $Y^{k-1}$ except the $i^{\text{th}}$ component.
+Importance sampling does not provide iid samples from the posterior distribution, but MCMC (with independent resampling) does. MCMC is a family of algorithms that samples from distributions known up to a normalising factors. Hence, MCMC algorithms are particularly interesting to sample from conditional distributions. These algorithms run a Markov chain whose stationary distribution follows the given distribution. Each MCMC algorithm defines its own transition probability $P(Y^k\mid Y^{k-1})$. Many instances exist, such as Metropolis-Hastings MCMC~\citep{hastings1970monte}, Hamiltonian MCMC~\citep{neal2011mcmc}, slice sampling~\citep{neal2003slice}, etc. Gibbs sampling~\citep{sorensen1995bayesian} is an instance that exploits the BN structure in the transition probability. Let us suppose that $M$ is empty, then at each transition step, Gibbs sampling only updates one component $Y_i$ of the vector $Y^k$. It samples $Y_i$ from the posterior $P(Y_i\mid Y_{-i}^{k-1})$ where $Y_{-i}^{k-1}$ contains the values of the evidence $E$ and the previous state $Y^{k-1}$ except the $i^{\text{th}}$ component.
 
 % \textcolor{red}{Mention that we do not pretend to be complete as there exist many many algorithms and we only focus on generic algorihm that showcase some of the classical issuing when sampling from these models. I have to help the reader to understand better why he it is important that he reads this sections. For the one about sampling it shows that inference is really hard but adding strucure helps producing specialized algorithms. For the inference as optimization it must mainly motivates to create parametric models that are efficiently trainable. Also mention that although we try to keep the discussion generic, our interest is really for continuous variables in this thesis. Find a place to mention the Expectation–maximization algorithm.}
 
@@ -292,7 +292,7 @@ It sounds more natural to express similar configurations with an undirected grap
     \end{subfigure}
     \caption{Two Markov networks of a $4$D variable. (\textbf{a}) No independence. (\textbf{b}) Cycle dependencies. A Bayesian network cannot represent all implied independencies but a Markov network can.} \label{fig:MN-fig}
 \end{figure}
-A Markov network (MN), also called Markov Random Field, is an undirected graph that describes \textit{Markov properties} between random variables. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a vector collecting $d$ random variables. The global Markov property states that any two subsets of variables are conditionally independent given a separating subset -- $X_A \indep X_B \mid X_S$, where the subset of variables $X_S$ separates the subsets $X_A$ and $X_B$ -- $X_S$ blocks all path from $X_A$ to $X_B$ in the graph. For example, the Markov network in \Cref{fig:MN-fig-a} does not impose any independence whereas the one in \Cref{fig:MN-fig-b} implies the following independence: $\{ X_1 \indep X_3 \mid (X_2, X_4), X_2 \indep X_4 \mid (X_1, X_3)\}$.
+A Markov network (MN), also called Markov Random Field, is an undirected graph that describes \textit{Markov properties} between random variables. Formally, let $X = \left[X_1, \hdots, X_d\right]^T$ be a vector collecting $d$ random variables. The global Markov property states that any two subsets of variables are conditionally independent given a separating subset. In mathematical terms: $X_A \indep X_B \mid X_S$, where the subset of variables $X_S$ separates the subsets $X_A$ and $X_B$; $X_S$ blocks all path from $X_A$ to $X_B$ in the graph. For example, the Markov network in \Cref{fig:MN-fig-a} does not impose any independence whereas the one in \Cref{fig:MN-fig-b} implies the following independence: $\{ X_1 \indep X_3 \mid (X_2, X_4), X_2 \indep X_4 \mid (X_1, X_3)\}$.
 
 \begin{table}[h]
 
@@ -334,7 +334,7 @@ The unidirectionality of Markov networks imposes some symmetry in their paramete
 % Similar to BNs, the graphical structure of a Markov network describes independencies but does not explicit distributions numerically.
 
 
-It is why instead Markov networks rely on \textbf{unormalised} functions called \textit{factors} for their parameterisation. A factor is a real-valued function $\phi(\cdot): \mathcal{X} \rightarrow \mathbb{R}$ that describe the interactions between a set of random variables $X$. We can combine multiple factors to create a joint distribution. This parameterisation is called a Gibbs distribution. It parameterises the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ with a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$. Each $D_i$ is a different subset of variables. The Gibbs distribution is defined as follows:
+It is why instead Markov networks rely on \textbf{unormalised} functions called \textit{factors} for their parameterisation. A factor is a real-valued function $\phi(\cdot): \mathcal{X} \rightarrow \mathbb{R}$ that describes the interactions between a set of random variables $X$. We can combine multiple factors to create a joint distribution. This parameterisation is called a Gibbs distribution. It parameterises the joint distribution of a random vector $X = \left[X_1, \hdots, X_d\right]^T$ with a set of factors $\bm{\phi} = \{ \phi_1(D_1), \dots, \phi_K(D_K) \}$. Each $D_i$ is a, potentially overlapping, different subset of variables. The Gibbs distribution is defined as follows:
 $$P_{\bm{\phi}}(X) = \frac{1}{Z}\tilde{P}_{\bm{\phi}}(X),$$
 where
 $$ \tilde{P}_{\bm{\phi}}(X) = \phi_1(D_1) \times \dots \times \phi_K(D_K). $$
