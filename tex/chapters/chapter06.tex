@@ -1,7 +1,5 @@
 \thispagestyle{empty}
-\section*{Preambule}
-
-\vfill
+\section*{}
 
 \vfill
 
@@ -10,9 +8,11 @@
    I prefer dangerous freedom over peaceful slavery.}
 
   \par\bigskip
-  \raggedleft\MakeUppercase{Thomas Jefferson}
+  \raggedleft{Thomas Jefferson}
   \par%
 }
+
+\vfill
 
 \chapter{Structured Density Estimation}\label{ch:06}
 
@@ -48,12 +48,6 @@ The reader should be able to skip section~3 as it describes the basics of normal
 \section{Epilogue}
 
 \subsection{Inductive bias in normalizing flows.}
-\begin{figure}
-  \centering
-  \includegraphics[width=1.\textwidth]{figures/chapter06/Lipschtizness_complexity.pdf}
-  \caption{Evolution of the Lipschitz constant of a normalizing flow's log-likelihood along training with the corresponding learning and testing log-likelihood. The training and test sets are composed of $100$ iid samples from a mixture of two Gaussian distributions. We reproduce the training $20$ times and plot the corresponding mean signals. The shaded area represents one standard deviation. As training continues overfitting, the gap between training and testing performance increases with the Lipschitz constant of the flow's log-likelihood.}
-  \label{fig:flow_Lipschtizness}
-\end{figure}
 The Lipschitz constant can be a good summary of the continuous machine learning models' complexity~\citep{virmaux2018lipschitz, weng2018evaluating, bartlett2017spectrally}. Hence we may prevent overfitting by choosing the model with the smallest Lipschitz constant between many fitting equally well the train set~\citep{von2004distance}. We usually control the Lipschitz constant of the model only implicitly, e.g. by penalising the norm of the weights~\citep{krogh1991simple} or adding stochasticity in the learning algorithm~\citep{smith2021origin, bottou2012stochastic}. However, such strategies turn inefficient when the loss function favours models with large Lipschitz constants.
 
 As shown in \Cref{fig:flow_Lipschtizness}, the Lipschitz constant of normalizing flows and overfitting are correlated. Indeed, we optimise the likelihood of the NF, which is directly related to the Lipschitz constant of the modelled density. The density is a function of its first-order derivative with respect to the input -- the Lipshitz constant bounds the likelihood and the highest density peak. The Lipschitz constant can quickly explode for small training sets. Indeed, expressive models may discover spurious relationships between variables. These spurious relationships are complicated and lead to large Lipschitz constants. Thus by enforcing independencies, prescribed or discovered in the data, graphical normalizing flows may avoid these traps and overfit less. Meanwhile, the relationships discover by graphical normalizing flows are simpler and generalise better.
@@ -63,7 +57,12 @@ There may also exist a genuine deterministic relationship between variables whic
 
 Finally, another way to improve the inductive bias of normalizing flows is to design invertible layers that mimic effective non-invertible architectures. This translation is not always straightforward, but it can be worth the time spent. Glow~\citep{kingma_glow_2018} is a perfect example; they borrow ideas from convolutions, pooling, and hierarchical VAEs to achieve state-of-the-art image synthesis at the time.
 
-
+\begin{figure}
+  \centering
+  \includegraphics[width=1.\textwidth]{figures/chapter06/Lipschtizness_complexity.pdf}
+  \caption{Evolution of the Lipschitz constant of a normalizing flow's log-likelihood along training with the corresponding learning and testing log-likelihood. The training and test sets are composed of $100$ iid samples from a mixture of two Gaussian distributions. We reproduce the training $20$ times and plot the corresponding mean signals. The shaded area represents one standard deviation. As training continues overfitting, the gap between training and testing performance increases with the Lipschitz constant of the flow's log-likelihood.}
+  \label{fig:flow_Lipschtizness}
+\end{figure}
 % \paragraph{The relationship between causal and independence discovery.}
 
 

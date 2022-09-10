@@ -1,13 +1,14 @@
 \thispagestyle{empty}
-\section*{Preambule}
+\section*{}
 
 \vfill
 
 \begin{figure}[h]
   \centering
 
-  % \caption{An old painting of Isaac Newton writing the theory of gravity in the language of probability and questioning the role of models in the world. Made by $\text{DALL}\cdot\text{E }2$.}
+
   \includegraphics[width=.95\textwidth]{figures/chapter02/DALLE_2_Newton.png}
+  \caption{An old painting of Isaac Newton writing the theory of gravity in the language of probability and questioning the role of models in the world. As seen by $\text{DALL}\cdot\text{E }2$.}
   \label{}
 \end{figure}
 
@@ -21,10 +22,10 @@
 
    If I have seen further, it is by standing on shoulders of giants.\par\bigskip
   }
-  \raggedleft\MakeUppercase{Isaac Newton}\par%
+  \raggedleft{Isaac Newton}\par%
 }}
 
-\vfill\vfill
+\vfill
 
 \chapter{Hybrid Probabilistic Models}\label{ch:07}
 
@@ -78,7 +79,7 @@ Soon, hybrid learning might unlock the development of new measurement devices at
 \paragraph{Symbolic model discovery}
 % - Symbolic regr
 % For hundread of years, we have described complex phenomenon with simple mathematical formulas and managed to achieve astonishing tasks.
-Most modern prediction or measurement tools are still free of machine learning solutions. They lean on a profound understanding of the underlying processes described with simple mathematical formulas. Nevertheless, we cannot deny the increasing impact of machine learning on the world. In some sense, symbolic model discovery[][SMD]~\citep{schmidt2009distilling,kusner2017grammar,sahoo2018learning} reconciles these two observations. It aims at discovering simple mathematical rules that accurately describe data.
+Most modern prediction or measurement tools are still free of machine learning solutions. They lean on a profound understanding of the underlying processes described with simple mathematical formulas. Nevertheless, we cannot deny the increasing impact of machine learning on the world. In some sense, symbolic model discovery~\citep[][SMD]{schmidt2009distilling,kusner2017grammar,sahoo2018learning} reconciles these two observations. It aims at discovering simple mathematical rules that accurately describe data.
 
 Recent SMD techniques~\citep{cranmer2020discovering} first learn a deep probabilistic model from a large amount of data and then fit a simple mathematical formula to the learnt model via classical symbolic regression tools~\citep{schmidt2009distilling}. This two-step strategy benefits from the practical inductive bias of modern deep learning architectures to generalise better than techniques that directly fit a symbolic model to the data. \citet{cranmer2020discovering} demonstrated that this strategy is effective for retrieving non-trivial cosmology and might be relevant for interpreting neural networks and discovering novel physics. In addition to their interpretability, symbolic models usually exhibit better generalisation than the corresponding neural network. Symbolic models typically correspond to simpler models that are less prone to overfitting -- compressing the neural networks into a few equations acts as a powerful regularisation strategy.
 
@@ -90,7 +91,7 @@ iii) a deep learning model accounting for the remaining gap.
 \paragraph{Inference under misspecification}
 The hybrid learning algorithms considered in the paper jointly build an encoder network that identifies the parameters of the expert model and an interaction model that accounts for the misspecification of the expert model. After training, we can apply the encoder to unseen data and obtain an estimation of the expert model's parameters. However, it is unclear whether we should believe in such estimators as the hybrid model might modify the meaning of the expert parameters.
 
-Another problem of the hybrid model's encoders is their incapacity to reflect uncertainty faithfully. Simulation-based inference~\citep[][SBI]{cranmer2020frontier} methods do not acknowledge model misspecifications but provide an accurate estimation of the uncertainty of the parameters' value. These methods provide efficient algorithmic solutions to perform inference over the parameters of a simulator, even when it is not differentiable. However, the guarantees of classical SBI collapse if the model is misspecified. Recently, inspired by robust Bayesian inference~\citep{cherief2020mmd,knoblauch2019generalized}, robust SBI~\citep{dellaporta2022robust} has acknowledged that even complex simulators are misspecified. Still, we believe that robust SBI may be inefficient, and machine learning techniques inspired by hybrid learning might lead to efficient solutions for robust SBI. We believe that the inductive bias of machine learning models combined with a large amount of data should outperform existing robust SBI techniques that rely on classical statistical arguments. One challenge to achieving this is to develop solutions compatible with non-differentiable simulators and efficiently benefit from a large amount of unlabeled data.
+Another problem of the hybrid model's encoders is their incapacity to reflect uncertainty faithfully. Simulation-based inference~\citep[][SBI]{cranmer2020frontier} methods do not acknowledge model misspecifications but provide an accurate estimation of the uncertainty of the parameters' value~\citep{Cannon2022InvestigatingTI}. These methods provide efficient algorithmic solutions to perform inference over the parameters of a simulator, even when it is not differentiable. However, the guarantees of classical SBI collapse if the model is misspecified. Recently, inspired by robust Bayesian inference~\citep{cherief2020mmd,knoblauch2019generalized}, robust SBI~\citep{dellaporta2022robust} has acknowledged that even complex simulators are misspecified. Still, we believe that robust SBI may be inefficient, and machine learning techniques inspired by hybrid learning might lead to efficient solutions for robust SBI. We believe that the inductive bias of machine learning models combined with a large amount of data should outperform existing robust SBI techniques that rely on classical statistical arguments. One challenge to achieving this is to develop solutions compatible with non-differentiable simulators and efficiently benefit from a large amount of unlabeled data.
 
 \subsection{Conclusion and opportunities}
 We have observed that hybrid models have robustness properties that are out of reach for purely data-driven machine learning models. In contrast to the classical ML setting, hybrid learning methods embed more than an inductive bias. They start from the assumption that a large part of the phenomenon observed can be described with an expert model. We formulate and achieve a notion of robustness that concerns the effects encoded by the expert model; our simple yet effective augmentation strategy unlocks this robustness in existing hybrid models. Our experiments show the benefit of the augmentation both concerning the parameter identification quality and the hybrid model's predictive accuracy.
