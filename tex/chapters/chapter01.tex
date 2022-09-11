@@ -81,7 +81,7 @@ Despite some great successes, automating probabilistic model discovery remains a
 % % A partial solution to this problem would be to allow these models to use efficiently the prior knowledge we can have of the modeled process, this is maybe fine when the goal is to do image synthesis but is not when we need a model that satisfies the laws of physics.
 % Paragraph on the challenges faced by deep generative models: Trainign difficulty, generalization, consistency with law of physics, interpretability.
 
-\begin{side_note}{Explicit vs. implicit models}
+\begin{side_note}{Explicit vs implicit models}
   In general, accurate modelling requires accounting for uncertainty. Modelling uncertainty is essential as, by definition, models are simplified representations of reality; they cannot explicitly represent all possible sources of perturbations deterministically.
   For instance, we determine the precision of any sensor by fitting a model that accounts stochastically for internal and external perturbations that may arise in practical settings such as temperature, humidity or pressure variations. This inherent stochasticity exists both for small models that are simplistic representations and for larger models that are a combination of smaller stochastic models. These models describe the stochastic relationship between observations $\mathbf{x}$ provided the models' parameters $\mathbf{\theta}$. %The complexity of the models eventually depends on the granularity of the various aggressors modelled.
 
