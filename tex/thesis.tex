@@ -4,6 +4,11 @@
 
 % Custom config ===============================================================
 
+% Code snippets
+\usepackage{minted}
+\definecolor{rulecolor}{rgb}{0.80,0.80,0.80}
+\definecolor{bgcolor}{rgb}{1.0,1.0,1.0}
+\newminted{python}{bgcolor=bgcolor}
 % Classic thesis
 \usepackage{amssymb}
 \input{classicthesis-config}
@@ -46,11 +51,6 @@
   \end{shaded}%
 }
 
-% Code snippets
-\usepackage{minted}
-\definecolor{rulecolor}{rgb}{0.80,0.80,0.80}
-\definecolor{bgcolor}{rgb}{1.0,1.0,1.0}
-\newminted{python}{bgcolor=bgcolor}
 
 % Todo
 \newcommand{\todo}[1]{\textcolor{red}{[TODO] #1}}
